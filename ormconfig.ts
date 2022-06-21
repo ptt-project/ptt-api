@@ -1,3 +1,10 @@
+const logging =
+  process.env.LOG_LEVEL === 'debug'
+    ? true
+    : process.env.LOG_LEVEL === 'production'
+    ? ['info', 'error']
+    : true
+
 const defaultConfig = {
   name: 'default',
   type: 'postgres',
@@ -6,20 +13,19 @@ const defaultConfig = {
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   synchronize: false,
-  cli: {
-    migrationsDir: 'migration',
-  },
+
   entities: ['dist/db/entities/*{.js,.ts}'],
   migrations: ['dist/db/migrations/*{.js,.ts}'],
   subscribers: ['dist/db/subscriber/**/*{.js,.ts}'],
   autoLoadEntities: true,
 
-  logging: ['error', 'info', 'log', 'warn'],
-};
+  // logging: ['error', 'info', 'log', 'warn'],
+  uuidExtension: 'pgcrypto',
+}
 
-const ORMConfig = {
+const config = {
   ...defaultConfig,
   database: process.env.DB_NAME,
-};
+}
 
-module.exports = ORMConfig;
+module.exports = config

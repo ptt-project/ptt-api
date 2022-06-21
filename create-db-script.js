@@ -9,6 +9,7 @@ const adminCred = {
 async function createDb(config) {
   const client = new Client(adminCred);
   console.log(config);
+  console.log("adminCred", adminCred)
   await client.connect();
   const result = await client.query(
     `SELECT datname FROM pg_catalog.pg_database WHERE lower(datname) = lower('${config.database}');`,
