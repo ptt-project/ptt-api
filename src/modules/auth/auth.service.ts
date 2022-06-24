@@ -3,133 +3,146 @@ import { response } from 'src/utils/response'
 import { OtpService } from '../otp/otp.service'
 import { Member } from '../../db/entities/Member'
 import { hashPassword } from 'src/utils/helpers'
+import { RegisterRequestDto } from './dto/register.dto'
+import {
+  InternalSeverError,
+  UnableRegisterEmailAlreayExist,
+  UnableRegisterUsernameAlreayExist,
+  UnableInsertMemberToDbError,
+} from 'src/utils/response-code'
+import { validateBadRequest, validateError } from 'src/utils/response-error'
 
+export type InquiryMemberExistType = (
+  params: RegisterRequestDto,
+) => Promise<[number, string]>
+
+export type InsertMemberToDbTye = (
+  params: RegisterRequestDto,
+) => Promise<[Member, string]>
 
 @Injectable()
 export class AuthService {
   constructor(private readonly otpService: OtpService) {}
 
   async helloWorld() {
-    return response(undefined);
+    return response(undefined)
   }
 
   async requestOtp(body) {
-    return await this.otpService.requestOtp(body);
+    return await this.otpService.requestOtp(body)
   }
 
   verifyOtp() {
-    return async (body) => {
-      return await this.otpService.verifyOtp(body);
+    return async body => {
+      return await this.otpService.verifyOtp(body)
     }
   }
 
   validate(validateMember) {
-    return async (body) => {
-      const [_, validateError] = await validateMember(body);
-      if (validateError === 'email') {
-        return response(undefined, '400', 'Email is already used');
-      }
-      if (validateError === 'username') {
-        return response(undefined, '400', 'Username is already used');
-      }
-      if (validateError) {
-        return response(undefined, '400', 'validations failed');
+    return async (body: RegisterRequestDto) => {
+      const [validateErrorCode, validateErrorMessage] = await validateMember(
+        body,
+      )
+      if (validateErrorCode != 0) {
+        return validateBadRequest(validateErrorCode, validateErrorMessage)
       }
 
-      return response(undefined, '200', 'Member data is available');
+      return response(undefined)
     }
   }
 
-  register(verifyOtp, validateMember, createMember) {
-    return async (body) => {
-      const isValidOtp = await verifyOtp(body);
+  registerHandler(
+    verifyOtp,
+    inquiryMemberEixst: Promise<InquiryMemberExistType>,
+    insertMemberToDb: Promise<InsertMemberToDbTye>,
+  ) {
+    return async (body: RegisterRequestDto) => {
+      const isValidOtp = await verifyOtp(body)
       if (!isValidOtp) {
-        return response(undefined, '400', 'Otp is invalid');
+        return response(undefined, '400', 'Otp is invalid')
       }
 
-      const [_, validateError] = await validateMember(body);
-      if (validateError === 'email') {
-        return response(undefined, '400', 'Email is already used');
-      }
-      if (validateError === 'username') {
-        return response(undefined, '400', 'Username is already used');
-      }
-      if (validateError) {
-        return response(undefined, '400', validateError);
+      const [validateErrorCode, validateErrorMessage] = await (
+        await inquiryMemberEixst
+      )(body)
+
+      if (validateErrorCode != 0) {
+        return validateBadRequest(validateErrorCode, validateErrorMessage)
       }
 
-      const [member, createMemberError] = await createMember(body);
-      if (createMemberError) {
-        return response(undefined, '400', 'Failed to create member');
+      const [member, insertMemberError] = await (await insertMemberToDb)(body)
+      if (insertMemberError != '') {
+        return validateError(UnableInsertMemberToDbError, insertMemberError)
       }
 
-      return response(undefined, "200", "Create member success");
+      return response(member)
     }
   }
 
-  validateMember() {
-    return async ({email, username}) => {
-      // validate member
+  async inquiryMemberEixstFunc(): Promise<InquiryMemberExistType> {
+    return async (params: RegisterRequestDto) => {
+      const { email, username } = params
       try {
         const member = await Member.findOne({
-          where: [{
-            email
-          }, {
-            username
-          }]
+          where: [
+            {
+              email,
+            },
+            {
+              username,
+            },
+          ],
         })
-        console.log('member', member)
         if (!member) {
-          return [true, null];
+          return [0, '']
         }
         if (member.username === username) {
-          return [false, 'username'];
+          return [
+            UnableRegisterUsernameAlreayExist,
+            'Username is is already used',
+          ]
         }
         if (member.email === email) {
-          return [false, 'email'];
+          return [UnableRegisterEmailAlreayExist, 'Email is is already used']
         }
       } catch (error) {
-        console.log(error)
-        return [false, error];
+        return [InternalSeverError, error]
       }
 
-      return [true, null];
+      return [0, '']
     }
   }
 
-  createMember() {
-    return async ({
-      username,
-      firstname,
-      lastname,
-      password,
-      mobile,
-      pdpaStatus,
-      birthday,
-      spCode,
-      gender,
-      email,
-    }) => {
-      try {
-        const member = new Member();
-        member.username = username;
-        member.firstname = firstname;
-        member.lastname = lastname;
-        member.password = await hashPassword(password);
-        member.mobile = mobile;
-        member.pdpaStatus = pdpaStatus === '1';
-        member.birthday = birthday;
-        member.spCode = spCode;
-        member.gender = gender;
-        member.email = email;
+  async insertMemberToDbFunc(): Promise<InsertMemberToDbTye> {
+    return async (params: RegisterRequestDto) => {
+      const {
+        username,
+        firstName,
+        lastName,
+        password,
+        mobile,
+        pdpaStatus,
+        email,
+      } = params
 
-        await member.save();
+      let member: Member
+      try {
+        member = Member.create({
+          username: username,
+          firstname: firstName,
+          lastname: lastName,
+          password: await hashPassword(password),
+          mobile: mobile,
+          pdpaStatus: pdpaStatus,
+          email: email,
+        })
+
+        await member.save()
       } catch (error) {
-        console.log(error)
-        return [false, error];
+        return [member, error]
       }
 
-      return [true, null];
+      return [member, '']
     }
   }
 }

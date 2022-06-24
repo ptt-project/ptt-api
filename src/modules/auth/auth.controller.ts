@@ -1,10 +1,14 @@
 import { Body, Controller, Get, Post, Param } from '@nestjs/common'
 import { AuthService } from './auth.service'
-import {OtpService} from '../otp/otp.service'
+import { OtpService } from '../otp/otp.service'
+import { RegisterRequestDto } from './dto/register.dto'
 
 @Controller('v1/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly otpService: OtpService,
+  ) {}
 
   @Get('hello-world')
   async HelloWorld() {
@@ -13,22 +17,22 @@ export class AuthController {
 
   @Post('request-otp')
   async requestOtp(@Body() body) {
-    return await this.authService.requestOtp(body);
+    return await this.authService.requestOtp(body)
   }
 
   @Post('register')
-  async register(@Body() body) {
-    return await this.authService.register(
+  async register(@Body() body: RegisterRequestDto) {
+    return await this.authService.registerHandler(
       this.authService.verifyOtp(),
-      this.authService.validateMember(),
-      this.authService.createMember(),
-    )(body);
+      this.authService.inquiryMemberEixstFunc(),
+      this.authService.insertMemberToDbFunc(),
+    )(body)
   }
 
   @Post('register/validate')
   async validate(@Body() body) {
     return await this.authService.validate(
-      this.authService.validateMember(),
-    )(body);
+      this.authService.inquiryMemberEixstFunc(),
+    )(body)
   }
 }

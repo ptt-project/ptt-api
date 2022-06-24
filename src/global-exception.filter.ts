@@ -4,22 +4,23 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  ArgumentsHost,
 } from '@nestjs/common'
 import { QueryFailedError } from 'typeorm'
 import { isUndefined, omitBy } from 'lodash'
 import chalk from 'chalk'
-import { InternalSeverError, InvalidJSONString } from './utils/response-code'
+import { InternalSeverError } from './utils/response-code'
 
 @Catch()
 export class GlobalExeptionFilter implements ExceptionFilter {
   private logger = new Logger()
   log = (...args) => this.logger.log(chalk.red(...args))
 
-  catch(exception: QueryFailedError) {
+  catch(exception: QueryFailedError, host: ArgumentsHost) {
     let response = {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-      errorCode: InternalSeverError,
-      error: HttpStatus[HttpStatus.INTERNAL_SERVER_ERROR],
+      code: InternalSeverError,
+      message: 'InternalSeverError',
     }
 
     if (exception instanceof HttpException) {
@@ -28,12 +29,12 @@ export class GlobalExeptionFilter implements ExceptionFilter {
         ...response,
         ...omitBy(res, isUndefined),
       }
-      if (res.statusCode === 401 && !res.errorCode) {
-        response.errorCode = InvalidJSONString
-        response.error = HttpStatus[401]
-      }
     }
 
-    this.log(exception.stack)
+    host
+      .switchToHttp()
+      .getResponse()
+      .status(response.statusCode)
+      .json({ ...response, statusCode: undefined })
   }
 }

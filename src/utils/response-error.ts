@@ -5,65 +5,60 @@ type Meta = { param?: { [k: string]: any } }
 
 export const httpError = (
   statusCode: HttpStatus,
-  errorCode?: number,
+  code?: number,
+  message?: string,
   meta?: Meta,
   messages?: ValidationError[],
 ) => {
-  // console.log({ statusCode, errorCode })
-  let message = undefined
+  let messagesTemp = undefined
   let params = undefined
 
   if (messages) {
-    message = messages[0].constraints
+    messagesTemp = messages[0].constraints
   }
-  if (process.env.NODE_ENV === 'dev') {
-    params = {
-      statusCode,
-      errorCode,
-      message,
-      error: HttpStatus[statusCode],
-      meta,
-    }
-  } else {
-    params = {
-      statusCode,
-      errorCode,
-      error: HttpStatus[statusCode],
-      meta,
-    }
+
+  params = {
+    statusCode,
+    code,
+    message: message || messagesTemp,
+    meta,
   }
 
   throw new HttpException({ ...params }, statusCode)
 }
 
-export const notFound = (
-  errorCode?: number,
-  meta?: Meta,
-  messages?: ValidationError[],
-) => {
-  httpError(HttpStatus.NOT_FOUND, errorCode, meta, messages)
+export const notFound = (errorCode?: number, message?: string, meta?: Meta) => {
+  httpError(HttpStatus.NOT_FOUND, errorCode, message, meta)
 }
 
 export const validateError = (
   errorCode?: number,
+  message?: string,
   meta?: Meta,
-  messages?: ValidationError[],
 ) => {
-  httpError(HttpStatus.UNPROCESSABLE_ENTITY, errorCode, meta, messages)
+  httpError(HttpStatus.UNPROCESSABLE_ENTITY, errorCode, message, meta)
 }
 
 export const validateForbidden = (
   errorCode?: number,
+  message?: string,
   meta?: Meta,
-  messages?: ValidationError[],
 ) => {
-  httpError(HttpStatus.FORBIDDEN, errorCode, meta, messages)
+  httpError(HttpStatus.FORBIDDEN, errorCode, message, meta)
 }
 
 export const validateUnauthorize = (
   errorCode?: number,
+  message?: string,
   meta?: Meta,
-  messages?: ValidationError[],
 ) => {
-  httpError(HttpStatus.UNAUTHORIZED, errorCode, meta, messages)
+  httpError(HttpStatus.UNAUTHORIZED, errorCode, message, meta)
+}
+
+export const validateBadRequest = (
+  errorCode?: number,
+  message?: string,
+  meta?: Meta,
+) => {
+  httpError(HttpStatus.BAD_REQUEST, errorCode, message, meta)
 }

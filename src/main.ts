@@ -10,7 +10,7 @@ import { urlencoded, json } from 'express'
 import { GlobalExeptionFilter } from './global-exception.filter'
 import { httpError } from './utils/response-error'
 import { ValidationError } from 'class-validator'
-import { InternalSeverError } from './utils/response-code'
+import { InvalidJSONString } from './utils/response-code'
 import { NestExpressApplication } from '@nestjs/platform-express'
 
 const loggerProduction: LogLevel[] = ['warn']
@@ -38,9 +38,11 @@ async function bootstrap() {
       transform: true,
       whitelist: true,
       exceptionFactory: (validationErrors: ValidationError[] = []) => {
+        console.log('exceptionFactory for this.')
         httpError(
           HttpStatus.BAD_REQUEST,
-          InternalSeverError,
+          InvalidJSONString,
+          undefined,
           undefined,
           validationErrors,
         )

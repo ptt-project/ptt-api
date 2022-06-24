@@ -4,101 +4,84 @@ import { randomStr, randomNum } from 'src/utils/helpers'
 
 @Injectable()
 export class OtpService {
-  constructor() {}
-
   async requestOtp(body) {
-    return await this.processRequestOtp(
-      this.sendOtp(),
-      this.saveOtp(),
-    )(body)
+    return await this.processRequestOtp(this.sendOtp(), this.saveOtp())(body)
   }
 
   async verifyOtp(body) {
-    return await this.processVerifyOtp(
-      this.verify(),
-    )(body)
+    return await this.processVerifyOtp(this.verify())(body)
   }
 
-  processRequestOtp(
-    sendOtp,
-    saveOtp,
-  ) {
-    return async ({
-      mobile,
-    }) => {
+  processRequestOtp(sendOtp, saveOtp) {
+    return async ({ mobile }) => {
       const [otpData, sendOtpError] = await sendOtp(mobile)
 
       if (sendOtpError) {
-        return response(undefined, '400', 'Fail to Send Otp');
+        return response(undefined, '400', 'Fail to Send Otp')
       }
 
-      const [_, saveOtpError] = await saveOtp(otpData);
+      const [_, saveOtpError] = await saveOtp(otpData)
 
       if (saveOtpError) {
-        return response(undefined, '400', 'Fail to Save Otp');
+        return response(undefined, '400', 'Fail to Save Otp')
       }
 
-      return response({refCode: otpData.refCode, mobile}, '200', 'Send Otp Successfully');
+      return response(
+        { refCode: otpData.refCode, mobile },
+        '200',
+        'Send Otp Successfully',
+      )
     }
   }
 
   sendOtp() {
-    return async (mobile:string) => {
-      const refCode = randomStr(4);
-      const otpCode = randomNum(6);
+    return async (mobile: string) => {
+      const refCode = randomStr(4)
+      const otpCode = randomNum(6)
       // sand otp
-      
+
       console.log(refCode, otpCode)
 
-      return [{
-        mobile, refCode, otpCode
-      }, null]
+      return [
+        {
+          mobile,
+          refCode,
+          otpCode,
+        },
+        null,
+      ]
     }
   }
 
   saveOtp() {
     return async (otpData: {
-      refCode: string,
-      otpCode: string,
-      mobile: string,
+      refCode: string
+      otpCode: string
+      mobile: string
     }) => {
       // save otpData
 
-      return ["saved otp", null]
+      return ['saved otp', null]
     }
   }
 
-  processVerifyOtp(
-    verifyOtp,
-  ) {
-    return async ({
-      refCode,
-      otpCode,
-      mobile,
-    }) => {
-      const [_, verifyOtpError] = await verifyOtp(
-        refCode,
-        otpCode,
-        mobile
-      );
+  processVerifyOtp(verifyOtp) {
+    return async ({ refCode, otpCode, mobile }) => {
+      const [_, verifyOtpError] = await verifyOtp(refCode, otpCode, mobile)
 
       if (verifyOtpError) {
-        return response(undefined, '400', 'Fail to Verify Otp');
+        return response(undefined, '400', 'Fail to Verify Otp')
       }
 
-      return true;
+      return true
     }
   }
 
   verify() {
-    return async (
-      refCode: string,
-      otpCode: string,
-      mobile: string,
-    ) => {
+    return async (refCode: string, otpCode: string, mobile: string) => {
       // verify otp
 
-      return ["Otp is valid", null]
+      return ['Otp is valid', null]
     }
   }
 }
