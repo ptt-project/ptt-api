@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsString, IsEmail, IsBoolean } from 'class-validator'
 import { Transform } from 'class-transformer'
+import { MemberGenderType } from 'src/db/entities/Member'
 
 export class RegisterRequestDto {
   @IsString()
@@ -36,9 +37,13 @@ export class RegisterRequestDto {
 
   @IsString()
   @IsNotEmpty()
-  otp: string
+  otpCode: string
 
   @IsString()
   @IsNotEmpty()
   refCode: string
+
+  @IsString()
+  @IsNotEmpty()
+  gender: MemberGenderType
 }

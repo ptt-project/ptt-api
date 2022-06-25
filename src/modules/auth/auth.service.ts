@@ -29,7 +29,7 @@ export class AuthService {
   }
 
   async requestOtp(body) {
-    return await this.otpService.requestOtp(body)
+    return await this.otpService.requestOtp({...body, detail: 'register'})
   }
 
   verifyOtp() {
@@ -58,8 +58,8 @@ export class AuthService {
   ) {
     return async (body: RegisterRequestDto) => {
       const isValidOtp = await verifyOtp(body)
-      if (!isValidOtp) {
-        return response(undefined, '400', 'Otp is invalid')
+      if (isValidOtp !== true) {
+        return isValidOtp
       }
 
       const [validateErrorCode, validateErrorMessage] = await (
@@ -123,6 +123,7 @@ export class AuthService {
         mobile,
         pdpaStatus,
         email,
+        gender,
       } = params
 
       let member: Member
@@ -135,6 +136,7 @@ export class AuthService {
           mobile: mobile,
           pdpaStatus: pdpaStatus,
           email: email,
+          gender: gender,
         })
 
         await member.save()

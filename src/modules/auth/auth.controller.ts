@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Param } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { OtpService } from '../otp/otp.service'
 import { RegisterRequestDto } from './dto/register.dto'
+import { sendOtpRequestDto } from '../otp/dto/otp.dto'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -16,7 +17,7 @@ export class AuthController {
   }
 
   @Post('request-otp')
-  async requestOtp(@Body() body) {
+  async requestOtp(@Body() body: sendOtpRequestDto) {
     return await this.authService.requestOtp(body)
   }
 
