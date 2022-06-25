@@ -1,13 +1,15 @@
-import { Body, Controller, Get, Post, Param } from '@nestjs/common'
+import { Body, Controller, Get, Post } from '@nestjs/common'
 import { AuthService } from './auth.service'
-import { OtpService } from '../otp/otp.service'
 import { RegisterRequestDto } from './dto/register.dto'
+import { LoginService } from './login.service'
+import { LoginRequestDto } from './dto/login.dto'
+import { Auth } from './auth.decorator'
 
 @Controller('v1/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly otpService: OtpService,
+    private readonly loginService: LoginService,
   ) {}
 
   @Get('hello-world')
@@ -33,6 +35,15 @@ export class AuthController {
   async validate(@Body() body) {
     return await this.authService.validate(
       this.authService.inquiryMemberEixstFunc(),
+    )(body)
+  }
+
+  @Post('login')
+  async login(@Body() body: LoginRequestDto) {
+    return await this.loginService.loginHandler(
+      this.loginService.inquiryUserExistByUsernameFunc(),
+      this.loginService.validatePasswordFunc(),
+      this.loginService.genJwtFunc(),
     )(body)
   }
 }

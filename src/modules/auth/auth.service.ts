@@ -80,7 +80,7 @@ export class AuthService {
   }
 
   async inquiryMemberEixstFunc(): Promise<InquiryMemberExistType> {
-    return async (params: RegisterRequestDto) => {
+    return async (params: RegisterRequestDto): Promise<[number, string]> => {
       const { email, username } = params
       try {
         const member = await Member.findOne({
@@ -114,7 +114,7 @@ export class AuthService {
   }
 
   async insertMemberToDbFunc(): Promise<InsertMemberToDbTye> {
-    return async (params: RegisterRequestDto) => {
+    return async (params: RegisterRequestDto): Promise<[Member, string]> => {
       const {
         username,
         firstName,
