@@ -8,12 +8,7 @@ import {
   PasswordIsInvalid,
 } from 'src/utils/response-code'
 import { validateBadRequest } from 'src/utils/response-error'
-import { JwtService } from '@nestjs/jwt'
-import dayjs, { Dayjs } from 'dayjs'
-
-export type TokenType = {
-  id: number
-}
+import { AuthService, GenAccessTokenType } from './auth.service'
 
 export type InquiryUserExistByUsernameType = (
   username: string,
@@ -24,17 +19,15 @@ export type ValidatePasswordType = (
   passwordMember: string,
 ) => Promise<string>
 
-export type GenJwtType = (member: Member) => Promise<string>
-
 @Injectable()
 export class LoginService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(private readonly authService: AuthService) {}
 
   loginHandler(
     inquiryUserExistByUsername: Promise<InquiryUserExistByUsernameType>,
     validatePassword: Promise<ValidatePasswordType>,
-    genJwt: Promise<GenJwtType>,
-  ) {
+    genAccessToken: Promise<GenAccessTokenType>,
+  ): any {
     return async (body: LoginRequestDto) => {
       const [member, inquiryUserExistByUsernameError] = await (
         await inquiryUserExistByUsername
@@ -55,10 +48,10 @@ export class LoginService {
         return validateBadRequest(PasswordIsInvalid, validatePasswordError)
       }
 
-      const jwtToken = await (await genJwt)(member)
+      const accessToken = await (await genAccessToken)(member)
 
       return response({
-        token: jwtToken,
+        accessToken,
         firstname: member.firstname,
         lastname: member.lastname,
         mobile: member.mobile,
@@ -103,16 +96,6 @@ export class LoginService {
       }
 
       return ''
-    }
-  }
-
-  async genJwtFunc(): Promise<GenJwtType> {
-    return async (member: Member): Promise<string> => {
-      const payload: TokenType = {
-        id: member.id,
-        // expiredAt: dayjs().add(1, 'day'),
-      }
-      return this.jwtService.sign(payload)
     }
   }
 }

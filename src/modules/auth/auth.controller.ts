@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Post } from '@nestjs/common'
+import { Body, Controller, Get, Post, Req } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { RegisterRequestDto } from './dto/register.dto'
 import { LoginService } from './login.service'
 import { LoginRequestDto } from './dto/login.dto'
-import { Auth } from './auth.decorator'
+import { Auth, ReqUser } from './auth.decorator'
+import dayjs from 'dayjs'
+import { Member } from 'src/db/entities/Member'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -12,9 +14,10 @@ export class AuthController {
     private readonly loginService: LoginService,
   ) {}
 
-  @Get('hello-world')
-  async HelloWorld() {
-    return this.authService.helloWorld()
+  @Auth()
+  @Get('getme')
+  async getMes(@ReqUser() member: Member) {
+    return this.authService.getMe(member)
   }
 
   @Post('request-otp')
@@ -39,11 +42,22 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() body: LoginRequestDto) {
-    return await this.loginService.loginHandler(
+  async login(@Req() request, @Body() body: LoginRequestDto) {
+    const longinResponse = await this.loginService.loginHandler(
       this.loginService.inquiryUserExistByUsernameFunc(),
       this.loginService.validatePasswordFunc(),
-      this.loginService.genJwtFunc(),
+      this.authService.genAccessTokenFunc(),
     )(body)
+
+    const accessToken = `AccessToken=${
+      longinResponse.data.accessToken
+    }; HttpOnly; Path=/; Max-Age=${dayjs().add(10, 'second')}`
+
+    const RefreshToken = `RefreshToken=${
+      longinResponse.data.accessToken
+    }; HttpOnly; Path=/; Max-Age=${dayjs().add(10, 'second')}`
+
+    request.res.setHeader('Set-Cookie', [accessToken, RefreshToken])
+    return longinResponse
   }
 }

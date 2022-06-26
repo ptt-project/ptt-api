@@ -13,7 +13,6 @@ import { JwtStrategy } from './jwt.strategy'
     OtpModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '86400s' },
     }),
   ],
   controllers: [AuthController],

@@ -4,13 +4,22 @@ import { OtpService } from '../otp/otp.service'
 import { Member } from '../../db/entities/Member'
 import { hashPassword } from 'src/utils/helpers'
 import { RegisterRequestDto } from './dto/register.dto'
+
+import { JwtService } from '@nestjs/jwt'
+import dayjs, { Dayjs } from 'dayjs'
+
+import { validateBadRequest, validateError } from 'src/utils/response-error'
 import {
   InternalSeverError,
   UnableRegisterEmailAlreayExist,
   UnableRegisterUsernameAlreayExist,
   UnableInsertMemberToDbError,
 } from 'src/utils/response-code'
-import { validateBadRequest, validateError } from 'src/utils/response-error'
+
+export type TokenType = {
+  id: number
+  expiredAt: Dayjs
+}
 
 export type InquiryMemberExistType = (
   params: RegisterRequestDto,
@@ -20,12 +29,17 @@ export type InsertMemberToDbTye = (
   params: RegisterRequestDto,
 ) => Promise<[Member, string]>
 
+export type GenAccessTokenType = (member: Member) => Promise<string>
+
 @Injectable()
 export class AuthService {
-  constructor(private readonly otpService: OtpService) {}
+  constructor(
+    private readonly otpService: OtpService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-  async helloWorld() {
-    return response(undefined)
+  async getMe(member: Member) {
+    return response(member)
   }
 
   async requestOtp(body) {
@@ -143,6 +157,16 @@ export class AuthService {
       }
 
       return [member, '']
+    }
+  }
+
+  async genAccessTokenFunc(): Promise<GenAccessTokenType> {
+    return async (member: Member): Promise<string> => {
+      const payload: TokenType = {
+        id: member.id,
+        expiredAt: dayjs().add(10, 'second'),
+      }
+      return this.jwtService.sign(payload)
     }
   }
 }
