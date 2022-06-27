@@ -8,7 +8,7 @@ import {
   PasswordIsInvalid,
 } from 'src/utils/response-code'
 import { validateBadRequest } from 'src/utils/response-error'
-import { AuthService, GenAccessTokenType } from './auth.service'
+import { AuthService, GenAccessTokenType, GenRefreshTokenType } from './auth.service'
 
 export type InquiryUserExistByUsernameType = (
   username: string,
@@ -27,6 +27,7 @@ export class LoginService {
     inquiryUserExistByUsername: Promise<InquiryUserExistByUsernameType>,
     validatePassword: Promise<ValidatePasswordType>,
     genAccessToken: Promise<GenAccessTokenType>,
+    genRefreshToken: Promise<GenRefreshTokenType>,
   ): any {
     return async (body: LoginRequestDto) => {
       const [member, inquiryUserExistByUsernameError] = await (
@@ -49,9 +50,11 @@ export class LoginService {
       }
 
       const accessToken = await (await genAccessToken)(member)
+      const refreshToken = await (await genRefreshToken)(member)
 
       return response({
         accessToken,
+        refreshToken,
         firstname: member.firstname,
         lastname: member.lastname,
         mobile: member.mobile,

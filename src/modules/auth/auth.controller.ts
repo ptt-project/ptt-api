@@ -47,17 +47,18 @@ export class AuthController {
       this.loginService.inquiryUserExistByUsernameFunc(),
       this.loginService.validatePasswordFunc(),
       this.authService.genAccessTokenFunc(),
+      this.authService.genRefreshTokenFunc(),
     )(body)
 
     const accessToken = `AccessToken=${
       longinResponse.data.accessToken
-    }; HttpOnly; Path=/; Max-Age=${dayjs().add(10, 'second')}`
+    }; HttpOnly; Path=/; Max-Age=${dayjs().add(1, 'day')}`
 
-    const RefreshToken = `RefreshToken=${
-      longinResponse.data.accessToken
-    }; HttpOnly; Path=/; Max-Age=${dayjs().add(10, 'second')}`
+    const refreshToken = `RefreshToken=${
+      longinResponse.data.refreshToken
+    }; HttpOnly; Path=/; Max-Age=${dayjs().add(7, 'day')}`
 
-    request.res.setHeader('Set-Cookie', [accessToken, RefreshToken])
+    request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
     return longinResponse
   }
 }

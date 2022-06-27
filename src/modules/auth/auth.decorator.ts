@@ -13,5 +13,5 @@ export const Auth = () => {
 
 export const ReqUser = createParamDecorator((data, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest()
-  return request.member
+  return request.user
 })
