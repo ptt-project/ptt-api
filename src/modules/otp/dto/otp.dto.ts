@@ -4,15 +4,15 @@ import { Transform } from 'class-transformer'
 export class sendOtpRequestDto {
   @IsString()
   @IsNotEmpty()
-  mobile: string
+  reference: string
 
-  detail: string
+  type: string
 }
 
 export class verifyOtpRequestDto {
   @IsString()
   @IsNotEmpty()
-  mobile: string
+  reference: string
 
   @IsString()
   @IsNotEmpty()

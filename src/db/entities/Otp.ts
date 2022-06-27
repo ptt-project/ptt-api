@@ -5,8 +5,8 @@ import { Member } from './Member'
 export type StatusType = "send" | "verified"
 @Entity({ name: 'otps' })
 export class Otp extends AppEntity {
-  @Column({ name: 'mobile', nullable: false, length: 20 })
-  mobile: string
+  @Column({ name: 'reference', nullable: false })
+  reference: string
 
   @Column({ name: 'ref_code', nullable: false, length: 4 })
   refCode: string
@@ -17,12 +17,8 @@ export class Otp extends AppEntity {
   @Column({ name: 'verify_count', nullable: false, default: 0 })
   verifyCount: number
 
-  @Column({ name: 'detail', nullable: true })
-  detail: string
-
-  @OneToOne(() => Member)
-  @JoinColumn()
-  customer: Member
+  @Column({ name: 'type', nullable: true })
+  type: string
 
   @Column({ 
     name: 'status',

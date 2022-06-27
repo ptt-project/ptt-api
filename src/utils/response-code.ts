@@ -9,3 +9,4 @@ export const UnableVerifyOtpIncorrect = _validateError + 7
 export const UnableVerifyOtpDataNotfound = _validateError + 8
 export const UnableVerifyOtpLimitExceeded = _validateError + 9
 export const UnableVerifyOtpIsAreadyVerified = _validateError + 10
+export const UnableToSendOtpInTimeLimit = _validateError + 11

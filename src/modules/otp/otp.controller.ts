@@ -8,7 +8,7 @@ export class OtpController {
 
   @Post('request-otp')
   async requestOtp(@Body() body: sendOtpRequestDto) {
-    return await this.otpService.requestOtp({...body, detail: 'test-otp'})
+    return await this.otpService.requestOtp({...body, type: 'test-otp'})
   }
 
   @Post('verify-otp')
