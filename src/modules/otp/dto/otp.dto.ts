@@ -6,6 +6,8 @@ export class sendOtpRequestDto {
   @IsNotEmpty()
   reference: string
 
+  @IsString()
+  @IsNotEmpty()
   type: string
 }
 

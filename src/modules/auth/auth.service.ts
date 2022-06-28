@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
-import { OtpService } from '../otp/otp.service'
+import {
+  InquiryVerifyOtpType,
+  OtpService,
+  VerifyOtpHandler,
+} from '../otp/otp.service'
 import { Member } from '../../db/entities/Member'
 import { hashPassword } from 'src/utils/helpers'
 import { RegisterRequestDto } from './dto/register.dto'
@@ -11,6 +15,7 @@ import {
   UnableInsertMemberToDbError,
 } from 'src/utils/response-code'
 import { validateBadRequest, validateError } from 'src/utils/response-error'
+import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
 
 export type InquiryMemberExistType = (
   params: RegisterRequestDto,
@@ -28,17 +33,7 @@ export class AuthService {
     return response(undefined)
   }
 
-  async requestOtp(body) {
-    return await this.otpService.requestOtp({ ...body, type: 'register' })
-  }
-
-  verifyOtp() {
-    return async body => {
-      return await this.otpService.verifyOtp(body)
-    }
-  }
-
-  validate(validateMember: Promise<InquiryMemberExistType>) {
+  validateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
     return async (body: RegisterRequestDto) => {
       const [validateErrorCode, validateErrorMessage] = await (
         await validateMember
@@ -52,15 +47,23 @@ export class AuthService {
   }
 
   registerHandler(
-    verifyOtp,
+    inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     inquiryMemberEixst: Promise<InquiryMemberExistType>,
     insertMemberToDb: Promise<InsertMemberToDbTye>,
   ) {
     return async (body: RegisterRequestDto) => {
-      // const isValidOtp = await verifyOtp(body)
-      // if (isValidOtp !== true) {
-      //   return isValidOtp
-      // }
+      const verifyOtpData: verifyOtpRequestDto = {
+        reference: body.mobile,
+        refCode: body.refCode,
+        otpCode: body.otpCode,
+      }
+      const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
+        await inquiryVerifyOtp
+      )(verifyOtpData)
+
+      if (verifyOtpErrorCode != 0) {
+        return validateBadRequest(verifyOtpErrorCode, verifyOtpErrorMessege)
+      }
 
       const [validateErrorCode, validateErrorMessage] = await (
         await inquiryMemberEixst

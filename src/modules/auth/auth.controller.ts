@@ -2,7 +2,6 @@ import { Body, Controller, Get, Post, Param } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { OtpService } from '../otp/otp.service'
 import { RegisterRequestDto } from './dto/register.dto'
-import { sendOtpRequestDto } from '../otp/dto/otp.dto'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -16,15 +15,10 @@ export class AuthController {
     return this.authService.helloWorld()
   }
 
-  @Post('request-otp')
-  async requestOtp(@Body() body: sendOtpRequestDto) {
-    return await this.authService.requestOtp(body)
-  }
-
   @Post('register')
   async register(@Body() body: RegisterRequestDto) {
     return await this.authService.registerHandler(
-      this.authService.verifyOtp(),
+      this.otpService.inquiryVerifyOtpFunc(),
       this.authService.inquiryMemberEixstFunc(),
       this.authService.insertMemberToDbFunc(),
     )(body)
@@ -32,7 +26,7 @@ export class AuthController {
 
   @Post('register/validate')
   async validate(@Body() body) {
-    return await this.authService.validate(
+    return await this.authService.validateRegisterHandler(
       this.authService.inquiryMemberEixstFunc(),
     )(body)
   }
