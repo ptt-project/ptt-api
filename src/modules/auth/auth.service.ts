@@ -29,7 +29,7 @@ export class AuthService {
   }
 
   async requestOtp(body) {
-    return await this.otpService.requestOtp({...body, type: 'register'})
+    return await this.otpService.requestOtp({ ...body, type: 'register' })
   }
 
   verifyOtp() {
@@ -40,10 +40,9 @@ export class AuthService {
 
   validate(validateMember: Promise<InquiryMemberExistType>) {
     return async (body: RegisterRequestDto) => {
-      console.log(body)
-      const [validateErrorCode, validateErrorMessage] = await (await validateMember)(
-        body,
-      )
+      const [validateErrorCode, validateErrorMessage] = await (
+        await validateMember
+      )(body)
       if (validateErrorCode != 0) {
         return validateBadRequest(validateErrorCode, validateErrorMessage)
       }
@@ -83,7 +82,6 @@ export class AuthService {
   async inquiryMemberEixstFunc(): Promise<InquiryMemberExistType> {
     return async (params: RegisterRequestDto) => {
       const { email, username } = params
-      console.log('email, username')
       try {
         const member = await Member.findOne({
           where: [
@@ -99,10 +97,7 @@ export class AuthService {
           return [0, '']
         }
         if (member.username === username) {
-          return [
-            UnableRegisterUsernameAlreayExist,
-            'Username is already used',
-          ]
+          return [UnableRegisterUsernameAlreayExist, 'Username is already used']
         }
         if (member.email === email) {
           return [UnableRegisterEmailAlreayExist, 'Email is already used']
