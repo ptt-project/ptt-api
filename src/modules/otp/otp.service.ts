@@ -9,10 +9,11 @@ import {
   UnableVerifyOtpDataNotfound,
   UnableVerifyOtpLimitExceeded,
   UnableVerifyOtpIsAreadyVerified,
-  UnableToSendOtpInTimeLimit,
+  UnableToSendOtp,
 } from 'src/utils/response-code'
 
 import { validateBadRequest } from 'src/utils/response-error'
+import { RegisterRequestDto } from '../auth/dto/register.dto'
 
 export type SendOtpType = {
   refCode: string
@@ -25,36 +26,46 @@ export type InquirySendOtpType = (
   params: sendOtpRequestDto,
 ) => Promise<[SendOtpType, number]>
 
+export type InquirySaveOtpType = (otp: Otp, otpData: SendOtpType) => Promise<[Otp, number]>
+
 export type InquiryValidateSendOtpType = (
   params: sendOtpRequestDto,
 ) => Promise<[Otp, number]>
 
 export type InquiryVerifyOtpType = (
-  params: verifyOtpRequestDto,
+  params: verifyOtpRequestDto|RegisterRequestDto,
 ) => Promise<[number, string]>
+
+export type VerifyOtpHandler = (body: verifyOtpRequestDto) => Promise<boolean|void>
 
 @Injectable()
 export class OtpService {
-  async requestOtp(body) {
-    return await this.requestOtpHandler(this.verifyForSendOtp(), this.sendOtp(), this.saveOtpToDb())(body)
-  }
-
-  async verifyOtp(body) {
-    return await this.verifyOtpHandler(this.verifyOtpByDb())(body)
-  }
-
   async testVerifyOtp(body) {
     const result = await this.verifyOtpHandler(this.verifyOtpByDb())(body)
     if(result === true) return response(undefined)
     return result
   }
 
-  requestOtpHandler(verifyForSend: Promise<InquirySendOtpType>, sendOtp: Promise<InquirySendOtpType>, saveOtp) {
+  async requestOtp(body) {
+    return await this.requestOtpHandler(
+      this.verifyForSendOtp(),
+      this.sendOtp(),
+      this.saveOtpToDb()
+    )(body)
+  }
+
+  async verifyOtp(): Promise<VerifyOtpHandler> {
+    return async (body: verifyOtpRequestDto) => await this.verifyOtpHandler(
+      this.verifyOtpByDb()
+    )(body)
+  }
+
+  requestOtpHandler(verifyForSend: Promise<InquiryValidateSendOtpType>, sendOtp: Promise<InquirySendOtpType>, saveOtp: InquirySaveOtpType) {
     return async ({ reference, type }) => {
       const [otp, verSendOtpError] = await (await verifyForSend)({reference, type})
 
       if (verSendOtpError != 0) {
-        return validateBadRequest(UnableToSendOtpInTimeLimit, 'Unable to send Otp with in 90 sec')
+        return validateBadRequest(UnableToSendOtp, 'Unable to send Otp with in 90 sec')
       }
 
       const [otpData, sendOtpError] = await (await sendOtp)({reference, type})
@@ -65,7 +76,7 @@ export class OtpService {
 
       const [_, saveOtpError] = await saveOtp(otp, otpData)
 
-      if (saveOtpError) {
+      if (saveOtpError != 0) {
         return validateBadRequest(saveOtpError, 'Fail to Save Otp')
       }
 
@@ -88,7 +99,7 @@ export class OtpService {
         })
 
         if (otp && new Date().getTime() - new Date(otp.createdAt).getTime() < 90000) {
-          return [otp, UnableToSendOtpInTimeLimit]
+          return [otp, UnableToSendOtp]
         }
 
       } catch (error) {
@@ -123,7 +134,7 @@ export class OtpService {
     }
   }
 
-  saveOtpToDb() {
+  saveOtpToDb(): InquirySaveOtpType {
     return async (otp: Otp, otpData: SendOtpType) => {
       // save otpData
       if (otp) {
@@ -132,11 +143,12 @@ export class OtpService {
         otp.otpCode = otpData.otpCode
         otp.type = otpData.type
         otp.verifyCount = 0
+        otp.status = 'send'
         otp.createdAt = new Date()
 
         await otp.save()
         } catch (error) {
-          return [otp, error]
+          return [otp, UnableToSendOtp]
         }
 
         return [otp, 0]
@@ -149,7 +161,7 @@ export class OtpService {
 
           await newOtp.save()
         } catch (error) {
-          return [newOtp, error]
+          return [newOtp, UnableToSendOtp]
         }
 
         return [newOtp, 0]
@@ -158,7 +170,11 @@ export class OtpService {
   }
 
   verifyOtpHandler(verifyOtp: Promise<InquiryVerifyOtpType>)  {
-    return async ({ refCode, otpCode, reference }) => {
+    return async (otpData : verifyOtpRequestDto) => {
+      if (process.env.SKIP_VERIFY_OTP) {
+        return true
+      }
+      const { reference, otpCode, refCode } = otpData
       const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (await verifyOtp)({refCode, otpCode, reference})
 
       if (verifyOtpErrorCode != 0) {
