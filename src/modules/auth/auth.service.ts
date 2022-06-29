@@ -8,7 +8,10 @@ import { RegisterRequestDto } from './dto/register.dto'
 import { JwtService } from '@nestjs/jwt'
 import dayjs, { Dayjs } from 'dayjs'
 
-import { validateBadRequest, validateError } from 'src/utils/response-error'
+import {
+  validateBadRequest,
+  internalSeverError,
+} from 'src/utils/response-error'
 import {
   InternalSeverError,
   UnableRegisterEmailAlreayExist,
@@ -30,19 +33,15 @@ export type GenAccessTokenType = (member: Member) => Promise<string>
 
 export type GenRefreshTokenType = (member: Member) => Promise<string>
 
-export type InquiryUserExistByIdType = (
-  id: number,
-) => Promise<[Member, string]>
+export type InquiryUserExistByIdType = (id: number) => Promise<[Member, string]>
 
 export type ValidateTokenType = (
-  accessToken: string, 
+  accessToken: string,
   refreshToken: string,
   id: number,
 ) => Promise<[ValidateTokenResponse, boolean]>
 
-export type ExiredTokenType = (
-  token: string,
-) => Promise<boolean>
+export type ExiredTokenType = (token: string) => Promise<boolean>
 
 export type TokenType = {
   id: number
@@ -72,7 +71,7 @@ export class AuthService {
         await validateMember
       )(body)
       if (validateErrorCode != 0) {
-        return validateBadRequest(validateErrorCode, validateErrorMessage)
+        return response(undefined, validateErrorCode, validateErrorMessage)
       }
 
       return response(undefined)
@@ -95,7 +94,7 @@ export class AuthService {
       )(verifyOtpData)
 
       if (verifyOtpErrorCode != 0) {
-        return validateBadRequest(verifyOtpErrorCode, verifyOtpErrorMessege)
+        return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
       }
 
       const [validateErrorCode, validateErrorMessage] = await (
@@ -103,12 +102,15 @@ export class AuthService {
       )(body)
 
       if (validateErrorCode != 0) {
-        return validateBadRequest(validateErrorCode, validateErrorMessage)
+        return response(undefined, validateErrorCode, validateErrorMessage)
       }
 
       const [member, insertMemberError] = await (await insertMemberToDb)(body)
       if (insertMemberError != '') {
-        return validateError(UnableInsertMemberToDbError, insertMemberError)
+        return internalSeverError(
+          UnableInsertMemberToDbError,
+          insertMemberError,
+        )
       }
 
       return response(member)
@@ -178,29 +180,33 @@ export class AuthService {
       return [member, '']
     }
   }
-  
+
   async validateTokenHandler(
     exiredToken: Promise<ExiredTokenType>,
     inquiryUserExistById: Promise<InquiryUserExistByIdType>,
     genAccessToken: Promise<GenAccessTokenType>,
     genRefreshToken: Promise<GenAccessTokenType>,
-  ): Promise<ValidateTokenType>{
-    return async (accessToken: string, refreshToken: string , id: number): Promise<[ValidateTokenResponse, boolean]> => {
-
+  ): Promise<ValidateTokenType> {
+    return async (
+      accessToken: string,
+      refreshToken: string,
+      id: number,
+    ): Promise<[ValidateTokenResponse, boolean]> => {
       const isExiredAccessToken = await (await exiredToken)(accessToken)
       const isExiredRefreshToken = await (await exiredToken)(refreshToken)
 
-      if(isExiredAccessToken && isExiredRefreshToken){
+      if (isExiredAccessToken && isExiredRefreshToken) {
         return [null, true]
       }
 
       const [member, inquiryUserExistByUsernameError] = await (
-        await inquiryUserExistById)(id)
+        await inquiryUserExistById
+      )(id)
 
-      if(inquiryUserExistByUsernameError != ''){
-        [null, true]
+      if (inquiryUserExistByUsernameError != '') {
+        ;[null, true]
       }
-      
+
       const newAccessToken = await (await genAccessToken)(member)
       const newRefreshToken = await (await genRefreshToken)(member)
       const response = {
@@ -210,11 +216,10 @@ export class AuthService {
       }
 
       return [response, false]
-
     }
   }
 
-  async exiredTokenFunc(): Promise<ExiredTokenType>{
+  async exiredTokenFunc(): Promise<ExiredTokenType> {
     return async (token: string): Promise<boolean> => {
       const decodedTokenFromJwt = this.jwtService.decode(token) as TokenType
       const tokenDate = decodedTokenFromJwt.expiredAt
@@ -264,5 +269,4 @@ export class AuthService {
       return this.jwtService.sign(payload)
     }
   }
-
 }

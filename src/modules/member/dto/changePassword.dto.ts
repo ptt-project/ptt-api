@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator'
+import { IsNotEmpty, IsString } from 'class-validator'
 
 export class ChagnePasswordRequestDto {
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  memberId: number
+  oldPassword: string
 
   @IsString()
   @IsNotEmpty()

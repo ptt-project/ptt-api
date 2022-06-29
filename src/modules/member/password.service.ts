@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common'
 
 import { Member } from 'src/db/entities/Member'
 import {
-  UnableInquiryMemberExistById,
   UnableUpatePasswordToDb,
+  OldPassowrdInvalid,
 } from 'src/utils/response-code'
-import { hashPassword } from 'src/utils/helpers'
+import { checkPassword, hashPassword } from 'src/utils/helpers'
 
-import { validateBadRequest } from 'src/utils/response-error'
+import { internalSeverError } from 'src/utils/response-error'
 import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
 import { response } from 'src/utils/response'
 
@@ -20,22 +20,30 @@ export type UpdatePasswordToMemberType = (
   newPassword: string,
 ) => Promise<string>
 
+export type VadlidateOldPasswordType = (
+  oldPassword: string,
+  oldPasswordParams: string,
+) => Promise<string>
+
 @Injectable()
-export class MemberService {
+export class PasswordService {
   changePasswordHandler(
-    inquiryMemberById: Promise<InquiryMemberByIdType>,
+    vadlidateOldPassword: Promise<VadlidateOldPasswordType>,
     updatePasswordToMember: Promise<UpdatePasswordToMemberType>,
   ) {
-    return async (body: ChagnePasswordRequestDto) => {
-      const { memberId, newPassword } = body
-      const [member, inquiryMemberByIdError] = await (await inquiryMemberById)(
-        memberId,
+    return async (member: Member, body: ChagnePasswordRequestDto) => {
+      const { oldPassword, newPassword } = body
+
+      const vadlidateOldPasswordError = await (await vadlidateOldPassword)(
+        member.password,
+        oldPassword,
       )
 
-      if (inquiryMemberByIdError !== '') {
-        return validateBadRequest(
-          UnableInquiryMemberExistById,
-          inquiryMemberByIdError,
+      if (vadlidateOldPasswordError !== '') {
+        return response(
+          undefined,
+          OldPassowrdInvalid,
+          vadlidateOldPasswordError,
         )
       }
 
@@ -44,7 +52,7 @@ export class MemberService {
         newPassword,
       )
       if (updatePasswordToMemberError !== '') {
-        return validateBadRequest(
+        return internalSeverError(
           UnableUpatePasswordToDb,
           updatePasswordToMemberError,
         )
@@ -68,6 +76,23 @@ export class MemberService {
       }
 
       return [member, '']
+    }
+  }
+
+  async vadlidateOldPasswordFunc(): Promise<VadlidateOldPasswordType> {
+    return async (
+      oldPassword: string,
+      oldPasswordParams: string,
+    ): Promise<string> => {
+      const invalidOldPasswordParams = await checkPassword(
+        oldPasswordParams,
+        oldPassword,
+      )
+      if (!invalidOldPasswordParams) {
+        return 'current password is wrong'
+      }
+
+      return ''
     }
   }
 

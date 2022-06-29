@@ -75,11 +75,7 @@ export class OtpService {
         return validateBadRequest(saveOtpError, 'Fail to Save Otp')
       }
 
-      return response(
-        { refCode: otpData.refCode, reference },
-        '200',
-        'Send Otp Successfully',
-      )
+      return response({ refCode: otpData.refCode, reference })
     }
   }
 

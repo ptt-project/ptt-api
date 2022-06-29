@@ -62,3 +62,11 @@ export const validateBadRequest = (
 ) => {
   httpError(HttpStatus.BAD_REQUEST, errorCode, message, meta)
 }
+
+export const internalSeverError = (
+  errorCode?: number,
+  message?: string,
+  meta?: Meta,
+) => {
+  httpError(HttpStatus.INTERNAL_SERVER_ERROR, errorCode, message, meta)
+}
