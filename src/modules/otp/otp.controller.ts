@@ -6,7 +6,7 @@ import { OtpService } from './otp.service'
 export class OtpController {
   constructor(private readonly otpService: OtpService) {}
 
-  @Post('request-otp')
+  @Post('request')
   async requestOtp(@Body() body: sendOtpRequestDto) {
     return await this.otpService.requestOtpHandler(
       this.otpService.verifyForSendOtp(),
@@ -15,7 +15,7 @@ export class OtpController {
     )(body)
   }
 
-  @Post('verify-otp')
+  @Post('verify')
   async verifyOtp(@Body() body: verifyOtpRequestDto) {
     return await this.otpService.verifyOtpHandler(
       this.otpService.inquiryVerifyOtpFunc(),

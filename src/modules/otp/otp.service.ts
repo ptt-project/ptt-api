@@ -162,9 +162,6 @@ export class OtpService {
 
   verifyOtpHandler(inquiryVerifyOtp: Promise<InquiryVerifyOtpType>) {
     return async (otpData: verifyOtpRequestDto) => {
-      if (process.env.SKIP_VERIFY_OTP) {
-        return true
-      }
       const { reference, otpCode, refCode } = otpData
       const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
         await inquiryVerifyOtp
@@ -174,14 +171,15 @@ export class OtpService {
         return validateBadRequest(verifyOtpErrorCode, verifyOtpErrorMessege)
       }
 
-      return true
+      return response(undefined)
     }
   }
 
   async inquiryVerifyOtpFunc(): Promise<InquiryVerifyOtpType> {
     return async (otpData: verifyOtpRequestDto) => {
-      // return [0, null]
-      // verify otp
+      if (process.env.SKIP_VERIFY_OTP) {
+        return [0, null]
+      }
       const { reference, otpCode, refCode } = otpData
       try {
         const otp = await Otp.findOne({
