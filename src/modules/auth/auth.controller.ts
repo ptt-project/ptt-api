@@ -6,11 +6,13 @@ import { LoginRequestDto } from './dto/login.dto'
 import { Auth, ReqUser } from './auth.decorator'
 import dayjs from 'dayjs'
 import { Member } from 'src/db/entities/Member'
+import { OtpService } from '../otp/otp.service'
 
 @Controller('v1/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly otpService: OtpService,
     private readonly loginService: LoginService,
   ) {}
 
@@ -20,24 +22,19 @@ export class AuthController {
     return this.authService.getMe(member)
   }
 
-  @Post('request-otp')
-  async requestOtp(@Body() body) {
-    return await this.authService.requestOtp(body)
-  }
-
   @Post('register')
   async register(@Body() body: RegisterRequestDto) {
     return await this.authService.registerHandler(
-      this.authService.verifyOtp(),
-      this.authService.inquiryMemberEixstFunc(),
+      this.otpService.inquiryVerifyOtpFunc(),
+      this.authService.inquiryMemberExistFunc(),
       this.authService.insertMemberToDbFunc(),
     )(body)
   }
 
   @Post('register/validate')
   async validate(@Body() body) {
-    return await this.authService.validate(
-      this.authService.inquiryMemberEixstFunc(),
+    return await this.authService.validateRegisterHandler(
+      this.authService.inquiryMemberExistFunc(),
     )(body)
   }
 

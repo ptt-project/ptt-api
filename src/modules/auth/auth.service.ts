@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
-import { OtpService } from '../otp/otp.service'
+import { InquiryVerifyOtpType, OtpService } from '../otp/otp.service'
 import { Member } from '../../db/entities/Member'
 import { hashPassword } from 'src/utils/helpers'
 import { RegisterRequestDto } from './dto/register.dto'
@@ -16,16 +16,7 @@ import {
   UnableInsertMemberToDbError,
 } from 'src/utils/response-code'
 
-export type TokenType = {
-  id: number
-  expiredAt: Dayjs
-}
-
-export type ValidateTokenResponse = {
-  accessToken: string
-  refreshToken: string
-  member: Member
-}
+import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
 
 export type InquiryMemberExistType = (
   params: RegisterRequestDto,
@@ -53,6 +44,17 @@ export type ExiredTokenType = (
   token: string,
 ) => Promise<boolean>
 
+export type TokenType = {
+  id: number
+  expiredAt: Dayjs
+}
+
+export type ValidateTokenResponse = {
+  accessToken: string
+  refreshToken: string
+  member: Member
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -64,21 +66,11 @@ export class AuthService {
     return response(member)
   }
 
-  async requestOtp(body) {
-    return await this.otpService.requestOtp(body)
-  }
-
-  verifyOtp() {
-    return async body => {
-      return await this.otpService.verifyOtp(body)
-    }
-  }
-
-  validate(validateMember) {
+  validateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
     return async (body: RegisterRequestDto) => {
-      const [validateErrorCode, validateErrorMessage] = await validateMember(
-        body,
-      )
+      const [validateErrorCode, validateErrorMessage] = await (
+        await validateMember
+      )(body)
       if (validateErrorCode != 0) {
         return validateBadRequest(validateErrorCode, validateErrorMessage)
       }
@@ -88,14 +80,22 @@ export class AuthService {
   }
 
   registerHandler(
-    verifyOtp,
+    inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     inquiryMemberEixst: Promise<InquiryMemberExistType>,
     insertMemberToDb: Promise<InsertMemberToDbTye>,
   ) {
     return async (body: RegisterRequestDto) => {
-      const isValidOtp = await verifyOtp(body)
-      if (!isValidOtp) {
-        return response(undefined, '400', 'Otp is invalid')
+      const verifyOtpData: verifyOtpRequestDto = {
+        reference: body.mobile,
+        refCode: body.refCode,
+        otpCode: body.otpCode,
+      }
+      const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
+        await inquiryVerifyOtp
+      )(verifyOtpData)
+
+      if (verifyOtpErrorCode != 0) {
+        return validateBadRequest(verifyOtpErrorCode, verifyOtpErrorMessege)
       }
 
       const [validateErrorCode, validateErrorMessage] = await (
@@ -115,7 +115,7 @@ export class AuthService {
     }
   }
 
-  async inquiryMemberEixstFunc(): Promise<InquiryMemberExistType> {
+  async inquiryMemberExistFunc(): Promise<InquiryMemberExistType> {
     return async (params: RegisterRequestDto): Promise<[number, string]> => {
       const { email, username } = params
       try {
@@ -133,13 +133,10 @@ export class AuthService {
           return [0, '']
         }
         if (member.username === username) {
-          return [
-            UnableRegisterUsernameAlreayExist,
-            'Username is is already used',
-          ]
+          return [UnableRegisterUsernameAlreayExist, 'Username is already used']
         }
         if (member.email === email) {
-          return [UnableRegisterEmailAlreayExist, 'Email is is already used']
+          return [UnableRegisterEmailAlreayExist, 'Email is already used']
         }
       } catch (error) {
         return [InternalSeverError, error]

@@ -16,6 +16,7 @@ import { join } from 'path'
 import { VersionMiddleware } from './utils/middlewares/version.middleware'
 import './initialize'
 import { AuthModule } from './modules/auth/auth.modules'
+import { MemberModule } from './modules/member/member.modules'
 
 console.log('__dirname', __dirname)
 @Module({
@@ -52,6 +53,7 @@ console.log('__dirname', __dirname)
       rootPath: join(__dirname, '..', 'public'),
     }),
     AuthModule,
+    MemberModule,
   ],
   controllers: [AppController],
   providers: [AppService],
