@@ -42,8 +42,4 @@ export class RegisterRequestDto {
   @IsString()
   @IsNotEmpty()
   refCode: string
-
-  @IsString()
-  @IsNotEmpty()
-  gender: MemberGenderType
 }

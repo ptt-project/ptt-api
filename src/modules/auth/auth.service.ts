@@ -119,7 +119,6 @@ export class AuthService {
         mobile,
         pdpaStatus,
         email,
-        gender,
       } = params
 
       let member: Member
@@ -132,7 +131,6 @@ export class AuthService {
           mobile: mobile,
           pdpaStatus: pdpaStatus,
           email: email,
-          gender: gender,
         })
 
         await member.save()

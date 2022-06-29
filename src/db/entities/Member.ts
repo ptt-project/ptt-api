@@ -34,7 +34,7 @@ export class Member extends AppEntity {
     name: 'gender',
     type: "enum",
     enum: ["F", "M", "O"],
-    nullable: false })
+    nullable: true })
   gender: MemberGenderType
 
   @Column({ name: 'email', nullable: false, length: 50 })
