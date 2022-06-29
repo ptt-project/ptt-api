@@ -12,3 +12,5 @@ export const UnableVerifyOtpIsAreadyVerified = _validateError + 10
 export const UnableToSendOtp = _validateError + 11
 export const UnableInquiryMemberExistById = _validateError + 12
 export const UnableUpatePasswordToDb = _validateError + 13
+export const UnableLoginUsernameDoNotAlreayExist = _validateError + 14
+export const PasswordIsInvalid = _validateError + 15

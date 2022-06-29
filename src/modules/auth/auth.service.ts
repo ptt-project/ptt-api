@@ -4,13 +4,18 @@ import { InquiryVerifyOtpType, OtpService } from '../otp/otp.service'
 import { Member } from '../../db/entities/Member'
 import { hashPassword } from 'src/utils/helpers'
 import { RegisterRequestDto } from './dto/register.dto'
+
+import { JwtService } from '@nestjs/jwt'
+import dayjs, { Dayjs } from 'dayjs'
+
+import { validateBadRequest, validateError } from 'src/utils/response-error'
 import {
   InternalSeverError,
   UnableRegisterEmailAlreayExist,
   UnableRegisterUsernameAlreayExist,
   UnableInsertMemberToDbError,
 } from 'src/utils/response-code'
-import { validateBadRequest, validateError } from 'src/utils/response-error'
+
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
 
 export type InquiryMemberExistType = (
@@ -21,12 +26,44 @@ export type InsertMemberToDbTye = (
   params: RegisterRequestDto,
 ) => Promise<[Member, string]>
 
+export type GenAccessTokenType = (member: Member) => Promise<string>
+
+export type GenRefreshTokenType = (member: Member) => Promise<string>
+
+export type InquiryUserExistByIdType = (
+  id: number,
+) => Promise<[Member, string]>
+
+export type ValidateTokenType = (
+  accessToken: string, 
+  refreshToken: string,
+  id: number,
+) => Promise<[ValidateTokenResponse, boolean]>
+
+export type ExiredTokenType = (
+  token: string,
+) => Promise<boolean>
+
+export type TokenType = {
+  id: number
+  expiredAt: Dayjs
+}
+
+export type ValidateTokenResponse = {
+  accessToken: string
+  refreshToken: string
+  member: Member
+}
+
 @Injectable()
 export class AuthService {
-  constructor(private readonly otpService: OtpService) {}
+  constructor(
+    private readonly otpService: OtpService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-  async helloWorld() {
-    return response(undefined)
+  async getMe(member: Member) {
+    return response(member)
   }
 
   validateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
@@ -79,7 +116,7 @@ export class AuthService {
   }
 
   async inquiryMemberExistFunc(): Promise<InquiryMemberExistType> {
-    return async (params: RegisterRequestDto) => {
+    return async (params: RegisterRequestDto): Promise<[number, string]> => {
       const { email, username } = params
       try {
         const member = await Member.findOne({
@@ -110,7 +147,7 @@ export class AuthService {
   }
 
   async insertMemberToDbFunc(): Promise<InsertMemberToDbTye> {
-    return async (params: RegisterRequestDto) => {
+    return async (params: RegisterRequestDto): Promise<[Member, string]> => {
       const {
         username,
         firstName,
@@ -141,4 +178,91 @@ export class AuthService {
       return [member, '']
     }
   }
+  
+  async validateTokenHandler(
+    exiredToken: Promise<ExiredTokenType>,
+    inquiryUserExistById: Promise<InquiryUserExistByIdType>,
+    genAccessToken: Promise<GenAccessTokenType>,
+    genRefreshToken: Promise<GenAccessTokenType>,
+  ): Promise<ValidateTokenType>{
+    return async (accessToken: string, refreshToken: string , id: number): Promise<[ValidateTokenResponse, boolean]> => {
+
+      const isExiredAccessToken = await (await exiredToken)(accessToken)
+      const isExiredRefreshToken = await (await exiredToken)(refreshToken)
+
+      if(isExiredAccessToken && isExiredRefreshToken){
+        return [null, true]
+      }
+
+      const [member, inquiryUserExistByUsernameError] = await (
+        await inquiryUserExistById)(id)
+
+      if(inquiryUserExistByUsernameError != ''){
+        [null, true]
+      }
+      
+      const newAccessToken = await (await genAccessToken)(member)
+      const newRefreshToken = await (await genRefreshToken)(member)
+      const response = {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+        member: member,
+      }
+
+      return [response, false]
+
+    }
+  }
+
+  async exiredTokenFunc(): Promise<ExiredTokenType>{
+    return async (token: string): Promise<boolean> => {
+      const decodedTokenFromJwt = this.jwtService.decode(token) as TokenType
+      const tokenDate = decodedTokenFromJwt.expiredAt
+      const isExiredToken = dayjs().isAfter(tokenDate)
+      return isExiredToken
+    }
+  }
+
+  async inquiryUserExistByIdFunc(): Promise<InquiryUserExistByIdType> {
+    return async (id: number): Promise<[Member, string]> => {
+      let member: Member
+      try {
+        member = await Member.findOne({
+          where: [
+            {
+              id,
+            },
+          ],
+        })
+        if (!member) {
+          return [null, 'Username is not already used']
+        }
+      } catch (error) {
+        return [null, error]
+      }
+
+      return [member, '']
+    }
+  }
+
+  async genAccessTokenFunc(): Promise<GenAccessTokenType> {
+    return async (member: Member): Promise<string> => {
+      const payload: TokenType = {
+        id: member.id,
+        expiredAt: dayjs().add(1, 'day'),
+      }
+      return this.jwtService.sign(payload)
+    }
+  }
+
+  async genRefreshTokenFunc(): Promise<GenRefreshTokenType> {
+    return async (member: Member): Promise<string> => {
+      const payload: TokenType = {
+        id: member.id,
+        expiredAt: dayjs().add(7, 'day'),
+      }
+      return this.jwtService.sign(payload)
+    }
+  }
+
 }
