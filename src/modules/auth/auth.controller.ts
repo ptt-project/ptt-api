@@ -19,7 +19,7 @@ export class AuthController {
   async register(@Body() body: RegisterRequestDto) {
     return await this.authService.registerHandler(
       this.otpService.inquiryVerifyOtpFunc(),
-      this.authService.inquiryMemberEixstFunc(),
+      this.authService.inquiryMemberExistFunc(),
       this.authService.insertMemberToDbFunc(),
     )(body)
   }
@@ -27,7 +27,7 @@ export class AuthController {
   @Post('register/validate')
   async validate(@Body() body) {
     return await this.authService.validateRegisterHandler(
-      this.authService.inquiryMemberEixstFunc(),
+      this.authService.inquiryMemberExistFunc(),
     )(body)
   }
 }

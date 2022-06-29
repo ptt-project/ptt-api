@@ -10,3 +10,5 @@ export const UnableVerifyOtpDataNotfound = _validateError + 8
 export const UnableVerifyOtpLimitExceeded = _validateError + 9
 export const UnableVerifyOtpIsAreadyVerified = _validateError + 10
 export const UnableToSendOtp = _validateError + 11
+export const UnableInquiryMemberExistById = _validateError + 12
+export const UnableUpatePasswordToDb = _validateError + 13

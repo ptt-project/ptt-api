@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
-import {
-  InquiryVerifyOtpType,
-  OtpService,
-  VerifyOtpHandler,
-} from '../otp/otp.service'
+import { InquiryVerifyOtpType, OtpService } from '../otp/otp.service'
 import { Member } from '../../db/entities/Member'
 import { hashPassword } from 'src/utils/helpers'
 import { RegisterRequestDto } from './dto/register.dto'
@@ -82,7 +78,7 @@ export class AuthService {
     }
   }
 
-  async inquiryMemberEixstFunc(): Promise<InquiryMemberExistType> {
+  async inquiryMemberExistFunc(): Promise<InquiryMemberExistType> {
     return async (params: RegisterRequestDto) => {
       const { email, username } = params
       try {
