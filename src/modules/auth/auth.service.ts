@@ -17,9 +17,12 @@ import {
   UnableRegisterEmailAlreayExist,
   UnableRegisterUsernameAlreayExist,
   UnableInsertMemberToDbError,
+  UnableToAddMobile,
 } from 'src/utils/response-code'
 
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
+import { EntityManager } from 'typeorm'
+import { InquiryAddMobileType } from '../mobile/mobile.service'
 
 export type InquiryMemberExistType = (
   params: RegisterRequestDto,
@@ -27,6 +30,7 @@ export type InquiryMemberExistType = (
 
 export type InsertMemberToDbTye = (
   params: RegisterRequestDto,
+  manager: EntityManager,
 ) => Promise<[Member, string]>
 
 export type GenAccessTokenType = (member: Member) => Promise<string>
@@ -82,8 +86,9 @@ export class AuthService {
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     inquiryMemberEixst: Promise<InquiryMemberExistType>,
     insertMemberToDb: Promise<InsertMemberToDbTye>,
+    addMobileFunc: Promise<InquiryAddMobileType>,
   ) {
-    return async (body: RegisterRequestDto) => {
+    return async (body: RegisterRequestDto, manager: EntityManager) => {
       const verifyOtpData: verifyOtpRequestDto = {
         reference: body.mobile,
         refCode: body.refCode,
@@ -91,7 +96,7 @@ export class AuthService {
       }
       const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
         await inquiryVerifyOtp
-      )(verifyOtpData)
+      )(verifyOtpData, manager)
 
       if (verifyOtpErrorCode != 0) {
         return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
@@ -105,12 +110,17 @@ export class AuthService {
         return response(undefined, validateErrorCode, validateErrorMessage)
       }
 
-      const [member, insertMemberError] = await (await insertMemberToDb)(body)
+      const [member, insertMemberError] = await (await insertMemberToDb)(body, manager)
       if (insertMemberError != '') {
         return internalSeverError(
           UnableInsertMemberToDbError,
           insertMemberError,
         )
+      }
+
+      const addMobileErrorMessege = await (await addMobileFunc)({mobile: body.mobile, isPrimary: true}, member, manager)
+      if (addMobileErrorMessege != '') {
+        return validateBadRequest(UnableToAddMobile, addMobileErrorMessege)
       }
 
       return response(member)
@@ -149,7 +159,7 @@ export class AuthService {
   }
 
   async insertMemberToDbFunc(): Promise<InsertMemberToDbTye> {
-    return async (params: RegisterRequestDto): Promise<[Member, string]> => {
+    return async (params: RegisterRequestDto, manager: EntityManager): Promise<[Member, string]> => {
       const {
         username,
         firstName,
@@ -172,7 +182,7 @@ export class AuthService {
           email: email,
         })
 
-        await member.save()
+        await manager.save(member)
       } catch (error) {
         return [member, error]
       }

@@ -14,3 +14,6 @@ export const UnableLoginUsernameDoNotAlreayExist = _validateError + 12
 export const PasswordIsInvalid = _validateError + 13
 export const OldPassowrdInvalid = _validateError + 14
 export const UnableUpatePasswordToDb = _validateError + 15
+export const UnableToAddMobile = _validateError + 16
+export const UnableToSetMainMobile = _validateError + 17
+export const UnableToDeleteMobile = _validateError + 18

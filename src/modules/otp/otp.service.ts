@@ -14,6 +14,7 @@ import {
 
 import { validateBadRequest } from 'src/utils/response-error'
 import { RegisterRequestDto } from '../auth/dto/register.dto'
+import { EntityManager } from 'typeorm'
 
 export type SendOtpType = {
   refCode: string
@@ -37,6 +38,7 @@ export type InquiryValidateSendOtpType = (
 
 export type InquiryVerifyOtpType = (
   params: verifyOtpRequestDto | RegisterRequestDto,
+  manager: EntityManager,
 ) => Promise<[number, string]>
 
 export type VerifyOtpHandler = (
@@ -157,11 +159,11 @@ export class OtpService {
   }
 
   verifyOtpHandler(inquiryVerifyOtp: Promise<InquiryVerifyOtpType>) {
-    return async (otpData: verifyOtpRequestDto) => {
+    return async (otpData: verifyOtpRequestDto, manager: EntityManager) => {
       const { reference, otpCode, refCode } = otpData
       const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
         await inquiryVerifyOtp
-      )({ refCode, otpCode, reference })
+      )({ refCode, otpCode, reference }, manager)
 
       if (verifyOtpErrorCode != 0) {
         return validateBadRequest(verifyOtpErrorCode, verifyOtpErrorMessege)
@@ -172,7 +174,7 @@ export class OtpService {
   }
 
   async inquiryVerifyOtpFunc(): Promise<InquiryVerifyOtpType> {
-    return async (otpData: verifyOtpRequestDto) => {
+    return async (otpData: verifyOtpRequestDto, manager: EntityManager) => {
       if (process.env.SKIP_VERIFY_OTP) {
         return [0, null]
       }
@@ -191,7 +193,7 @@ export class OtpService {
           return [UnableVerifyOtpIsAreadyVerified, 'Otp code is already verify']
         }
         otp.verifyCount += 1
-        await otp.save()
+        await manager.save(otp)
         if (otp.verifyCount > 3) {
           return [
             UnableVerifyOtpLimitExceeded,
@@ -202,7 +204,7 @@ export class OtpService {
           return [UnableVerifyOtpIncorrect, 'Otp code is incorrect']
         }
         otp.status = 'verified'
-        await otp.save()
+        await manager.save(otp)
       } catch (error) {
         return [InternalSeverError, error]
       }
