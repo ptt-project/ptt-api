@@ -16,12 +16,6 @@ export class AuthController {
     private readonly loginService: LoginService,
   ) {}
 
-  @Auth()
-  @Get('getme')
-  async getMes(@ReqUser() member: Member) {
-    return this.authService.getMe(member)
-  }
-
   @Post('register')
   async register(@Body() body: RegisterRequestDto) {
     return await this.authService.registerHandler(

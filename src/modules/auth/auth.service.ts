@@ -61,9 +61,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async getMe(member: Member) {
-    return response(member)
-  }
+  
 
   validateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
     return async (body: RegisterRequestDto) => {
