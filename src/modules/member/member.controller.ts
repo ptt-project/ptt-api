@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common'
+import { Body, Controller, Get, Patch, Put } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
@@ -14,7 +14,7 @@ export class MemberController {
     private readonly passwordService: PasswordService,
     private readonly memberService: MemberService,
     private readonly emailService: EmailService,
-    ) {}
+  ) {}
 
   @Auth()
   @Patch('change-password')

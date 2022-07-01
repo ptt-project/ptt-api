@@ -1,11 +1,18 @@
 import { Injectable } from "@nestjs/common";
 import { Member } from 'src/db/entities/Member'
 import { response } from "src/utils/response";
+import { UnableUpatePasswordToDb } from "src/utils/response-code";
+import { internalSeverError } from "src/utils/response-error";
+import { UpdateProfiledRequestDto } from "./dto/updateProfile.dto";
 
 export type getProfileType = (
-    member: Member,
-  ) => Promise<any>
+  member: Member,
+) => Promise<any>
 
+export type UpdateProfileToMemberType = (
+  member: Member,
+  body: UpdateProfiledRequestDto
+) => Promise<any>
 @Injectable()
 export class MemberService {
 
@@ -29,6 +36,41 @@ export class MemberService {
         gender: member.gender,
         email: member.email,
       }
+    }
+  }
+
+  upDateProfileHandler (
+    updatePasswordToMember: Promise<UpdateProfileToMemberType>,
+  ) {
+      return async (member: Member,body: UpdateProfiledRequestDto) => {
+        const updateProfileToMemberError = await (await updatePasswordToMember)(
+          member,
+          body,
+        )
+        if (updateProfileToMemberError !== '') {
+          return internalSeverError(
+            UnableUpatePasswordToDb,
+            updateProfileToMemberError,
+          )
+        }
+  
+        return response(undefined)
+      }
+  }
+
+  async updatePasswordToMemberFunc(): Promise<UpdateProfileToMemberType> {
+    return async (member: Member, body: UpdateProfiledRequestDto): Promise<string> => {
+      
+      try {
+        member.firstname = body.firstName
+        member.lastname = body.lastName
+        member.birthday = body.birthday
+        member.gender = body.gender
+        await member.save()
+      } catch (error) {
+        return error
+      }
+      return ''
     }
   }
 }
