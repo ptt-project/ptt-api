@@ -43,3 +43,14 @@ export class RegisterRequestDto {
   @IsNotEmpty()
   refCode: string
 }
+
+export class ValidateRegisterRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  @IsEmail()
+  email: string
+
+  @IsString()
+  @IsNotEmpty()
+  username: string
+}

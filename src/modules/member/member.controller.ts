@@ -3,6 +3,8 @@ import { Member } from 'src/db/entities/Member'
 import { Auth, ReqUser } from '../auth/auth.decorator'
 import { AuthService } from '../auth/auth.service'
 import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
+import { EditEmailRequestDto } from './dto/editEmail.dto'
+import { EmailService } from './email.service'
 import { MemberService } from './member.service'
 import { PasswordService } from './password.service'
 
@@ -11,6 +13,7 @@ export class MemberController {
   constructor(
     private readonly passwordService: PasswordService,
     private readonly memberService: MemberService,
+    private readonly emailService: EmailService,
     ) {}
 
   @Auth()
@@ -31,5 +34,18 @@ export class MemberController {
     return this.memberService.getProfileHandler(
       this.memberService.getProfileFunc(),
     )(member)
+  }
+
+  @Auth()
+  @Patch('edit-email')
+  async editEmail(
+    @ReqUser() member: Member,
+    @Body() body: EditEmailRequestDto,
+  ) {
+    return await this.emailService.editEmailHandler(
+      this.emailService.vadlidatePasswordFunc(),
+      this.emailService.updateEmailToMemberFunc(),
+      this.emailService.notifyNewEmailFunc(),
+    )(member, body)
   }
 }

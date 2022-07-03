@@ -3,7 +3,7 @@ import { response } from 'src/utils/response'
 import { InquiryVerifyOtpType, OtpService } from '../otp/otp.service'
 import { Member } from '../../db/entities/Member'
 import { hashPassword } from 'src/utils/helpers'
-import { RegisterRequestDto } from './dto/register.dto'
+import { RegisterRequestDto, ValidateRegisterRequestDto } from './dto/register.dto'
 
 import { JwtService } from '@nestjs/jwt'
 import dayjs, { Dayjs } from 'dayjs'
@@ -25,7 +25,7 @@ import { EntityManager } from 'typeorm'
 import { InquiryAddMobileType } from '../mobile/mobile.service'
 
 export type InquiryMemberExistType = (
-  params: RegisterRequestDto,
+  params: RegisterRequestDto | ValidateRegisterRequestDto,
 ) => Promise<[number, string]>
 
 export type InsertMemberToDbTye = (
@@ -68,7 +68,7 @@ export class AuthService {
   
 
   validateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
-    return async (body: RegisterRequestDto) => {
+    return async (body: ValidateRegisterRequestDto) => {
       const [validateErrorCode, validateErrorMessage] = await (
         await validateMember
       )(body)
@@ -126,7 +126,7 @@ export class AuthService {
   }
 
   async inquiryMemberExistFunc(): Promise<InquiryMemberExistType> {
-    return async (params: RegisterRequestDto): Promise<[number, string]> => {
+    return async (params: RegisterRequestDto | ValidateRegisterRequestDto): Promise<[number, string]> => {
       const { email, username } = params
       try {
         const member = await Member.findOne({
