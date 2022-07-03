@@ -1,8 +1,7 @@
-import { Column, Entity, OneToOne, JoinColumn } from 'typeorm'
+import { Column, Entity } from 'typeorm'
 import { AppEntity } from './AppEntity'
-import { Member } from './Member'
 
-export type StatusType = "send" | "verified"
+export type StatusType = 'send' | 'verified'
 @Entity({ name: 'otps' })
 export class Otp extends AppEntity {
   @Column({ name: 'reference', nullable: false })
@@ -20,11 +19,12 @@ export class Otp extends AppEntity {
   @Column({ name: 'type', nullable: true })
   type: string
 
-  @Column({ 
+  @Column({
     name: 'status',
-    type: "enum",
-    enum: ["send", "verified"],
-    default: "send",
-    nullable: false })
+    type: 'enum',
+    enum: ['send', 'verified'],
+    default: 'send',
+    nullable: false,
+  })
   status: StatusType
 }

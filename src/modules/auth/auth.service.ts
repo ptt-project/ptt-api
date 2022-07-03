@@ -3,15 +3,15 @@ import { response } from 'src/utils/response'
 import { InquiryVerifyOtpType, OtpService } from '../otp/otp.service'
 import { Member } from '../../db/entities/Member'
 import { hashPassword } from 'src/utils/helpers'
-import { RegisterRequestDto, ValidateRegisterRequestDto } from './dto/register.dto'
+import {
+  RegisterRequestDto,
+  ValidateRegisterRequestDto,
+} from './dto/register.dto'
 
 import { JwtService } from '@nestjs/jwt'
 import dayjs, { Dayjs } from 'dayjs'
 
-import {
-  validateBadRequest,
-  internalSeverError,
-} from 'src/utils/response-error'
+import { internalSeverError } from 'src/utils/response-error'
 import {
   InternalSeverError,
   UnableRegisterEmailAlreayExist,
@@ -23,6 +23,7 @@ import {
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
 import { EntityManager } from 'typeorm'
 import { InquiryAddMobileType } from '../mobile/mobile.service'
+import { PinoLogger } from 'nestjs-pino'
 
 export type InquiryMemberExistType = (
   params: RegisterRequestDto | ValidateRegisterRequestDto,
@@ -63,9 +64,10 @@ export class AuthService {
   constructor(
     private readonly otpService: OtpService,
     private readonly jwtService: JwtService,
-  ) {}
-
-  
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(AuthService.name)
+  }
 
   validateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
     return async (body: ValidateRegisterRequestDto) => {
@@ -108,7 +110,10 @@ export class AuthService {
         return response(undefined, validateErrorCode, validateErrorMessage)
       }
 
-      const [member, insertMemberError] = await (await insertMemberToDb)(body, manager)
+      const [member, insertMemberError] = await (await insertMemberToDb)(
+        body,
+        manager,
+      )
       if (insertMemberError != '') {
         return internalSeverError(
           UnableInsertMemberToDbError,
@@ -116,7 +121,11 @@ export class AuthService {
         )
       }
 
-      const addMobileErrorMessege = await (await addMobileFunc)({mobile: body.mobile, isPrimary: true}, member, manager)
+      const addMobileErrorMessege = await (await addMobileFunc)(
+        { mobile: body.mobile, isPrimary: true },
+        member,
+        manager,
+      )
       if (addMobileErrorMessege != '') {
         return validateBadRequest(UnableToAddMobile, addMobileErrorMessege)
       }
@@ -126,7 +135,9 @@ export class AuthService {
   }
 
   async inquiryMemberExistFunc(): Promise<InquiryMemberExistType> {
-    return async (params: RegisterRequestDto | ValidateRegisterRequestDto): Promise<[number, string]> => {
+    return async (
+      params: RegisterRequestDto | ValidateRegisterRequestDto,
+    ): Promise<[number, string]> => {
       const { email, username } = params
       try {
         const member = await Member.findOne({
@@ -157,7 +168,10 @@ export class AuthService {
   }
 
   async insertMemberToDbFunc(): Promise<InsertMemberToDbTye> {
-    return async (params: RegisterRequestDto, manager: EntityManager): Promise<[Member, string]> => {
+    return async (
+      params: RegisterRequestDto,
+      manager: EntityManager,
+    ): Promise<[Member, string]> => {
       const {
         username,
         firstName,
@@ -212,7 +226,7 @@ export class AuthService {
       )(id)
 
       if (inquiryUserExistByUsernameError != '') {
-        ;[null, true]
+        return [null, true]
       }
 
       const newAccessToken = await (await genAccessToken)(member)
