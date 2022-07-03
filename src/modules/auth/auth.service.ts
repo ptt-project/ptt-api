@@ -8,10 +8,7 @@ import { RegisterRequestDto } from './dto/register.dto'
 import { JwtService } from '@nestjs/jwt'
 import dayjs, { Dayjs } from 'dayjs'
 
-import {
-  validateBadRequest,
-  internalSeverError,
-} from 'src/utils/response-error'
+import { internalSeverError } from 'src/utils/response-error'
 import {
   InternalSeverError,
   UnableRegisterEmailAlreayExist,
@@ -20,6 +17,7 @@ import {
 } from 'src/utils/response-code'
 
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
+import { PinoLogger } from 'nestjs-pino'
 
 export type InquiryMemberExistType = (
   params: RegisterRequestDto,
@@ -59,10 +57,13 @@ export class AuthService {
   constructor(
     private readonly otpService: OtpService,
     private readonly jwtService: JwtService,
-  ) {}
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(AuthService.name)
+  }
 
   async getMe(member: Member) {
-    return response(member)
+    return member
   }
 
   validateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
@@ -204,7 +205,7 @@ export class AuthService {
       )(id)
 
       if (inquiryUserExistByUsernameError != '') {
-        ;[null, true]
+        return [null, true]
       }
 
       const newAccessToken = await (await genAccessToken)(member)
