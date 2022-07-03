@@ -7,6 +7,8 @@ import { Auth, ReqUser } from './auth.decorator'
 import dayjs from 'dayjs'
 import { Member } from 'src/db/entities/Member'
 import { OtpService } from '../otp/otp.service'
+import { EntityManager, Transaction, TransactionManager } from 'typeorm'
+import { MobileService } from '../mobile/mobile.service'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -14,15 +16,18 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly otpService: OtpService,
     private readonly loginService: LoginService,
+    private readonly mobileService: MobileService,
   ) {}
 
   @Post('register')
-  async register(@Body() body: RegisterRequestDto) {
+  @Transaction({isolation: "SERIALIZABLE"})
+  async register(@Body() body: RegisterRequestDto, @TransactionManager() manager: EntityManager) {
     return await this.authService.registerHandler(
       this.otpService.inquiryVerifyOtpFunc(),
       this.authService.inquiryMemberExistFunc(),
       this.authService.insertMemberToDbFunc(),
-    )(body)
+      this.mobileService.addMobileFunc(),
+    )(body, manager)
   }
 
   @Post('register/validate')

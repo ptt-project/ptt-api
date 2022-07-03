@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post } from '@nestjs/common'
+import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { sendOtpRequestDto, verifyOtpRequestDto } from './dto/otp.dto'
 import { OtpService } from './otp.service'
 
@@ -16,9 +17,10 @@ export class OtpController {
   }
 
   @Post('verify')
-  async verifyOtp(@Body() body: verifyOtpRequestDto) {
+  @Transaction({isolation: "SERIALIZABLE"})
+  async verifyOtp(@Body() body: verifyOtpRequestDto, @TransactionManager() manager: EntityManager) {
     return await this.otpService.verifyOtpHandler(
       this.otpService.inquiryVerifyOtpFunc(),
-    )(body)
+    )(body, manager)
   }
 }

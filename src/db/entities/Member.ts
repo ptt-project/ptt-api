@@ -1,6 +1,7 @@
 import { transformerDayjsToDate } from 'src/utils/entity-transform'
-import { Column, Entity, OneToOne, JoinColumn } from 'typeorm'
+import { Column, Entity, OneToOne, JoinColumn, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
+import { Mobile } from './Mobile'
 
 export type MemberGenderType = "F" | "M" | "O"
 @Entity({ name: 'members' })
@@ -39,4 +40,7 @@ export class Member extends AppEntity {
 
   @Column({ name: 'email', nullable: false, length: 50 })
   email: string
+
+  @OneToMany(() => Mobile, (mobile) => mobile.member)
+  mobiles: Mobile[]
 }
