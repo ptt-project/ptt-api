@@ -18,7 +18,7 @@ import {
   UnableUpdateNotMainAddressByMemberId,
 } from 'src/utils/response-code'
 
-export type InsertAddreeToDbParams = {
+export type InsertAddressToDbParams = {
   memberId: number
   name: string
   mobile: string
@@ -33,7 +33,7 @@ export type InsertAddreeToDbParams = {
   isWork?: boolean
 }
 
-export type UpdateAddreeToDbParams = {
+export type UpdateAddressToDbParams = {
   memberId: number
   name: string
   mobile: string
@@ -49,7 +49,7 @@ export type UpdateAddreeToDbParams = {
 }
 
 export type InsertAddressToDbType = (
-  params: InsertAddreeToDbParams,
+  params: InsertAddressToDbParams,
 ) => Promise<[Address, string]>
 
 export type UpdateNotMainAddressesByMemberIdType = (
@@ -58,16 +58,16 @@ export type UpdateNotMainAddressesByMemberIdType = (
 
 export type UpdateAddressByIdType = (
   addressId: number,
-  params: UpdateAddreeToDbParams,
+  params: UpdateAddressToDbParams,
 ) => Promise<string>
 
-export type DeleteAddressByIdInDbType = (addressId: number) => Promise<string>
+export type DeleteAddressByIdInDbType = (address: Address) => Promise<string>
 
 export type UpdateIsMainAddressesByIdToDbType = (
   addressId: number,
 ) => Promise<string>
 
-export type InquiryAddreeByIdType = (
+export type InquiryAddressByIdType = (
   addressId: number,
 ) => Promise<[Address, string]>
 
@@ -101,7 +101,7 @@ export class MemberService {
         }
       }
 
-      const params: InsertAddreeToDbParams = {
+      const params: InsertAddressToDbParams = {
         ...body,
         memberId,
       }
@@ -125,7 +125,7 @@ export class MemberService {
     etm: EntityManager,
   ): Promise<InsertAddressToDbType> {
     return async (
-      params: InsertAddreeToDbParams,
+      params: InsertAddressToDbParams,
     ): Promise<[Address, string]> => {
       let address: Address
 
@@ -168,7 +168,7 @@ export class MemberService {
         }
       }
 
-      const params: UpdateAddreeToDbParams = {
+      const params: UpdateAddressToDbParams = {
         ...body,
         memberId,
       }
@@ -194,7 +194,7 @@ export class MemberService {
   ): Promise<UpdateAddressByIdType> {
     return async (
       addressId: number,
-      params: UpdateAddreeToDbParams,
+      params: UpdateAddressToDbParams,
     ): Promise<string> => {
       try {
         await etm.getRepository(Address).update(addressId, { ...params })
@@ -272,11 +272,24 @@ export class MemberService {
   }
 
   deleteAddressHandler(
+    inquiryAddressById: Promise<InquiryAddressByIdType>,
     deleteAddressByIdToDb: Promise<DeleteAddressByIdInDbType>,
   ) {
     return async (addressId: number) => {
+      const [address, inquiryAddressByIdError] = await (
+        await inquiryAddressById
+      )(addressId)
+
+      if (inquiryAddressByIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryAddressById,
+          inquiryAddressByIdError,
+        )
+      }
+
       const deleteAddressByIdToDbError = await (await deleteAddressByIdToDb)(
-        addressId,
+        address,
       )
 
       if (deleteAddressByIdToDbError != '') {
@@ -287,16 +300,16 @@ export class MemberService {
         )
       }
 
-      return response(undefined)
+      return response({ id: address })
     }
   }
 
   async DeleteAddressByIdToDbFunc(
     etm: EntityManager,
   ): Promise<DeleteAddressByIdInDbType> {
-    return async (addressId: number): Promise<string> => {
+    return async (address: Address): Promise<string> => {
       try {
-        await etm.getRepository(Address).softDelete(addressId)
+        await etm.softRemove(address)
       } catch (error) {
         return error
       }
@@ -305,28 +318,27 @@ export class MemberService {
     }
   }
 
-  getAddressHandler(inquiryAddreeById: Promise<InquiryAddreeByIdType>) {
+  getAddressHandler(inquiryAddressById: Promise<InquiryAddressByIdType>) {
     return async (addressId: number) => {
-      const [addree, inquiryAddreeByIdError] = await (await inquiryAddreeById)(
-        addressId,
-      )
+      const [address, inquiryAddressByIdError] = await (
+        await inquiryAddressById
+      )(addressId)
 
-      console.log('inquiryAddreeByIdError', inquiryAddreeByIdError)
-      if (inquiryAddreeByIdError != '') {
+      if (inquiryAddressByIdError != '') {
         return response(
           undefined,
           UnableInquiryAddressById,
-          inquiryAddreeByIdError,
+          inquiryAddressByIdError,
         )
       }
 
-      return response(addree)
+      return response(address)
     }
   }
 
-  async InquiryAddreeByIdFunc(
+  async InquiryAddressByIdFunc(
     etm: EntityManager,
-  ): Promise<InquiryAddreeByIdType> {
+  ): Promise<InquiryAddressByIdType> {
     return async (addressId: number): Promise<[Address, string]> => {
       let address: Address
       try {
@@ -351,7 +363,7 @@ export class MemberService {
     return async (member: Member) => {
       const { id: memberId } = member
 
-      const [addree, inquiryAddressesByMemberIdError] = await (
+      const [address, inquiryAddressesByMemberIdError] = await (
         await inquiryAddressesByMemberId
       )(memberId)
 
@@ -363,7 +375,7 @@ export class MemberService {
         )
       }
 
-      return response(addree)
+      return response(address)
     }
   }
 
