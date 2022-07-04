@@ -70,6 +70,7 @@ export class AddressController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.memberService.deleteAddressHandler(
+      this.memberService.InquiryAddressByIdFunc(etm),
       this.memberService.DeleteAddressByIdToDbFunc(etm),
     )(addressId)
   }
@@ -81,7 +82,7 @@ export class AddressController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.memberService.getAddressHandler(
-      this.memberService.InquiryAddreeByIdFunc(etm),
+      this.memberService.InquiryAddressByIdFunc(etm),
     )(addressId)
   }
 
