@@ -5,20 +5,18 @@ export class UpdateProfiledRequestDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
-  firstName: string
+  firstname: string
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
-  lastName: string
+  lastname: string
 
   @IsOptional()
   @IsISO8601()
-  @IsString()
-  birthday: Date
+  birthday?: Date
 
   @IsOptional()
-  @IsString()
   @IsIn(["M","F","O"])
-  gender: MemberGenderType
+  gender?: MemberGenderType
 }

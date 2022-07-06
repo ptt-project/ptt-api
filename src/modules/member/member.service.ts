@@ -2,8 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { Member } from 'src/db/entities/Member'
 import { response } from "src/utils/response";
 import { UnableUpateProfileToDb } from "src/utils/response-code";
+import { EntityManager } from "typeorm";
 import { UpdateProfiledRequestDto } from "./dto/updateProfile.dto";
-import { getProfileType, UpdateProfileToMemberType } from "./type/member.type";
+import { getProfileType, UpdateProfileToDbParams, UpdateProfileToMemberType } from "./type/member.type";
 
 @Injectable()
 export class MemberService {
@@ -35,12 +36,18 @@ export class MemberService {
     updateProfileToMember: Promise<UpdateProfileToMemberType>,
   ) {
       return async (member: Member,body: UpdateProfiledRequestDto) => {
+
+        const { id: memberId } = member
+        const { firstname, lastname, birthday, gender} = body
+
         const updateProfileToMemberError = await (await updateProfileToMember)(
-          member,
+          memberId,
           body,
         )
+
         if (updateProfileToMemberError !== '') {
           return response(
+            undefined,
             UnableUpateProfileToDb,
             updateProfileToMemberError,
           )
@@ -50,16 +57,15 @@ export class MemberService {
       }
   }
 
-  async updateProfileToMemberFunc(): Promise<UpdateProfileToMemberType> {
-    return async (member: Member, body: UpdateProfiledRequestDto): Promise<string> => {
-      
+  async updateProfileToMemberFunc(
+    etm: EntityManager,
+  ): Promise<UpdateProfileToMemberType> {
+    return async (
+      memberId: number,
+      params: UpdateProfileToDbParams,
+    ): Promise<string> => {
       try {
-        member.firstname = body.firstName
-        member.lastname = body.lastName
-        member.birthday = body.birthday
-        member.gender = body.gender
-
-        await member.save()
+        await etm.getRepository(Member).update(memberId, { ...params })
       } catch (error) {
         return error
       }

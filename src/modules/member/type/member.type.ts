@@ -1,11 +1,17 @@
-import { Member } from "src/db/entities/Member"
-import { UpdateProfiledRequestDto } from "../dto/updateProfile.dto"
+import { Member, MemberGenderType } from "src/db/entities/Member"
 
 export type getProfileType = (
     member: Member,
   ) => Promise<any>
   
-  export type UpdateProfileToMemberType = (
-    member: Member,
-    body: UpdateProfiledRequestDto
-  ) => Promise<any>
+export type UpdateProfileToDbParams = {
+  firstname: string
+  lastname: string
+  birthday?: Date
+  gender?: MemberGenderType
+}
+
+export type UpdateProfileToMemberType = (
+  memberId: number,
+  params: UpdateProfileToDbParams,
+) => Promise<string>
