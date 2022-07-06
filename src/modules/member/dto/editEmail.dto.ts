@@ -1,8 +1,9 @@
-import { IsNotEmpty, IsString } from 'class-validator'
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator'
 
 export class EditEmailRequestDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(50)
   newEmail: string
 
   @IsString()

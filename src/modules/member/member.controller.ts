@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Patch } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
+import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
-import { AuthService } from '../auth/auth.service'
 import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
 import { EmailService } from './email.service'
@@ -38,14 +38,17 @@ export class MemberController {
 
   @Auth()
   @Patch('edit-email')
+  @Transaction()
   async editEmail(
     @ReqUser() member: Member,
     @Body() body: EditEmailRequestDto,
+    @TransactionManager() manager: EntityManager,
   ) {
     return await this.emailService.editEmailHandler(
       this.emailService.vadlidatePasswordFunc(),
+      this.emailService.vadlidateEmailFunc(),
       this.emailService.updateEmailToMemberFunc(),
       this.emailService.notifyNewEmailFunc(),
-    )(member, body)
+    )(member, body, manager)
   }
 }
