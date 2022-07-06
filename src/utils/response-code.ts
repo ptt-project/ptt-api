@@ -19,3 +19,4 @@ export const UnableToSetMainMobile = _validateError + 17
 export const UnableToDeleteMobile = _validateError + 18
 export const UnableToUpdateEmailToDb = _validateError + 19
 export const UnableToSendEmail = _validateError + 20
+export const UnableUpateProfileToDb = _validateError + 28

@@ -2,17 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { Member } from 'src/db/entities/Member'
 import { response } from "src/utils/response";
 import { UnableUpateProfileToDb } from "src/utils/response-code";
-import { internalSeverError } from "src/utils/response-error";
 import { UpdateProfiledRequestDto } from "./dto/updateProfile.dto";
+import { getProfileType, UpdateProfileToMemberType } from "./type/member.type";
 
-export type getProfileType = (
-  member: Member,
-) => Promise<any>
-
-export type UpdateProfileToMemberType = (
-  member: Member,
-  body: UpdateProfiledRequestDto
-) => Promise<any>
 @Injectable()
 export class MemberService {
 
@@ -39,7 +31,7 @@ export class MemberService {
     }
   }
 
-  upDateProfileHandler (
+  updateProfileHandler (
     updateProfileToMember: Promise<UpdateProfileToMemberType>,
   ) {
       return async (member: Member,body: UpdateProfiledRequestDto) => {
@@ -48,7 +40,7 @@ export class MemberService {
           body,
         )
         if (updateProfileToMemberError !== '') {
-          return internalSeverError(
+          return response(
             UnableUpateProfileToDb,
             updateProfileToMemberError,
           )
@@ -67,7 +59,6 @@ export class MemberService {
         member.birthday = body.birthday
         member.gender = body.gender
 
-        console.log('member',member)
         await member.save()
       } catch (error) {
         return error
