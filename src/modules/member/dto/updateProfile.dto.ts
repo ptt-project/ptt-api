@@ -1,6 +1,13 @@
-import { IsDateString, IsIn, IsISO8601, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator'
+import {
+  IsIn,
+  IsISO8601,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator'
 
-export type MemberGenderType = "F" | "M" | "O"
+export type MemberGenderType = 'F' | 'M' | 'O'
 export class UpdateProfiledRequestDto {
   @IsString()
   @IsNotEmpty()
@@ -17,6 +24,6 @@ export class UpdateProfiledRequestDto {
   birthday?: Date
 
   @IsOptional()
-  @IsIn(["M","F","O"])
+  @IsIn(['M', 'F', 'O'])
   gender?: MemberGenderType
 }

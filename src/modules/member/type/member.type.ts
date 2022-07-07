@@ -1,9 +1,7 @@
-import { Member, MemberGenderType } from "src/db/entities/Member"
+import { Member, MemberGenderType } from 'src/db/entities/Member'
 
-export type getProfileType = (
-    member: Member,
-  ) => Promise<any>
-  
+export type getProfileType = (member: Member) => Promise<any>
+
 export type UpdateProfileToDbParams = {
   firstname: string
   lastname: string

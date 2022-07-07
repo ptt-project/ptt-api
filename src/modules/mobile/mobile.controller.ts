@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Patch, Post } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'

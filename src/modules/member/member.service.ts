@@ -1,21 +1,22 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
-import { response } from "src/utils/response";
-import { UnableUpateProfileToDb } from "src/utils/response-code";
-import { EntityManager } from "typeorm";
-import { UpdateProfiledRequestDto } from "./dto/updateProfile.dto";
-import { getProfileType, UpdateProfileToDbParams, UpdateProfileToMemberType } from "./type/member.type";
+import { response } from 'src/utils/response'
+import { UnableUpateProfileToDb } from 'src/utils/response-code'
+import { EntityManager } from 'typeorm'
+import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
+import {
+  getProfileType,
+  UpdateProfileToDbParams,
+  UpdateProfileToMemberType,
+} from './type/member.type'
 
 @Injectable()
 export class MemberService {
-
-  getProfileHandler (
-    getProfile: Promise<getProfileType>,
-  ) {
-      return async (member: Member) => {
-        const profile = await (await getProfile)(member)
-        return response(profile)
-      }
+  getProfileHandler(getProfile: Promise<getProfileType>) {
+    return async (member: Member) => {
+      const profile = await (await getProfile)(member)
+      return response(profile)
+    }
   }
 
   async getProfileFunc(): Promise<getProfileType> {
@@ -32,29 +33,27 @@ export class MemberService {
     }
   }
 
-  updateProfileHandler (
+  updateProfileHandler(
     updateProfileToMember: Promise<UpdateProfileToMemberType>,
   ) {
-      return async (member: Member,body: UpdateProfiledRequestDto) => {
+    return async (member: Member, body: UpdateProfiledRequestDto) => {
+      const { id: memberId } = member
 
-        const { id: memberId } = member
-        const { firstname, lastname, birthday, gender} = body
+      const updateProfileToMemberError = await (await updateProfileToMember)(
+        memberId,
+        body,
+      )
 
-        const updateProfileToMemberError = await (await updateProfileToMember)(
-          memberId,
-          body,
+      if (updateProfileToMemberError !== '') {
+        return response(
+          undefined,
+          UnableUpateProfileToDb,
+          updateProfileToMemberError,
         )
-
-        if (updateProfileToMemberError !== '') {
-          return response(
-            undefined,
-            UnableUpateProfileToDb,
-            updateProfileToMemberError,
-          )
-        }
-  
-        return response(undefined)
       }
+
+      return response(undefined)
+    }
   }
 
   async updateProfileToMemberFunc(
