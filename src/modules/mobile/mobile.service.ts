@@ -9,7 +9,7 @@ import {
 } from 'src/utils/response-code'
 import { EntityManager } from 'typeorm'
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
-import { InquiryVerifyOtpType } from '../otp/otp.service'
+import { InquiryVerifyOtpType } from '../otp/otp.type'
 import {
   addMobileRegisterDto,
   addMobileRequestDto,
@@ -17,29 +17,12 @@ import {
   setMainMobileRequestDto,
 } from './dto/mobile.dto'
 
-export type InquiryAddMobileType = (
-  body: addMobileRequestDto | addMobileRegisterDto,
-  member: Member,
-  manager: EntityManager,
-) => Promise<string>
-
-export type InquirySetMainMobileType = (
-  mobile: Mobile,
-  member: Member,
-  manager: EntityManager,
-) => Promise<string>
-
-export type InquiryDeleteMobileType = (
-  mobile: Mobile,
-  member: Member,
-  manager: EntityManager,
-) => Promise<string>
-
-export type InquiryGetMobileType = (
-  mobile: string,
-  member: Member,
-  manager: EntityManager,
-) => Promise<[Mobile, string]>
+import {
+  InquiryAddMobileType,
+  InquirySetMainMobileType,
+  InquiryDeleteMobileType,
+  InquiryGetMobileType,
+} from './mobile.type'
 
 @Injectable()
 export class MobileService {

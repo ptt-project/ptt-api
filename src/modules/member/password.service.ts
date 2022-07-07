@@ -1,29 +1,21 @@
 import { Injectable } from '@nestjs/common'
+import { response } from 'src/utils/response'
 
 import { Member } from 'src/db/entities/Member'
+
+import { checkPassword, hashPassword } from 'src/utils/helpers'
+import { internalSeverError } from 'src/utils/response-error'
+
+import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
 import {
   UnableUpatePasswordToDb,
   OldPassowrdInvalid,
 } from 'src/utils/response-code'
-import { checkPassword, hashPassword } from 'src/utils/helpers'
-
-import { internalSeverError } from 'src/utils/response-error'
-import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
-import { response } from 'src/utils/response'
-
-export type InquiryMemberByIdType = (
-  memberId: number,
-) => Promise<[Member, string]>
-
-export type UpdatePasswordToMemberType = (
-  member: Member,
-  newPassword: string,
-) => Promise<string>
-
-export type VadlidateOldPasswordType = (
-  oldPassword: string,
-  oldPasswordParams: string,
-) => Promise<string>
+import {
+  InquiryMemberByIdType,
+  UpdatePasswordToMemberType,
+  VadlidateOldPasswordType,
+} from './password.type'
 
 @Injectable()
 export class PasswordService {

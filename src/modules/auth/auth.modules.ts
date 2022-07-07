@@ -17,7 +17,13 @@ import { MobileService } from '../mobile/mobile.service'
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LoginService, OtpService, JwtStrategy, MobileService],
+  providers: [
+    AuthService,
+    LoginService,
+    OtpService,
+    JwtStrategy,
+    MobileService,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

@@ -17,8 +17,11 @@ export class OtpController {
   }
 
   @Post('verify')
-  @Transaction({isolation: "SERIALIZABLE"})
-  async verifyOtp(@Body() body: verifyOtpRequestDto, @TransactionManager() manager: EntityManager) {
+  @Transaction({ isolation: 'SERIALIZABLE' })
+  async verifyOtp(
+    @Body() body: verifyOtpRequestDto,
+    @TransactionManager() manager: EntityManager,
+  ) {
     return await this.otpService.verifyOtpHandler(
       this.otpService.inquiryVerifyOtpFunc(),
     )(body, manager)

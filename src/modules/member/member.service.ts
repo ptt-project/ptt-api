@@ -8,7 +8,7 @@ import {
   getProfileType,
   UpdateProfileToDbParams,
   UpdateProfileToMemberType,
-} from './type/member.type'
+} from './member.type'
 
 @Injectable()
 export class MemberService {

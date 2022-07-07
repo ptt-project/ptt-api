@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
-import { InquiryVerifyOtpType, OtpService } from '../otp/otp.service'
+import { InquiryVerifyOtpType } from '../otp/otp.type'
+import { OtpService } from '../otp/otp.service'
 import { Member } from '../../db/entities/Member'
 import { hashPassword } from 'src/utils/helpers'
-import { RegisterRequestDto, ValidateRegisterRequestDto } from './dto/register.dto'
+import {
+  RegisterRequestDto,
+  ValidateRegisterRequestDto,
+} from './dto/register.dto'
 
 import { JwtService } from '@nestjs/jwt'
-import dayjs, { Dayjs } from 'dayjs'
+import dayjs from 'dayjs'
 
 import {
   validateBadRequest,
@@ -22,41 +26,19 @@ import {
 
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
 import { EntityManager } from 'typeorm'
-import { InquiryAddMobileType } from '../mobile/mobile.service'
+import { InquiryAddMobileType } from '../mobile/mobile.type'
 
-export type InquiryMemberExistType = (
-  params: RegisterRequestDto | ValidateRegisterRequestDto,
-) => Promise<[number, string]>
-
-export type InsertMemberToDbTye = (
-  params: RegisterRequestDto,
-  manager: EntityManager,
-) => Promise<[Member, string]>
-
-export type GenAccessTokenType = (member: Member) => Promise<string>
-
-export type GenRefreshTokenType = (member: Member) => Promise<string>
-
-export type InquiryUserExistByIdType = (id: number) => Promise<[Member, string]>
-
-export type ValidateTokenType = (
-  accessToken: string,
-  refreshToken: string,
-  id: number,
-) => Promise<[ValidateTokenResponse, boolean]>
-
-export type ExiredTokenType = (token: string) => Promise<boolean>
-
-export type TokenType = {
-  id: number
-  expiredAt: Dayjs
-}
-
-export type ValidateTokenResponse = {
-  accessToken: string
-  refreshToken: string
-  member: Member
-}
+import {
+  InquiryMemberExistType,
+  InsertMemberToDbTye,
+  GenAccessTokenType,
+  GenRefreshTokenType,
+  InquiryUserExistByIdType,
+  ValidateTokenType,
+  ExiredTokenType,
+  TokenType,
+  ValidateTokenResponse,
+} from './auth.type'
 
 @Injectable()
 export class AuthService {
@@ -64,8 +46,6 @@ export class AuthService {
     private readonly otpService: OtpService,
     private readonly jwtService: JwtService,
   ) {}
-
-  
 
   validateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
     return async (body: ValidateRegisterRequestDto) => {
@@ -108,7 +88,10 @@ export class AuthService {
         return response(undefined, validateErrorCode, validateErrorMessage)
       }
 
-      const [member, insertMemberError] = await (await insertMemberToDb)(body, manager)
+      const [member, insertMemberError] = await (await insertMemberToDb)(
+        body,
+        manager,
+      )
       if (insertMemberError != '') {
         return internalSeverError(
           UnableInsertMemberToDbError,
@@ -116,7 +99,11 @@ export class AuthService {
         )
       }
 
-      const addMobileErrorMessege = await (await addMobileFunc)({mobile: body.mobile, isPrimary: true}, member, manager)
+      const addMobileErrorMessege = await (await addMobileFunc)(
+        { mobile: body.mobile, isPrimary: true },
+        member,
+        manager,
+      )
       if (addMobileErrorMessege != '') {
         return validateBadRequest(UnableToAddMobile, addMobileErrorMessege)
       }
@@ -126,7 +113,9 @@ export class AuthService {
   }
 
   async inquiryMemberExistFunc(): Promise<InquiryMemberExistType> {
-    return async (params: RegisterRequestDto | ValidateRegisterRequestDto): Promise<[number, string]> => {
+    return async (
+      params: RegisterRequestDto | ValidateRegisterRequestDto,
+    ): Promise<[number, string]> => {
       const { email, username } = params
       try {
         const member = await Member.findOne({
@@ -157,7 +146,10 @@ export class AuthService {
   }
 
   async insertMemberToDbFunc(): Promise<InsertMemberToDbTye> {
-    return async (params: RegisterRequestDto, manager: EntityManager): Promise<[Member, string]> => {
+    return async (
+      params: RegisterRequestDto,
+      manager: EntityManager,
+    ): Promise<[Member, string]> => {
       const {
         username,
         firstName,

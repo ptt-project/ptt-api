@@ -8,16 +8,13 @@ import {
   PasswordIsInvalid,
 } from 'src/utils/response-code'
 import { validateBadRequest } from 'src/utils/response-error'
-import { AuthService, GenAccessTokenType, GenRefreshTokenType } from './auth.service'
+import { GenAccessTokenType, GenRefreshTokenType } from './auth.type'
+import { AuthService } from './auth.service'
 
-export type InquiryUserExistByUsernameType = (
-  username: string,
-) => Promise<[Member, string]>
-
-export type ValidatePasswordType = (
-  password: string,
-  passwordMember: string,
-) => Promise<string>
+import {
+  InquiryUserExistByUsernameType,
+  ValidatePasswordType,
+} from './login.type'
 
 @Injectable()
 export class LoginService {
