@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common'
+import { Body, Controller, Get, Patch, Put } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
 import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
+import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
 import { EmailService } from './email.service'
 import { MemberService } from './member.service'
 import { PasswordService } from './password.service'
@@ -14,7 +15,7 @@ export class MemberController {
     private readonly passwordService: PasswordService,
     private readonly memberService: MemberService,
     private readonly emailService: EmailService,
-    ) {}
+  ) {}
 
   @Auth()
   @Patch('change-password')
@@ -50,5 +51,17 @@ export class MemberController {
       this.emailService.updateEmailToMemberFunc(),
       this.emailService.notifyNewEmailFunc(),
     )(member, body, manager)
+  }
+
+  @Put('profile')
+  @Transaction()
+  async updateProfile(
+    @ReqUser() member: Member,
+    @Body() body: UpdateProfiledRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.memberService.updateProfileHandler(
+      this.memberService.updateProfileToMemberFunc(etm),
+    )(member, body)
   }
 }
