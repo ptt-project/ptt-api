@@ -16,9 +16,18 @@ import {
   ValidatePasswordType,
 } from './login.type'
 
+import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
+import { PinoLogger } from 'nestjs-pino'
+import dayjs from 'dayjs'
+
 @Injectable()
 export class LoginService {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(AuthService.name)
+  }
 
   loginHandler(
     inquiryUserExistByUsername: Promise<InquiryUserExistByUsernameType>,
@@ -27,6 +36,8 @@ export class LoginService {
     genRefreshToken: Promise<GenRefreshTokenType>,
   ): any {
     return async (body: LoginRequestDto) => {
+      this.logger.info('start loginHandler')
+      const start = dayjs()
       const [member, inquiryUserExistByUsernameError] = await (
         await inquiryUserExistByUsername
       )(body.username)
@@ -49,6 +60,7 @@ export class LoginService {
       const accessToken = await (await genAccessToken)(member)
       const refreshToken = await (await genRefreshToken)(member)
 
+      this.logger.info(`end loginHandler ${dayjs().diff(start)} ms`)
       return response({
         accessToken,
         refreshToken,

@@ -12,10 +12,7 @@ import {
 import { JwtService } from '@nestjs/jwt'
 import dayjs from 'dayjs'
 
-import {
-  validateBadRequest,
-  internalSeverError,
-} from 'src/utils/response-error'
+import { internalSeverError } from 'src/utils/response-error'
 import {
   InternalSeverError,
   UnableRegisterEmailAlreayExist,
@@ -105,7 +102,7 @@ export class AuthService {
         manager,
       )
       if (addMobileErrorMessege != '') {
-        return validateBadRequest(UnableToAddMobile, addMobileErrorMessege)
+        return response(undefined, UnableToAddMobile, addMobileErrorMessege)
       }
 
       return response(member)
@@ -204,7 +201,7 @@ export class AuthService {
       )(id)
 
       if (inquiryUserExistByUsernameError != '') {
-        ;[null, true]
+        return [null, true]
       }
 
       const newAccessToken = await (await genAccessToken)(member)
