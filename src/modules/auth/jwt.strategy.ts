@@ -1,10 +1,11 @@
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
 import { jwtConstants } from './auth.constants'
-import { AuthService, TokenType } from './auth.service'
+import { AuthService } from './auth.service'
+import { TokenType } from './auth.type'
 import { Request } from 'express'
-import dayjs, { Dayjs } from 'dayjs'
+import dayjs from 'dayjs'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {

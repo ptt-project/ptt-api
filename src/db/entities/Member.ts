@@ -2,6 +2,7 @@ import { transformerDayjsToDate } from 'src/utils/entity-transform'
 import { Column, Entity, OneToOne, OneToMany, JoinColumn } from 'typeorm'
 import { Address } from './Address'
 import { AppEntity } from './AppEntity'
+import { Mobile } from './Mobile'
 
 export type MemberGenderType = 'F' | 'M' | 'O'
 @Entity({ name: 'members' })
@@ -31,8 +32,11 @@ export class Member extends AppEntity {
   })
   birthday: Date
 
+  @Column({ name: 'sp_code_id', nullable: true })
+  spCodeId: number
+
   @OneToOne(() => Member)
-  @JoinColumn()
+  @JoinColumn({ name: 'sp_code_id', referencedColumnName: 'id' })
   spCode: Member
 
   @Column({
@@ -47,9 +51,15 @@ export class Member extends AppEntity {
   email: string
 
   @OneToMany(
+    () => Mobile,
+    mobile => mobile.member,
+  )
+  mobiles: Mobile[]
+
+  @OneToMany(
     () => Address,
     address => address.member,
   )
-  @JoinColumn({ referencedColumnName: 'memberId' })
+  @JoinColumn({ referencedColumnName: 'member_id' })
   addresses: Address[]
 }
