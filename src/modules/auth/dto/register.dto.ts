@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsEmail, IsBoolean } from 'class-validator'
+import { IsNotEmpty, IsString, IsEmail, IsBoolean, MaxLength } from 'class-validator'
 import { Transform } from 'class-transformer'
 import { MemberGenderType } from 'src/db/entities/Member'
 
@@ -42,4 +42,17 @@ export class RegisterRequestDto {
   @IsString()
   @IsNotEmpty()
   refCode: string
+}
+
+export class ValidateRegisterRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  @IsEmail()
+  @MaxLength(50)
+  email: string
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(20)
+  username: string
 }

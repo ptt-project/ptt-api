@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common'
 import { AuthService } from './auth.service'
-import { RegisterRequestDto } from './dto/register.dto'
+import { RegisterRequestDto, ValidateRegisterRequestDto } from './dto/register.dto'
 import { LoginService } from './login.service'
 import { LoginRequestDto } from './dto/login.dto'
 import { Auth, ReqUser } from './auth.decorator'
@@ -31,7 +31,7 @@ export class AuthController {
   }
 
   @Post('register/validate')
-  async validate(@Body() body) {
+  async validate(@Body() body: ValidateRegisterRequestDto) {
     return await this.authService.validateRegisterHandler(
       this.authService.inquiryMemberExistFunc(),
     )(body)
