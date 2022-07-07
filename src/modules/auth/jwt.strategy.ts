@@ -21,24 +21,26 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(request: Request, payload: TokenType): Promise<any> {
-    const [response, isError] = await (await this.authService.validateTokenHandler(
-      this.authService.exiredTokenFunc(),
-      this.authService.inquiryUserExistByIdFunc(),
-      this.authService.genAccessTokenFunc(),
-      this.authService.genRefreshTokenFunc()
-    ))(request?.cookies?.AccessToken, request?.cookies?.RefreshToken, payload.id)
+    const [response, isError] = await (
+      await this.authService.validateTokenHandler(
+        this.authService.exiredTokenFunc(),
+        this.authService.inquiryUserExistByIdFunc(),
+        this.authService.genAccessTokenFunc(),
+        this.authService.genRefreshTokenFunc(),
+      )
+    )(request?.cookies?.AccessToken, request?.cookies?.RefreshToken, payload.id)
 
-    if(isError){
+    if (isError) {
       return false
-    }else{
+    } else {
       const accessToken = `AccessToken=${
         response.accessToken
       }; HttpOnly; Path=/; Max-Age=${dayjs().add(10, 'second')}`
-  
+
       const refreshToken = `RefreshToken=${
         response.refreshToken
       }; HttpOnly; Path=/; Max-Age=${dayjs().add(20, 'second')}`
-     request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
+      request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
     }
 
     return response.member

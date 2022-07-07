@@ -13,8 +13,9 @@ import { ValidationError } from 'class-validator'
 import { InvalidJSONString } from './utils/response-code'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import cookieParser from 'cookie-parser'
+import { Logger } from 'nestjs-pino'
 
-const loggerProduction: LogLevel[] = ['warn']
+const loggerProduction: LogLevel[] = ['warn', 'error', 'log']
 const logger =
   process.env.LOG_LEVEL === 'debug'
     ? {}
@@ -27,6 +28,7 @@ async function bootstrap() {
     logger,
   )
 
+  app.useLogger(app.get(Logger))
   app.enableCors({
     origin: '*',
     methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE'],
