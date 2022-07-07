@@ -3,7 +3,6 @@ import { Member } from 'src/db/entities/Member'
 import { Mobile } from 'src/db/entities/Mobile'
 import { response } from 'src/utils/response'
 import { UnableToAddMobile, UnableToSetMainMobile, UnableToDeleteMobile } from 'src/utils/response-code'
-import { validateBadRequest } from 'src/utils/response-error'
 import { EntityManager } from 'typeorm'
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
 import { InquiryVerifyOtpType } from '../otp/otp.service'
@@ -16,16 +15,22 @@ export type InquiryAddMobileType = (
 ) => Promise<string>
 
 export type InquirySetMainMobileType = (
-  mobile: string,
+  mobile: Mobile,
   member: Member,
   manager: EntityManager,
 ) => Promise<string>
 
 export type InquiryDeleteMobileType = (
-  mobile: string,
+  mobile: Mobile,
   member: Member,
   manager: EntityManager,
 ) => Promise<string>
+
+export type InquiryGetMobileType = (
+  mobile: string,
+  member: Member,
+  manager: EntityManager,
+) => Promise<[Mobile, string]>
 
 @Injectable()
 export class MobileService {
@@ -53,7 +58,7 @@ export class MobileService {
       )({ mobile, isPrimary: false }, member, manager)
 
       if (addMobileErrorMessege != '') {
-        return validateBadRequest(UnableToAddMobile, addMobileErrorMessege)
+        return response(undefined, UnableToAddMobile, addMobileErrorMessege)
       }
 
       return response(undefined)
@@ -62,6 +67,7 @@ export class MobileService {
 
   setMainMobileHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
+    inquiryGetMobileFromDb: Promise<InquiryGetMobileType>,
     inquirySetMainMobile: Promise<InquirySetMainMobileType>,
   ) {
     return async (member: Member, body: setMainMobileRequestDto, manager: EntityManager) => {
@@ -79,12 +85,21 @@ export class MobileService {
       }
 
       const { mobile } = body
-      const addMobileErrorMessege = await (
-        await inquirySetMainMobile
+
+      const [mobileRow, getMobileRowError] = await (
+        await inquiryGetMobileFromDb
       )(mobile, member, manager)
 
+      if (getMobileRowError != '') {
+        return response(undefined, UnableToSetMainMobile, getMobileRowError)
+      }
+
+      const addMobileErrorMessege = await (
+        await inquirySetMainMobile
+      )(mobileRow, member, manager)
+
       if (addMobileErrorMessege != '') {
-        return validateBadRequest(UnableToSetMainMobile, addMobileErrorMessege)
+        return response(undefined, UnableToSetMainMobile, addMobileErrorMessege)
       }
 
       return response(undefined)
@@ -93,11 +108,15 @@ export class MobileService {
 
   deleteMobileHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
+    inquiryGetMobileFromDb: Promise<InquiryGetMobileType>,
     inquiryDeleteMobile: Promise<InquiryDeleteMobileType>,
   ) {
     return async (member: Member, body: deleteMobileRequestDto, manager: EntityManager) => {
+      if (!member.mobile) {
+        return response(undefined, UnableToDeleteMobile, 'You have to set main mobile first')
+      }
       const verifyOtpData: verifyOtpRequestDto = {
-        reference: body.mobile,
+        reference: member.mobile,
         refCode: body.refCode,
         otpCode: body.otpCode,
       }
@@ -110,15 +129,46 @@ export class MobileService {
       }
       
       const { mobile } = body
-      const addMobileErrorMessege = await (
-        await inquiryDeleteMobile
+
+      const [mobileRow, getMobileRowError] = await (
+        await inquiryGetMobileFromDb
       )(mobile, member, manager)
 
+      if (getMobileRowError != '') {
+        return response(undefined, UnableToSetMainMobile, getMobileRowError)
+      }
+      const addMobileErrorMessege = await (
+        await inquiryDeleteMobile
+      )(mobileRow, member, manager)
+
       if (addMobileErrorMessege != '') {
-        return validateBadRequest(UnableToDeleteMobile, addMobileErrorMessege)
+        return response(undefined, UnableToDeleteMobile, addMobileErrorMessege)
       }
 
       return response(undefined)
+    }
+  }
+
+  async getMobileFormDbByMobilePhoneFunc(): Promise<InquiryGetMobileType> {
+    return async (mobile: string, member: Member, manager: EntityManager) => {
+      let mobileRow: Mobile
+        try {
+          mobileRow = await manager.findOne(Mobile, {
+            where: {
+              mobile,
+              member,
+              deletedAt: null
+            }
+          })
+
+          if (!mobileRow) {
+            return [mobileRow, 'the mobile phone is not found in this user']
+          }
+        } catch (error) {
+          return [null, error]
+        }
+
+        return [mobileRow, '']
     }
   }
 
@@ -126,9 +176,10 @@ export class MobileService {
     return async (body: addMobileRegisterDto, member: Member, manager: EntityManager) => {
       let mobile: Mobile
         try {
-          mobile = await Mobile.findOne({
+          mobile = await manager.findOne(Mobile, {
             where: {
               mobile: body.mobile,
+              deletedAt: null,
             },
             relations:['member']
           })
@@ -147,7 +198,7 @@ export class MobileService {
               await manager.save(oldMobileMember)
             }
 
-            await manager.remove(mobile)
+            await manager.softRemove(mobile)
           }
           
 
@@ -173,13 +224,13 @@ export class MobileService {
   }
 
   async setMainMobileFunc(): Promise<InquirySetMainMobileType> {
-    return async (mobile: string, member: Member, manager: EntityManager) => {
-      let mobileRow: Mobile
+    return async (mobile: Mobile, member: Member, manager: EntityManager) => {
         try {
-          const oldPrimary = await Mobile.findOne({
+          const oldPrimary = await manager.findOne(Mobile, {
             where: {
               member,
               isPrimary: true,
+              deletedAt: null
             }
           })
 
@@ -188,23 +239,11 @@ export class MobileService {
             manager.save(oldPrimary)
           }
 
-          mobileRow = await Mobile.findOne({
-            where: {
-              mobile,
-              member
-            }
-          })
+          mobile.isPrimary = true
+          await manager.save(mobile)
 
-          if (!mobileRow) {
-            return 'the mobile phone is not found in this user'
-          }
-
-          mobileRow.isPrimary = true
-          await manager.save(mobileRow)
-
-          member.mobile = mobile
+          member.mobile = mobile.mobile
           await manager.save(member)
-
 
         } catch (error) {
           return error
@@ -215,24 +254,13 @@ export class MobileService {
   }
 
   async deleteMobileFunc(): Promise<InquiryDeleteMobileType> {
-    return async (mobile: string, member: Member, manager: EntityManager) => {
-      let mobileRow: Mobile
+    return async (mobile: Mobile, member: Member, manager: EntityManager) => {
         try {
-          mobileRow = await Mobile.findOne({
-            where: {
-              mobile,
-              member
-            }
-          })
-
-          if (!mobileRow) {
-            return 'the mobile phone is not found in this user'
-          }
-          if (mobileRow.isPrimary){
+          if (mobile.isPrimary){
             member.mobile = null
             await manager.save(member)
           }
-          await manager.remove(mobileRow)
+          await manager.softRemove(mobile)
 
         } catch (error) {
           return error

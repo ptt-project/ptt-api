@@ -1,9 +1,10 @@
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator'
+import { IsBoolean, IsNotEmpty, IsString, MaxLength } from 'class-validator'
 import { Transform } from 'class-transformer'
 
 export class addMobileRequestDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(10)
   mobile: string
 
   @IsString()
@@ -18,6 +19,7 @@ export class addMobileRequestDto {
 export class addMobileRegisterDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(10)
   mobile: string
 
   @IsBoolean()
@@ -31,6 +33,7 @@ export class addMobileRegisterDto {
 export class setMainMobileRequestDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(10)
   mobile: string
 
   @IsString()
@@ -45,6 +48,7 @@ export class setMainMobileRequestDto {
 export class deleteMobileRequestDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(10)
   mobile: string
 
   @IsString()

@@ -6,7 +6,7 @@ import { OtpService } from '../otp/otp.service'
 import { addMobileRequestDto, setMainMobileRequestDto, deleteMobileRequestDto } from './dto/mobile.dto'
 import { MobileService } from './mobile.service'
 
-@Controller('v1/mobile')
+@Controller('v1/members/mobiles')
 export class MobileController {
   constructor(
     private readonly mobileService: MobileService,
@@ -15,7 +15,7 @@ export class MobileController {
 
   @Auth()
   @Post('add')
-  @Transaction({isolation: "SERIALIZABLE"})
+  @Transaction()
   async addMobile(
     @ReqUser() member: Member,@Body() body: addMobileRequestDto, @TransactionManager() manager: EntityManager) {
     return await this.mobileService.addMobileHandler(
@@ -26,20 +26,22 @@ export class MobileController {
 
   @Auth()
   @Patch('set-main')
-  @Transaction({isolation: "SERIALIZABLE"})
+  @Transaction()
   async setMainMobile(@ReqUser() member: Member, @Body() body: setMainMobileRequestDto, @TransactionManager() manager: EntityManager) {
     return await this.mobileService.setMainMobileHandler(
       this.otpService.inquiryVerifyOtpFunc(),
+      this.mobileService.getMobileFormDbByMobilePhoneFunc(),
       this.mobileService.setMainMobileFunc(),
     )(member, body, manager)
   }
 
   @Auth()
   @Delete('delete')
-  @Transaction({isolation: "SERIALIZABLE"})
+  @Transaction()
   async deleteMobile(@ReqUser() member: Member, @Body() body: deleteMobileRequestDto, @TransactionManager() manager: EntityManager) {
     return await this.mobileService.deleteMobileHandler(
       this.otpService.inquiryVerifyOtpFunc(),
+      this.mobileService.getMobileFormDbByMobilePhoneFunc(),
       this.mobileService.deleteMobileFunc(),
     )(member, body, manager)
   }
