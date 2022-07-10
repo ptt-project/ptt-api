@@ -55,6 +55,9 @@ export const UnableInquiryAddressesByMemberId = _addressError + 7
 
 // seller module
 const _sellerError = _validateError + 106000
+export const InvalidSellerRegister = _sellerError + 1
+export const UnableInsertShopToDb = _sellerError + 2
+
 
 // review module
 const _reviewError = _validateError + 107000
