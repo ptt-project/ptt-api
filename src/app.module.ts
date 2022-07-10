@@ -45,11 +45,7 @@ console.log('__dirname', __dirname)
           },
         },
       },
-      exclude: [
-        { method: RequestMethod.GET, path: '/api/v1/health' },
-        // { method: RequestMethod.GET, path: "/api/v1/notifications" },
-        // { method: RequestMethod.GET, path: "/api/v1/notifications/count" },
-      ],
+      exclude: [{ method: RequestMethod.GET, path: '/api/v1/health' }],
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
