@@ -9,6 +9,7 @@ import {
 import {
   InvalidSellerRegister,
   UnableInsertShopToDb,
+  UnableUpdateShopToDb,
 } from 'src/utils/response-code'
 
 import {
@@ -18,8 +19,15 @@ import {
 } from './seller.type'
 import { Shop } from 'src/db/entities/Shop'
 
+import { PinoLogger } from 'nestjs-pino'
+import dayjs from 'dayjs'
+
 @Injectable()
 export class RegisterService {
+  constructor(private readonly logger: PinoLogger) {
+    this.logger.setContext(RegisterService.name)
+  }
+
   registerSellerHandler(
     validateSellerData: Promise<
       ValidateSellerRegisterType
@@ -27,6 +35,7 @@ export class RegisterService {
     insertShopToDb: Promise<InsertShopToDbType>,
   ) {
     return async (member: Member, body: RegisterSellerRequestDto) => {
+      const start = dayjs()
       const { id: memberId } = member
 
       const validateSellerError = await (await validateSellerData)(
@@ -60,6 +69,7 @@ export class RegisterService {
         )
       }
 
+      this.logger.info(`Done registerSellerHandler ${dayjs().diff(start)} ms`)
       return response(shop)
     }
   }
@@ -71,6 +81,7 @@ export class RegisterService {
     resubmitShopToDb: Promise<InsertShopToDbType>,
   ) {
     return async (member: Member, body: RegisterSellerRequestDto) => {
+      const start = dayjs()
       const { id: memberId } = member
 
       const validateSellerError = await (await validateSellerData)(
@@ -99,11 +110,12 @@ export class RegisterService {
       if (resubmitShopToDbError != '') {
         return response(
           undefined,
-          UnableInsertShopToDb,
+          UnableUpdateShopToDb,
           resubmitShopToDbError,
         )
       }
 
+      this.logger.info(`Done resubmitRegisterSellerHandler ${dayjs().diff(start)} ms`)
       return response(shop)
     }
   }
@@ -116,6 +128,7 @@ export class RegisterService {
       params: InsertShopToDbParams,
       isResubmit: boolean,
     ): Promise<string> => {
+      const start = dayjs()
       let shop: Shop
 
       try {
@@ -153,6 +166,7 @@ export class RegisterService {
         return error
       }
 
+      this.logger.info(`Done validateSellerDataFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }
@@ -163,6 +177,7 @@ export class RegisterService {
     return async (
       params: InsertShopToDbParams,
     ): Promise<[Shop, string]> => {
+      const start = dayjs()
       let shop: Shop
 
       try {
@@ -186,6 +201,7 @@ export class RegisterService {
         return [shop, error]
       }
 
+      this.logger.info(`Done insertShopToDbFunc ${dayjs().diff(start)} ms`)
       return [shop, '']
     }
   }
@@ -196,6 +212,7 @@ export class RegisterService {
     return async (
       params: InsertShopToDbParams,
     ): Promise<[Shop, string]> => {
+      const start = dayjs()
       let shop: Shop
 
       try {
@@ -230,6 +247,7 @@ export class RegisterService {
         return [shop, error]
       }
 
+      this.logger.info(`Done resubmitShopToDbFunc ${dayjs().diff(start)} ms`)
       return [shop, '']
     }
   }

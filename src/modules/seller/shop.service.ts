@@ -15,14 +15,21 @@ import {
 } from './seller.type'
 import { Shop } from 'src/db/entities/Shop'
 
+import { PinoLogger } from 'nestjs-pino'
+import dayjs from 'dayjs'
 @Injectable()
 export class ShopService {
+  constructor(private readonly logger: PinoLogger) {
+    this.logger.setContext(ShopService.name)
+  }
+  
   getShopInfoHandler(
     getShopInfo: Promise<
       GetShopInfoType
     >,
   ) {
     return async (member: Member) => {
+      const start = dayjs()
       const { id: memberId } = member
 
       const [shop, getShopInfoError] = await (await getShopInfo)(
@@ -37,6 +44,7 @@ export class ShopService {
         )
       }
 
+      this.logger.info(`Done getShopInfoHandler ${dayjs().diff(start)} ms`)
       return response(shop)
     }
   }
@@ -47,6 +55,7 @@ export class ShopService {
     >,
   ) {
     return async (member: Member, params: UpdateShopInfoToDbParams) => {
+      const start = dayjs()
       const { id: memberId } = member
 
       const updateShopInfoError = await (await updateShopInfo)(
@@ -62,6 +71,7 @@ export class ShopService {
         )
       }
 
+      this.logger.info(`Done updateShopInfoHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
@@ -70,13 +80,18 @@ export class ShopService {
     etm: EntityManager,
   ): Promise<GetShopInfoType> {
     return async (memberId: number): Promise<[Shop, string]> => {
+      const start = dayjs()
       let shop: Shop
       try {
         shop = await etm.findOne(Shop, { withDeleted: false, where: { memberId } })
+        if (!shop) {
+          return [shop, 'Unable to get shop for this user']
+        }
       } catch (error) {
         return [shop, error]
       }
 
+      this.logger.info(`Done InquiryShopByMemberIdFunc ${dayjs().diff(start)} ms`)
       return [shop, '']
     }
   }
@@ -85,6 +100,7 @@ export class ShopService {
     etm: EntityManager,
   ): Promise<UpdateShopTobDbByIdType> {
     return async (memberId: number, params: UpdateShopInfoToDbParams): Promise<string> => {
+      const start = dayjs()
       try {
         const result: UpdateResult = await etm.update(Shop, {memberId}, { ...params })
         if (result.raw === 0) {
@@ -94,6 +110,7 @@ export class ShopService {
         return error
       }
 
+      this.logger.info(`Done InquiryUpdateShopByMemberIdFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }
