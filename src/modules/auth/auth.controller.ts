@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common'
+import { Body, Controller, Post, Req } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import {
   RegisterRequestDto,
@@ -6,12 +6,10 @@ import {
 } from './dto/register.dto'
 import { LoginService } from './login.service'
 import { LoginRequestDto } from './dto/login.dto'
-import { Auth, ReqUser } from './auth.decorator'
-import dayjs from 'dayjs'
-import { Member } from 'src/db/entities/Member'
 import { OtpService } from '../otp/otp.service'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { MobileService } from '../mobile/mobile.service'
+import dayjs from 'dayjs'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -23,7 +21,7 @@ export class AuthController {
   ) {}
 
   @Post('register')
-  @Transaction({ isolation: 'SERIALIZABLE' })
+  @Transaction()
   async register(
     @Body() body: RegisterRequestDto,
     @TransactionManager() manager: EntityManager,

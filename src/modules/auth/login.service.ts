@@ -9,24 +9,19 @@ import {
 } from 'src/utils/response-code'
 import { validateBadRequest } from 'src/utils/response-error'
 import { GenAccessTokenType, GenRefreshTokenType } from './auth.type'
-import { AuthService } from './auth.service'
 
 import {
   InquiryUserExistByUsernameType,
   ValidatePasswordType,
 } from './login.type'
 
-import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 
 @Injectable()
 export class LoginService {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly logger: PinoLogger,
-  ) {
-    this.logger.setContext(AuthService.name)
+  constructor(private readonly logger: PinoLogger) {
+    this.logger.setContext(LoginService.name)
   }
 
   loginHandler(
@@ -36,7 +31,6 @@ export class LoginService {
     genRefreshToken: Promise<GenRefreshTokenType>,
   ): any {
     return async (body: LoginRequestDto) => {
-      this.logger.info('start loginHandler')
       const start = dayjs()
       const [member, inquiryUserExistByUsernameError] = await (
         await inquiryUserExistByUsername
@@ -60,7 +54,7 @@ export class LoginService {
       const accessToken = await (await genAccessToken)(member)
       const refreshToken = await (await genRefreshToken)(member)
 
-      this.logger.info(`end loginHandler ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done loginHandler ${dayjs().diff(start)} ms`)
       return response({
         accessToken,
         refreshToken,
