@@ -60,3 +60,15 @@ export class RegisterSellerRequestDto {
   @MaxLength(50)
   corperateName?: string
 }
+
+export class UpdateShopInfoRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(30)
+  shopName: string
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(500)
+  shopDescription: string
+}

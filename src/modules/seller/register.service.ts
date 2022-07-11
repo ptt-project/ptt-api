@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common'
-import { Address } from 'src/db/entities/Address'
 import { Member } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
 import { EntityManager } from 'typeorm'
@@ -13,7 +12,6 @@ import {
 } from 'src/utils/response-code'
 
 import {
-  InquiryShopByMemberIdType,
   InsertShopToDbParams,
   ValidateSellerRegisterType,
   InsertShopToDbType,
@@ -134,7 +132,7 @@ export class RegisterService {
             }
           ]
         })
-        if (!isResubmit && shop.memberId === memberId) {
+        if (!isResubmit && shop && shop.memberId === memberId) {
           return 'You have already register as a seller'
         }
         if (shop && shop.memberId !== memberId) {
@@ -147,6 +145,9 @@ export class RegisterService {
           if (shop.corperateId === params.corperateId) {
             return 'corperateId is alredy used'
           }
+        }
+        if (params.type === 'Mall' && (!params.corperateId || !params.corperateName)) {
+          return 'corperateId and corperateName is required for Mall shop'
         }
       } catch (error) {
         return error
@@ -225,21 +226,6 @@ export class RegisterService {
         shop.approvalStatus = 'requested'
         
         await etm.save(shop)
-      } catch (error) {
-        return [shop, error]
-      }
-
-      return [shop, '']
-    }
-  }
-
-  async InquiryShopByMemberIdFunc(
-    etm: EntityManager,
-  ): Promise<InquiryShopByMemberIdType> {
-    return async (memberId: number): Promise<[Shop, string]> => {
-      let shop: Shop
-      try {
-        shop = await etm.findOne(Shop, { withDeleted: false, where: { memberId } })
       } catch (error) {
         return [shop, error]
       }

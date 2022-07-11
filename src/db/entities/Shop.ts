@@ -60,6 +60,27 @@ export class Shop extends AppEntity {
   })
   approvalStatus: ApprovalType
 
+  @Column({ name: 'shop_name', nullable: true, length: 30 })
+  shopName: string
+
+  @Column({ name: 'shop_description', nullable: true, length: 500 })
+  shopDescription: string
+
+  @Column({ name: 'product_count', nullable: false, default: 0 })
+  productCount: number
+
+  @Column({ name: 'reply_rate', type: "decimal", precision: 5, scale: 2,nullable: false, default: 0 })
+  replyRate: number
+
+  @Column({ name: 'shop_score', type: "decimal", precision: 2, scale: 1, nullable: false, default: 0 })
+  shopScore: number
+
+  @Column({ name: 'score_count', nullable: false, default: 0 })
+  scoreCount: number
+
+  @Column({ name: 'cancel_rate', type: "decimal", precision: 5, scale: 2, nullable: false, default: 0 })
+  cancelRate: number
+
   @Column({ name: 'member_id', nullable: true })
   memberId: number
 

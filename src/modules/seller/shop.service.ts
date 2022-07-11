@@ -1,64 +1,39 @@
 import { Injectable } from '@nestjs/common'
-import { Address } from 'src/db/entities/Address'
 import { Member } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
-import { EntityManager } from 'typeorm'
-import {
-  RegisterSellerRequestDto,
-} from './dto/seller.dto'
+import { EntityManager, UpdateResult } from 'typeorm'
 
 import {
-  InvalidSellerRegister,
-  UnableInsertShopToDb,
+  UnableToGetShopInfo,
+  UnableToUpdateShopInfo
 } from 'src/utils/response-code'
 
 import {
-  InquiryShopByMemberIdType,
-  InsertShopToDbParams,
-  ValidateSellerRegisterType,
-  InsertShopToDbType,
+  GetShopInfoType,
+  UpdateShopInfoToDbParams,
+  UpdateShopTobDbByIdType,
 } from './seller.type'
 import { Shop } from 'src/db/entities/Shop'
 
 @Injectable()
-export class RegisterService {
-  registerSellerHandler(
-    validateSellerData: Promise<
-      ValidateSellerRegisterType
+export class ShopService {
+  getShopInfoHandler(
+    getShopInfo: Promise<
+      GetShopInfoType
     >,
-    insertShopToDb: Promise<InsertShopToDbType>,
   ) {
-    return async (member: Member, body: RegisterSellerRequestDto) => {
+    return async (member: Member) => {
       const { id: memberId } = member
 
-      const validateSellerError = await (await validateSellerData)(
+      const [shop, getShopInfoError] = await (await getShopInfo)(
         memberId,
-        body,
-        false
       )
 
-      if (validateSellerError != '') {
+      if (getShopInfoError != '') {
         return response(
           undefined,
-          InvalidSellerRegister,
-          validateSellerError,
-        )
-      }
-    
-
-      const params: InsertShopToDbParams = {
-        ...body,
-        memberId,
-      }
-      const [shop, insertShopToDbError] = await (await insertShopToDb)(
-        params,
-      )
-
-      if (insertShopToDbError != '') {
-        return response(
-          undefined,
-          UnableInsertShopToDb,
-          insertShopToDbError,
+          UnableToGetShopInfo,
+          getShopInfoError,
         )
       }
 
@@ -66,179 +41,34 @@ export class RegisterService {
     }
   }
 
-  resubmitRegisterSellerHandler(
-    validateSellerData: Promise<
-      ValidateSellerRegisterType
+  updateShopInfoHandler(
+    updateShopInfo: Promise<
+      UpdateShopTobDbByIdType
     >,
-    resubmitShopToDb: Promise<InsertShopToDbType>,
   ) {
-    return async (member: Member, body: RegisterSellerRequestDto) => {
+    return async (member: Member, params: UpdateShopInfoToDbParams) => {
       const { id: memberId } = member
 
-      const validateSellerError = await (await validateSellerData)(
+      const updateShopInfoError = await (await updateShopInfo)(
         memberId,
-        body,
-        true,
-      )
-
-      if (validateSellerError != '') {
-        return response(
-          undefined,
-          InvalidSellerRegister,
-          validateSellerError,
-        )
-      }
-    
-
-      const params: InsertShopToDbParams = {
-        ...body,
-        memberId,
-      }
-      const [shop, resubmitShopToDbError] = await (await resubmitShopToDb)(
         params,
       )
 
-      if (resubmitShopToDbError != '') {
+      if (updateShopInfoError != '') {
         return response(
           undefined,
-          UnableInsertShopToDb,
-          resubmitShopToDbError,
+          UnableToUpdateShopInfo,
+          updateShopInfoError,
         )
       }
 
-      return response(shop)
-    }
-  }
-
-  async validateSellerDataFunc(
-    etm: EntityManager,
-  ): Promise<ValidateSellerRegisterType> {
-    return async (
-      memberId: number,
-      params: InsertShopToDbParams,
-      isResubmit: boolean,
-    ): Promise<string> => {
-      let shop: Shop
-
-      try {
-        shop = await etm.findOne(Shop, { where: [
-            {
-              deletedAt: null,
-              email: params.email
-            }, {
-              deletedAt: null,
-              mobile: params.mobile
-            }, {
-              deletedAt: null,
-              corperateId: params.corperateId,
-            }
-          ]
-        })
-        if (!isResubmit && shop.memberId === memberId) {
-          return 'You have already register as a seller'
-        }
-        if (shop && shop.memberId !== memberId) {
-          if (shop.email === params.email) {
-            return 'email is alredy used'
-          }
-          if (shop.mobile === params.mobile) {
-            return 'mobile is alredy used'
-          }
-          if (shop.corperateId === params.corperateId) {
-            return 'corperateId is alredy used'
-          }
-        }
-        if (params.type === 'Mall' && (!params.corperateId || !params.corperateName)) {
-          return 'corperateId and corperateName is required for Mall shop'
-        }
-      } catch (error) {
-        return error
-      }
-
-      return ''
-    }
-  }
-
-  async insertShopToDbFunc(
-    etm: EntityManager,
-  ): Promise<InsertShopToDbType> {
-    return async (
-      params: InsertShopToDbParams,
-    ): Promise<[Shop, string]> => {
-      let shop: Shop
-
-      try {
-        shop = Shop.create({
-          fullName: params.fullName,
-          memberId: params.memberId,
-          mobile: params.mobile,
-          email: params.email,
-          brandName: params.brandName,
-          category: params.category,
-          website: params.website,
-          facebookPage: params.facebookPage,
-          instagram: params.instagram,
-          socialMedia: params.socialMedia,
-          note: params.note,
-          corperateId: params.corperateId,
-          corperateName: params.corperateName,
-        })
-        await etm.save(shop)
-      } catch (error) {
-        return [shop, error]
-      }
-
-      return [shop, '']
-    }
-  }
-
-  async resubmitShopToDbFunc(
-    etm: EntityManager,
-  ): Promise<InsertShopToDbType> {
-    return async (
-      params: InsertShopToDbParams,
-    ): Promise<[Shop, string]> => {
-      let shop: Shop
-
-      try {
-        shop = await etm.findOne(Shop, {
-          where: {
-            memberId: params.memberId,
-          }
-        })
-
-        if (!shop) {
-          return [null, 'Unable to find shop for this user']
-        }
-
-        shop.type = params.type
-        shop.fullName = params.fullName
-        shop.memberId = params.memberId
-        shop.mobile = params.mobile
-        shop.email = params.email
-        shop.brandName = params.brandName
-        shop.category = params.category
-        shop.website = params.website
-        shop.facebookPage = params.facebookPage
-        shop.instagram = params.instagram
-        shop.socialMedia = params.socialMedia
-        shop.note = params.note
-        shop.corperateId = params.corperateId
-        shop.corperateName = params.corperateName
-        shop.approvalStatus = 'requested'
-        
-        await etm.save(shop)
-      } catch (error) {
-        return [shop, error]
-      }
-
-      return [shop, '']
+      return response(undefined)
     }
   }
 
   async InquiryShopByMemberIdFunc(
     etm: EntityManager,
-  ): Promise<InquiryShopByMemberIdType> {
+  ): Promise<GetShopInfoType> {
     return async (memberId: number): Promise<[Shop, string]> => {
       let shop: Shop
       try {
@@ -248,6 +78,23 @@ export class RegisterService {
       }
 
       return [shop, '']
+    }
+  }
+
+  async InquiryUpdateShopByMemberIdFunc(
+    etm: EntityManager,
+  ): Promise<UpdateShopTobDbByIdType> {
+    return async (memberId: number, params: UpdateShopInfoToDbParams): Promise<string> => {
+      try {
+        const result: UpdateResult = await etm.update(Shop, {memberId}, { ...params })
+        if (result.raw === 0) {
+          return 'Unable to update shop info'
+        }
+      } catch (error) {
+        return error
+      }
+
+      return ''
     }
   }
 }
