@@ -41,6 +41,7 @@ console.log('__dirname', __dirname)
         serializers: {
           req(req) {
             req.body = req.raw.body
+            req.headers = undefined
             return req
           },
         },
