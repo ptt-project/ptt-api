@@ -1,4 +1,10 @@
-import { IsBooleanString, IsIn, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import {
+  IsBooleanString,
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator'
 
 export class replyCommentRequestDto {
   @IsString()
@@ -7,10 +13,16 @@ export class replyCommentRequestDto {
 }
 export class getReviewQueryDTO {
   @IsOptional()
+  limit?: number
+
+  @IsOptional()
+  page?: number
+
+  @IsOptional()
   @IsBooleanString()
-  isReply? : string
+  isReply?: string
 
   @IsOptional()
   @IsIn(['0', '1', '2', '3', '4', '5'])
-  star? : string
+  star?: string
 }

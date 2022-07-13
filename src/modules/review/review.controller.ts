@@ -15,7 +15,7 @@ export class ReviewController {
   @Transaction()
   async getCommentsByMemberId(
     @ReqUser() member: Member,
-    @Query() query : getReviewQueryDTO,
+    @Query() query: getReviewQueryDTO,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.reviewService.getCommentsByMemberIdHandler(
@@ -44,6 +44,6 @@ export class ReviewController {
     return await this.reviewService.replyCommentByIdHandler(
       this.reviewService.InquiryCommentsByIdFunc(etm),
       this.reviewService.replyCommentByIdToDbFunc(etm),
-    )(commentId,body)
+    )(commentId, body)
   }
 }
