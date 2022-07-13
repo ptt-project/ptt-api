@@ -43,7 +43,17 @@ console.log('__dirname', __dirname)
           req(req) {
             req.body = req.raw.body
             req.headers = undefined
+            req.remoteAddress = undefined
+            req.remotePort = undefined
+            req.url = undefined
             return req
+          },
+          res(res) {
+            res.headers = undefined
+            res.remoteAddress = undefined
+            res.remotePort = undefined
+            res.url = undefined
+            return res
           },
         },
       },

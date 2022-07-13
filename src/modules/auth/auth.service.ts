@@ -230,12 +230,12 @@ export class AuthService {
 
   async exiredTokenFunc(): Promise<ExiredTokenType> {
     return async (token: string): Promise<boolean> => {
-      const start = dayjs()
+      // const start = dayjs()
       const decodedTokenFromJwt = this.jwtService.decode(token) as TokenType
       const tokenDate = decodedTokenFromJwt.expiredAt
       const isExiredToken = dayjs().isAfter(tokenDate)
 
-      this.logger.info(`Done ExiredTokenFunc ${dayjs().diff(start)} ms`)
+      // this.logger.info(`Done ExiredTokenFunc ${dayjs().diff(start)} ms`)
       return isExiredToken
     }
   }
@@ -247,11 +247,12 @@ export class AuthService {
       const start = dayjs()
       let member: Member
       try {
-        member = await etm.createQueryBuilder(Member, 'members')
-        .where('members.deletedAt IS NULL')
-        .andWhere("members.id = :id", {id})
-        .getOne()
-        
+        member = await etm
+          .createQueryBuilder(Member, 'members')
+          .where('members.deletedAt IS NULL')
+          .andWhere('members.id = :id', { id })
+          .getOne()
+
         if (!member) {
           return [null, 'Username is not already used']
         }
@@ -268,26 +269,26 @@ export class AuthService {
 
   async genAccessTokenFunc(): Promise<GenAccessTokenType> {
     return async (member: Member): Promise<string> => {
-      const start = dayjs()
+      // const start = dayjs()
       const payload: TokenType = {
         id: member.id,
         expiredAt: dayjs().add(1, 'day'),
       }
 
-      this.logger.info(`Done GenAccessTokenFunc ${dayjs().diff(start)} ms`)
+      // this.logger.info(`Done GenAccessTokenFunc ${dayjs().diff(start)} ms`)
       return this.jwtService.sign(payload)
     }
   }
 
   async genRefreshTokenFunc(): Promise<GenRefreshTokenType> {
     return async (member: Member): Promise<string> => {
-      const start = dayjs()
+      // const start = dayjs()
       const payload: TokenType = {
         id: member.id,
         expiredAt: dayjs().add(7, 'day'),
       }
 
-      this.logger.info(`Done GenRefreshTokenFunc ${dayjs().diff(start)} ms`)
+      // this.logger.info(`Done GenRefreshTokenFunc ${dayjs().diff(start)} ms`)
       return this.jwtService.sign(payload)
     }
   }
