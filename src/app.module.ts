@@ -19,6 +19,7 @@ import { AuthModule } from './modules/auth/auth.modules'
 import { MemberModule } from './modules/member/member.modules'
 import { MobileModule } from './modules/mobile/mobile.modules'
 import { AddressModule } from './modules/address/address.modules'
+import { ReviewModule } from './modules/review/review.modules'
 
 console.log('__dirname', __dirname)
 @Module({
@@ -55,6 +56,7 @@ console.log('__dirname', __dirname)
     MemberModule,
     MobileModule,
     AddressModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],
