@@ -240,18 +240,18 @@ export class AuthService {
     }
   }
 
-  async inquiryUserExistByIdFunc(): Promise<InquiryUserExistByIdType> {
+  async inquiryUserExistByIdFunc(
+    etm: EntityManager,
+  ): Promise<InquiryUserExistByIdType> {
     return async (id: number): Promise<[Member, string]> => {
       const start = dayjs()
       let member: Member
       try {
-        member = await Member.findOne({
-          where: [
-            {
-              id,
-            },
-          ],
-        })
+        member = await etm.createQueryBuilder(Member, 'members')
+        .where('members.deletedAt IS NULL')
+        .andWhere("members.id = :id", {id})
+        .getOne()
+        
         if (!member) {
           return [null, 'Username is not already used']
         }

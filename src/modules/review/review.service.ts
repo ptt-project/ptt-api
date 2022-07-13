@@ -44,12 +44,17 @@ export class ReviewService {
           inquiryCommentsError,
         )
       }
-
+      
+      const result =  await paginate<Review>(reviews, { limit, page })
+      this.logger.info(
+        `Done paginate InquiryCommentsByMemberIdFunc ${dayjs().diff(start)} ms`,
+      )
+      
       this.logger.info(
         `Done getCommentsByMemberIdHandler ${dayjs().diff(start)} ms`,
       )
       return response(
-        paginate<Review>(reviews, { limit, page }),
+        result,
       )
     }
   }
@@ -61,12 +66,11 @@ export class ReviewService {
       sellerId: number,
       isReply?: string,
       star?: string,
-    ): Promise<[SelectQueryBuilder<Review>, string]> => {
+    ): Promise<[ SelectQueryBuilder<Review>, string]> => {
       const start = dayjs()
       let reviews: SelectQueryBuilder<Review>
-
       try {
-        reviews = await etm
+        reviews = etm
           .createQueryBuilder(Review, 'reviews')
           .where('reviews.deletedAt IS NULL')
           .andWhere('reviews.sellerId = :sellerId', { sellerId })
@@ -79,7 +83,6 @@ export class ReviewService {
           reviews.andWhere('reviews.star = :star', { star })
         }
 
-        reviews.getMany()
       } catch (error) {
         return [reviews, error]
       }
@@ -87,6 +90,7 @@ export class ReviewService {
       this.logger.info(
         `Done InquiryCommentsByMemberIdFunc ${dayjs().diff(start)} ms`,
       )
+
       return [reviews, '']
     }
   }
