@@ -2,16 +2,16 @@ import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
 import { Review } from 'src/db/entities/Review'
 import {
-  UnableInquiryCommentsById,
-  UnableInquiryCommentsByMemberId,
-  UnableReplyCommentToDb,
+  UnableInquiryReviewsByReviewId,
+  UnableInquiryInquiryReviewsBySellerId,
+  UnableReplyReviewByReviewId,
 } from 'src/utils/response-code'
 import { EntityManager, SelectQueryBuilder } from 'typeorm'
 import {
-  InquiryCommentsByIdType,
-  InquiryCommentsMemberIdType,
-  ReplyCommentByIdType,
-  ReplyCommentToDbParams,
+  InquiryReviewsByReviewIdType,
+  InquiryReviewsBySellerIdType,
+  replyReviewByReviewIdType,
+  ReplyReviewToDbParams,
 } from './review.type'
 import { Member } from 'src/db/entities/Member'
 import { getReviewQueryDTO, replyCommentRequestDto } from './dto/review.dto'
@@ -25,8 +25,8 @@ export class ReviewService {
     this.logger.setContext(ReviewService.name)
   }
 
-  getCommentsByMemberIdHandler(
-    InquiryCommentsByMemberId: Promise<InquiryCommentsMemberIdType>,
+  getReviewsBySellerIdHandler(
+    InquiryReviewsBySellerId: Promise< InquiryReviewsBySellerIdType>,
   ) {
     return async (member: Member, query?: getReviewQueryDTO) => {
       const start = dayjs()
@@ -34,24 +34,24 @@ export class ReviewService {
       const { isReply, star, limit = 10, page = 1 } = query
 
       const [reviews, inquiryCommentsError] = await (
-        await InquiryCommentsByMemberId
+        await InquiryReviewsBySellerId
       )(sellerId, isReply, star)
 
       if (inquiryCommentsError != '') {
         response(
           undefined,
-          UnableInquiryCommentsByMemberId,
+          UnableInquiryInquiryReviewsBySellerId,
           inquiryCommentsError,
         )
       }
       
       const result =  await paginate<Review>(reviews, { limit, page })
       this.logger.info(
-        `Done paginate InquiryCommentsByMemberIdFunc ${dayjs().diff(start)} ms`,
+        `Done paginate InquiryReviewsBySellerIdFunc ${dayjs().diff(start)} ms`,
       )
       
       this.logger.info(
-        `Done getCommentsByMemberIdHandler ${dayjs().diff(start)} ms`,
+        `Done getReviewsBySellerIdHandler ${dayjs().diff(start)} ms`,
       )
       return response(
         result,
@@ -59,9 +59,9 @@ export class ReviewService {
     }
   }
 
-  async InquiryCommentsByMemberIdFunc(
+  async InquiryReviewsBySellerIdFunc(
     etm: EntityManager,
-  ): Promise<InquiryCommentsMemberIdType> {
+  ): Promise< InquiryReviewsBySellerIdType> {
     return async (
       sellerId: number,
       isReply?: string,
@@ -88,44 +88,44 @@ export class ReviewService {
       }
 
       this.logger.info(
-        `Done InquiryCommentsByMemberIdFunc ${dayjs().diff(start)} ms`,
+        `Done InquiryReviewsBySellerIdFunc ${dayjs().diff(start)} ms`,
       )
 
       return [reviews, '']
     }
   }
 
-  getCommentsHandler(inquiryCommentsById: Promise<InquiryCommentsByIdType>) {
-    return async (commentId: number) => {
+  getReviewsByReviewIdHandler(InquiryReviewsByReviewId: Promise<InquiryReviewsByReviewIdType>) {
+    return async (reviewId: number) => {
       const start = dayjs()
-      const [review, inquiryCommentsByIdError] = await (
-        await inquiryCommentsById
-      )(commentId)
+      const [review, InquiryReviewsByReviewIdError] = await (
+        await InquiryReviewsByReviewId
+      )(reviewId)
 
-      if (inquiryCommentsByIdError != '') {
+      if (InquiryReviewsByReviewIdError != '') {
         return response(
           undefined,
-          UnableInquiryCommentsById,
-          inquiryCommentsByIdError,
+          UnableInquiryReviewsByReviewId,
+          InquiryReviewsByReviewIdError,
         )
       }
 
-      this.logger.info(`Done getCommentsHandler ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done getReviewsByReviewIdHandler ${dayjs().diff(start)} ms`)
       return response(review)
     }
   }
 
-  async InquiryCommentsByIdFunc(
+  async InquiryReviewsByReviewIdFunc(
     etm: EntityManager,
-  ): Promise<InquiryCommentsByIdType> {
-    return async (commentId: number): Promise<[Review, string]> => {
+  ): Promise<InquiryReviewsByReviewIdType> {
+    return async (reviewId: number): Promise<[Review, string]> => {
       const start = dayjs()
       let review: Review
 
       try {
         review = await etm
           .getRepository(Review)
-          .findOne(commentId, { withDeleted: false })
+          .findOne(reviewId, { withDeleted: false })
       } catch (error) {
         return [review, error]
       }
@@ -134,65 +134,65 @@ export class ReviewService {
         return [review, 'Not found Comment']
       }
 
-      this.logger.info(`Done InquiryCommentsByIdFunc ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done InquiryReviewsByReviewIdFunc ${dayjs().diff(start)} ms`)
       return [review, '']
     }
   }
 
-  replyCommentByIdHandler(
-    inquiryCommentsById: Promise<InquiryCommentsByIdType>,
-    replyCommentByIdToDb: Promise<ReplyCommentByIdType>,
+  replyReviewByReviewIdHandler(
+    InquiryReviewsByReviewId: Promise<InquiryReviewsByReviewIdType>,
+    replyReviewByReviewIdToDb: Promise<replyReviewByReviewIdType>,
   ) {
-    return async (commentId: number, body: replyCommentRequestDto) => {
+    return async (reviewId: number, body: replyCommentRequestDto) => {
       const start = dayjs()
-      const [review, inquiryCommentsByIdError] = await (
-        await inquiryCommentsById
-      )(commentId)
+      const [review, inquiryReviewsByReviewIdError] = await (
+        await InquiryReviewsByReviewId
+      )(reviewId)
 
-      if (inquiryCommentsByIdError != '') {
+      if (inquiryReviewsByReviewIdError != '') {
         return response(
           undefined,
-          UnableInquiryCommentsById,
-          inquiryCommentsByIdError,
+          UnableInquiryReviewsByReviewId,
+          inquiryReviewsByReviewIdError,
         )
       }
 
-      const replyCommentByIdToDbError = await (await replyCommentByIdToDb)(
-        commentId,
+      const replyReviewByReviewIdToDError = await (await replyReviewByReviewIdToDb)(
+        reviewId,
         body,
       )
 
-      if (replyCommentByIdToDbError != '') {
+      if (replyReviewByReviewIdToDError != '') {
         return response(
           undefined,
-          UnableReplyCommentToDb,
-          replyCommentByIdToDbError,
+          UnableReplyReviewByReviewId,
+          replyReviewByReviewIdToDError,
         )
       }
 
-      this.logger.info(`Done replyCommentByIdHandler ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done replyReviewByReviewIdHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
 
-  async replyCommentByIdToDbFunc(
+  async replyReviewByReviewIdToDbFunc(
     etm: EntityManager,
-  ): Promise<ReplyCommentByIdType> {
+  ): Promise<replyReviewByReviewIdType> {
     return async (
-      commentId: number,
-      params: ReplyCommentToDbParams,
+      reviewId: number,
+      params: ReplyReviewToDbParams,
     ): Promise<string> => {
       const start = dayjs()
       try {
         await etm
           .getRepository(Review)
-          .update(commentId, { ...params, isReply: true })
+          .update(reviewId, { ...params, isReply: true })
       } catch (error) {
         return error
       }
 
       this.logger.info(
-        `Done replyCommentByIdToDbFunc ${dayjs().diff(start)} ms`,
+        `Done replyReviewByReviewIdToDbFunc ${dayjs().diff(start)} ms`,
       )
       return ''
     }

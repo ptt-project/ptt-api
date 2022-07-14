@@ -13,37 +13,37 @@ export class ReviewController {
 
   @Get('reviews')
   @Transaction()
-  async getCommentsByMemberId(
+  async getReviewsBySellerId(
     @ReqUser() member: Member,
     @Query() query: getReviewQueryDTO,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.reviewService.getCommentsByMemberIdHandler(
-      this.reviewService.InquiryCommentsByMemberIdFunc(etm),
+    return await this.reviewService.getReviewsBySellerIdHandler(
+      this.reviewService.InquiryReviewsBySellerIdFunc(etm),
     )(member, query)
   }
 
   @Get('reviews/:reviewId')
   @Transaction()
-  async getComments(
-    @Param('reviewId') commentId: number,
+  async getReviewsByReviewId(
+    @Param('reviewId') reviewId: number,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.reviewService.getCommentsHandler(
-      this.reviewService.InquiryCommentsByIdFunc(etm),
-    )(commentId)
+    return await this.reviewService.getReviewsByReviewIdHandler(
+      this.reviewService.InquiryReviewsByReviewIdFunc(etm),
+    )(reviewId)
   }
 
   @Put('reviews/:reviewId/reply')
   @Transaction()
-  async replyCommentById(
-    @Param('reviewId') commentId: number,
+  async replyReviewByReviewId(
+    @Param('reviewId') reviewId: number,
     @Body() body: replyCommentRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.reviewService.replyCommentByIdHandler(
-      this.reviewService.InquiryCommentsByIdFunc(etm),
-      this.reviewService.replyCommentByIdToDbFunc(etm),
-    )(commentId, body)
+    return await this.reviewService.replyReviewByReviewIdHandler(
+      this.reviewService.InquiryReviewsByReviewIdFunc(etm),
+      this.reviewService.replyReviewByReviewIdToDbFunc(etm),
+    )(reviewId, body)
   }
 }

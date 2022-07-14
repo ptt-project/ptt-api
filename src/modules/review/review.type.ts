@@ -1,21 +1,21 @@
 import { Review } from 'src/db/entities/Review'
 import { SelectQueryBuilder } from 'typeorm'
 
-export type InquiryCommentsMemberIdType = (
+export type  InquiryReviewsBySellerIdType = (
   memberId: number,
   isReply: string,
   star: string,
 ) => Promise<[SelectQueryBuilder<Review>, string]>
 
-export type InquiryCommentsByIdType = (
+export type InquiryReviewsByReviewIdType = (
   commentId: number,
 ) => Promise<[Review, string]>
 
-export type ReplyCommentByIdType = (
+export type replyReviewByReviewIdType = (
   memberId: number,
-  params: ReplyCommentToDbParams,
+  params: ReplyReviewToDbParams,
 ) => Promise<string>
 
-export type ReplyCommentToDbParams = {
+export type ReplyReviewToDbParams = {
   reply: string
 }

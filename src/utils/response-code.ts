@@ -58,6 +58,6 @@ const _sellerError = 106000
 
 // review module
 const _reviewError = 107000
-export const UnableInquiryCommentsByMemberId = _reviewError + 1
-export const UnableInquiryCommentsById = _reviewError + 2
-export const UnableReplyCommentToDb = _reviewError + 3
+export const UnableInquiryInquiryReviewsBySellerId = _reviewError + 1
+export const UnableInquiryReviewsByReviewId = _reviewError + 2
+export const UnableReplyReviewByReviewId = _reviewError + 3
