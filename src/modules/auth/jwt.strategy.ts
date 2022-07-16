@@ -6,10 +6,19 @@ import { AuthService } from './auth.service'
 import { TokenType } from './auth.type'
 import { Request } from 'express'
 import dayjs from 'dayjs'
+import { PinoLogger } from 'nestjs-pino'
+import {
+  Connection,
+  EntityManager,
+  getConnection,
+} from 'typeorm'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly authService: AuthService) {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly logger: PinoLogger,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
@@ -19,13 +28,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       secretOrKey: jwtConstants.secret,
       passReqToCallback: true,
     })
+    this.logger.setContext(JwtStrategy.name)
   }
 
   async validate(request: Request, payload: TokenType): Promise<any> {
+    const start = dayjs()
+    const connection: Connection = getConnection()
+    const etm: EntityManager = connection.createEntityManager()
     const [response, isError] = await (
       await this.authService.validateTokenHandler(
         this.authService.exiredTokenFunc(),
-        this.authService.inquiryUserExistByIdFunc(),
+        this.authService.inquiryUserExistByIdFunc(etm),
         this.authService.genAccessTokenFunc(),
         this.authService.genRefreshTokenFunc(),
       )
@@ -44,6 +57,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
     }
 
+    this.logger.info(`Done ValidateToken ${dayjs().diff(start)} ms`)
     return response.member
   }
 }

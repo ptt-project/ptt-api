@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common'
+import dayjs from 'dayjs'
+import { PinoLogger } from 'nestjs-pino'
 import { Member } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
 import { UnableUpateProfileToDb } from 'src/utils/response-code'
@@ -12,9 +14,16 @@ import {
 
 @Injectable()
 export class MemberService {
+  constructor(private readonly logger: PinoLogger) {
+    this.logger.setContext(MemberService.name)
+  }
+
   getProfileHandler(getProfile: Promise<getProfileType>) {
     return async (member: Member) => {
+      const start = dayjs()
       const profile = await (await getProfile)(member)
+
+      this.logger.info(`Done GetProfileHandler ${dayjs().diff(start)} ms`)
       return response(profile)
     }
   }
@@ -37,6 +46,7 @@ export class MemberService {
     updateProfileToMember: Promise<UpdateProfileToMemberType>,
   ) {
     return async (member: Member, body: UpdateProfiledRequestDto) => {
+      const start = dayjs()
       const { id: memberId } = member
 
       const updateProfileToMemberError = await (await updateProfileToMember)(
@@ -52,6 +62,7 @@ export class MemberService {
         )
       }
 
+      this.logger.info(`Done UpdateProfileHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
@@ -63,11 +74,16 @@ export class MemberService {
       memberId: number,
       params: UpdateProfileToDbParams,
     ): Promise<string> => {
+      const start = dayjs()
       try {
         await etm.getRepository(Member).update(memberId, { ...params })
       } catch (error) {
         return error
       }
+
+      this.logger.info(
+        `Done UpdateProfileToMemberFunc ${dayjs().diff(start)} ms`,
+      )
       return ''
     }
   }

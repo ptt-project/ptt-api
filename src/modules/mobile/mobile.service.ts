@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common'
+import dayjs from 'dayjs'
+import { PinoLogger } from 'nestjs-pino'
 import { Member } from 'src/db/entities/Member'
 import { Mobile } from 'src/db/entities/Mobile'
 import { response } from 'src/utils/response'
@@ -26,6 +28,10 @@ import {
 
 @Injectable()
 export class MobileService {
+  constructor(private readonly logger: PinoLogger) {
+    this.logger.setContext(MobileService.name)
+  }
+
   addMobileHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     inquiryAddMobile: Promise<InquiryAddMobileType>,
@@ -35,6 +41,7 @@ export class MobileService {
       body: addMobileRequestDto,
       manager: EntityManager,
     ) => {
+      const start = dayjs()
       const verifyOtpData: verifyOtpRequestDto = {
         reference: body.mobile,
         refCode: body.refCode,
@@ -59,6 +66,7 @@ export class MobileService {
         return response(undefined, UnableToAddMobile, addMobileErrorMessege)
       }
 
+      this.logger.info(`Done AddMobileHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
@@ -73,6 +81,7 @@ export class MobileService {
       body: setMainMobileRequestDto,
       manager: EntityManager,
     ) => {
+      const start = dayjs()
       const verifyOtpData: verifyOtpRequestDto = {
         reference: body.mobile,
         refCode: body.refCode,
@@ -106,6 +115,7 @@ export class MobileService {
         return response(undefined, UnableToSetMainMobile, addMobileErrorMessege)
       }
 
+      this.logger.info(`Done SetMainMobileHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
@@ -120,6 +130,7 @@ export class MobileService {
       body: deleteMobileRequestDto,
       manager: EntityManager,
     ) => {
+      const start = dayjs()
       if (!member.mobile) {
         return response(
           undefined,
@@ -159,12 +170,14 @@ export class MobileService {
         return response(undefined, UnableToDeleteMobile, addMobileErrorMessege)
       }
 
+      this.logger.info(`Done DeleteMobileHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
 
   async getMobileFormDbByMobilePhoneFunc(): Promise<InquiryGetMobileType> {
     return async (mobile: string, member: Member, manager: EntityManager) => {
+      const start = dayjs()
       let mobileRow: Mobile
       try {
         mobileRow = await manager.findOne(Mobile, {
@@ -182,6 +195,9 @@ export class MobileService {
         return [null, error]
       }
 
+      this.logger.info(
+        `Done GetMobileFormDbByMobilePhoneFunc ${dayjs().diff(start)} ms`,
+      )
       return [mobileRow, '']
     }
   }
@@ -192,6 +208,7 @@ export class MobileService {
       member: Member,
       manager: EntityManager,
     ) => {
+      const start = dayjs()
       let mobile: Mobile
       try {
         mobile = await manager.findOne(Mobile, {
@@ -236,12 +253,14 @@ export class MobileService {
         return error
       }
 
+      this.logger.info(`Done AddMobileFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }
 
   async setMainMobileFunc(): Promise<InquirySetMainMobileType> {
     return async (mobile: Mobile, member: Member, manager: EntityManager) => {
+      const start = dayjs()
       try {
         const oldPrimary = await manager.findOne(Mobile, {
           where: {
@@ -265,12 +284,14 @@ export class MobileService {
         return error
       }
 
+      this.logger.info(`Done SetMainMobileFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }
 
   async deleteMobileFunc(): Promise<InquiryDeleteMobileType> {
     return async (mobile: Mobile, member: Member, manager: EntityManager) => {
+      const start = dayjs()
       try {
         if (mobile.isPrimary) {
           member.mobile = null
@@ -281,6 +302,7 @@ export class MobileService {
         return error
       }
 
+      this.logger.info(`Done DeleteMobileFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }

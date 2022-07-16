@@ -71,6 +71,7 @@ export class LoginService {
     InquiryUserExistByUsernameType
   > {
     return async (username: string): Promise<[Member, string]> => {
+      const start = dayjs()
       let member: Member
       try {
         member = await Member.findOne({
@@ -87,6 +88,9 @@ export class LoginService {
         return [null, error]
       }
 
+      this.logger.info(
+        `Done InquiryUserExistByUsernameFunc ${dayjs().diff(start)} ms`,
+      )
       return [member, '']
     }
   }
@@ -96,11 +100,13 @@ export class LoginService {
       password: string,
       passwordMember: string,
     ): Promise<string> => {
+      const start = dayjs()
       const isValidPass = await checkPassword(password, passwordMember)
       if (!isValidPass) {
         return 'Password is invalid'
       }
 
+      this.logger.info(`Done ValidatePasswordFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }

@@ -22,15 +22,22 @@ import {
   InquiryValidateSendOtpType,
   InquiryVerifyOtpType,
 } from './otp.type'
+import { PinoLogger } from 'nestjs-pino'
+import dayjs from 'dayjs'
 
 @Injectable()
 export class OtpService {
+  constructor(private readonly logger: PinoLogger) {
+    this.logger.setContext(OtpService.name)
+  }
+
   requestOtpHandler(
     verifyForSend: Promise<InquiryValidateSendOtpType>,
     sendOtp: Promise<InquirySendOtpType>,
     saveOtp: InquirySaveOtpType,
   ) {
     return async ({ reference, type }) => {
+      const start = dayjs()
       const [otp, verSendOtpError] = await (await verifyForSend)({
         reference,
         type,
@@ -55,12 +62,14 @@ export class OtpService {
         return validateBadRequest(saveOtpError, 'Fail to Save Otp')
       }
 
+      this.logger.info(`Done RequestOtpHandler ${dayjs().diff(start)} ms`)
       return response({ refCode: otpData.refCode, reference })
     }
   }
 
   async verifyForSendOtp(): Promise<InquiryValidateSendOtpType> {
     return async (params: sendOtpRequestDto) => {
+      const start = dayjs()
       let otp: Otp
       try {
         otp = await Otp.findOne({
@@ -79,12 +88,14 @@ export class OtpService {
         return [otp, error]
       }
 
+      this.logger.info(`Done VerifyForSendOtp ${dayjs().diff(start)} ms`)
       return [otp, 0]
     }
   }
 
   async sendOtp(): Promise<InquirySendOtpType> {
     return async (params: sendOtpRequestDto) => {
+      const start = dayjs()
       const refCode: string = randomStr(4)
       const otpCode: string = randomNum(6)
       // Todo: sand otp
@@ -97,12 +108,14 @@ export class OtpService {
         otpCode,
       }
 
+      this.logger.info(`Done SendOtp ${dayjs().diff(start)} ms`)
       return [result, 0]
     }
   }
 
   saveOtpToDb(): InquirySaveOtpType {
     return async (otp: Otp, otpData: SendOtpType) => {
+      const start = dayjs()
       // save otpData
       if (otp) {
         try {
@@ -131,6 +144,7 @@ export class OtpService {
           return [newOtp, UnableToSendOtp]
         }
 
+        this.logger.info(`Done SaveOtpToDb ${dayjs().diff(start)} ms`)
         return [newOtp, 0]
       }
     }
@@ -138,6 +152,7 @@ export class OtpService {
 
   verifyOtpHandler(inquiryVerifyOtp: Promise<InquiryVerifyOtpType>) {
     return async (otpData: verifyOtpRequestDto, manager: EntityManager) => {
+      const start = dayjs()
       const { reference, otpCode, refCode } = otpData
       const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
         await inquiryVerifyOtp
@@ -147,12 +162,14 @@ export class OtpService {
         return validateBadRequest(verifyOtpErrorCode, verifyOtpErrorMessege)
       }
 
+      this.logger.info(`Done VerifyOtpHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
 
   async inquiryVerifyOtpFunc(): Promise<InquiryVerifyOtpType> {
     return async (otpData: verifyOtpRequestDto, manager: EntityManager) => {
+      const start = dayjs()
       if (process.env.SKIP_VERIFY_OTP) {
         return [0, null]
       }
@@ -187,6 +204,7 @@ export class OtpService {
         return [InternalSeverError, error]
       }
 
+      this.logger.info(`Done InquiryVerifyOtpFunc ${dayjs().diff(start)} ms`)
       return [0, null]
     }
   }

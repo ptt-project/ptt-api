@@ -65,3 +65,6 @@ export const UnableToUpdateShopInfo = _sellerError + 5
 
 // review module
 const _reviewError = 107000
+export const UnableInquiryInquiryReviewsBySellerId = _reviewError + 1
+export const UnableInquiryReviewsByReviewId = _reviewError + 2
+export const UnableReplyReviewByReviewId = _reviewError + 3

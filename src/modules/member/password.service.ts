@@ -16,14 +16,21 @@ import {
   UpdatePasswordToMemberType,
   VadlidateOldPasswordType,
 } from './password.type'
+import { PinoLogger } from 'nestjs-pino'
+import dayjs from 'dayjs'
 
 @Injectable()
 export class PasswordService {
+  constructor(private readonly logger: PinoLogger) {
+    this.logger.setContext(PasswordService.name)
+  }
+
   changePasswordHandler(
     vadlidateOldPassword: Promise<VadlidateOldPasswordType>,
     updatePasswordToMember: Promise<UpdatePasswordToMemberType>,
   ) {
     return async (member: Member, body: ChagnePasswordRequestDto) => {
+      const start = dayjs()
       const { oldPassword, newPassword } = body
 
       const vadlidateOldPasswordError = await (await vadlidateOldPassword)(
@@ -50,12 +57,14 @@ export class PasswordService {
         )
       }
 
+      this.logger.info(`Done ChangePasswordHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
 
   async inquiryMemberByIdFunc(): Promise<InquiryMemberByIdType> {
     return async (memberId: number): Promise<[Member, string]> => {
+      const start = dayjs()
       let member: Member
       try {
         member = await Member.findOne({ id: memberId })
@@ -67,6 +76,7 @@ export class PasswordService {
         return [member, error]
       }
 
+      this.logger.info(`Done InquiryMemberByIdFunc ${dayjs().diff(start)} ms`)
       return [member, '']
     }
   }
@@ -76,6 +86,7 @@ export class PasswordService {
       oldPassword: string,
       oldPasswordParams: string,
     ): Promise<string> => {
+      const start = dayjs()
       const invalidOldPasswordParams = await checkPassword(
         oldPasswordParams,
         oldPassword,
@@ -84,12 +95,16 @@ export class PasswordService {
         return 'current password is wrong'
       }
 
+      this.logger.info(
+        `Done VadlidateOldPasswordFunc ${dayjs().diff(start)} ms`,
+      )
       return ''
     }
   }
 
   async updatePasswordToMemberFunc(): Promise<UpdatePasswordToMemberType> {
     return async (member: Member, newPassword: string): Promise<string> => {
+      const start = dayjs()
       try {
         member.password = await hashPassword(newPassword)
         await member.save()
@@ -97,6 +112,9 @@ export class PasswordService {
         return error
       }
 
+      this.logger.info(
+        `Done UpdatePasswordToMemberFunc ${dayjs().diff(start)} ms`,
+      )
       return ''
     }
   }

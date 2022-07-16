@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
 import { InquiryVerifyOtpType } from '../otp/otp.type'
-import { OtpService } from '../otp/otp.service'
 import { Member } from '../../db/entities/Member'
 import { hashPassword } from 'src/utils/helpers'
 import {
@@ -36,16 +35,20 @@ import {
   TokenType,
   ValidateTokenResponse,
 } from './auth.type'
+import { PinoLogger } from 'nestjs-pino'
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly otpService: OtpService,
     private readonly jwtService: JwtService,
-  ) {}
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(AuthService.name)
+  }
 
   validateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
     return async (body: ValidateRegisterRequestDto) => {
+      const start = dayjs()
       const [validateErrorCode, validateErrorMessage] = await (
         await validateMember
       )(body)
@@ -53,6 +56,7 @@ export class AuthService {
         return response(undefined, validateErrorCode, validateErrorMessage)
       }
 
+      this.logger.info(`Done validateRegisterHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
@@ -64,6 +68,7 @@ export class AuthService {
     addMobileFunc: Promise<InquiryAddMobileType>,
   ) {
     return async (body: RegisterRequestDto, manager: EntityManager) => {
+      const start = dayjs()
       const verifyOtpData: verifyOtpRequestDto = {
         reference: body.mobile,
         refCode: body.refCode,
@@ -105,6 +110,7 @@ export class AuthService {
         return response(undefined, UnableToAddMobile, addMobileErrorMessege)
       }
 
+      this.logger.info(`Done RegisterHandler ${dayjs().diff(start)} ms`)
       return response(member)
     }
   }
@@ -113,6 +119,7 @@ export class AuthService {
     return async (
       params: RegisterRequestDto | ValidateRegisterRequestDto,
     ): Promise<[number, string]> => {
+      const start = dayjs()
       const { email, username } = params
       try {
         const member = await Member.findOne({
@@ -138,6 +145,7 @@ export class AuthService {
         return [InternalSeverError, error]
       }
 
+      this.logger.info(`Done InquiryMemberExistFunc ${dayjs().diff(start)} ms`)
       return [0, '']
     }
   }
@@ -147,6 +155,7 @@ export class AuthService {
       params: RegisterRequestDto,
       manager: EntityManager,
     ): Promise<[Member, string]> => {
+      const start = dayjs()
       const {
         username,
         firstName,
@@ -174,6 +183,7 @@ export class AuthService {
         return [member, error]
       }
 
+      this.logger.info(`Done InsertMemberToDbFunc ${dayjs().diff(start)} ms`)
       return [member, '']
     }
   }
@@ -189,6 +199,7 @@ export class AuthService {
       refreshToken: string,
       id: number,
     ): Promise<[ValidateTokenResponse, boolean]> => {
+      const start = dayjs()
       const isExiredAccessToken = await (await exiredToken)(accessToken)
       const isExiredRefreshToken = await (await exiredToken)(refreshToken)
 
@@ -212,30 +223,36 @@ export class AuthService {
         member: member,
       }
 
+      this.logger.info(`Done ValidateTokenHandler ${dayjs().diff(start)} ms`)
       return [response, false]
     }
   }
 
   async exiredTokenFunc(): Promise<ExiredTokenType> {
     return async (token: string): Promise<boolean> => {
+      // const start = dayjs()
       const decodedTokenFromJwt = this.jwtService.decode(token) as TokenType
       const tokenDate = decodedTokenFromJwt.expiredAt
       const isExiredToken = dayjs().isAfter(tokenDate)
+
+      // this.logger.info(`Done ExiredTokenFunc ${dayjs().diff(start)} ms`)
       return isExiredToken
     }
   }
 
-  async inquiryUserExistByIdFunc(): Promise<InquiryUserExistByIdType> {
+  async inquiryUserExistByIdFunc(
+    etm: EntityManager,
+  ): Promise<InquiryUserExistByIdType> {
     return async (id: number): Promise<[Member, string]> => {
+      const start = dayjs()
       let member: Member
       try {
-        member = await Member.findOne({
-          where: [
-            {
-              id,
-            },
-          ],
-        })
+        member = await etm
+          .createQueryBuilder(Member, 'members')
+          .where('members.deletedAt IS NULL')
+          .andWhere('members.id = :id', { id })
+          .getOne()
+
         if (!member) {
           return [null, 'Username is not already used']
         }
@@ -243,26 +260,35 @@ export class AuthService {
         return [null, error]
       }
 
+      this.logger.info(
+        `Done InquiryUserExistByIdFunc ${dayjs().diff(start)} ms`,
+      )
       return [member, '']
     }
   }
 
   async genAccessTokenFunc(): Promise<GenAccessTokenType> {
     return async (member: Member): Promise<string> => {
+      // const start = dayjs()
       const payload: TokenType = {
         id: member.id,
         expiredAt: dayjs().add(1, 'day'),
       }
+
+      // this.logger.info(`Done GenAccessTokenFunc ${dayjs().diff(start)} ms`)
       return this.jwtService.sign(payload)
     }
   }
 
   async genRefreshTokenFunc(): Promise<GenRefreshTokenType> {
     return async (member: Member): Promise<string> => {
+      // const start = dayjs()
       const payload: TokenType = {
         id: member.id,
         expiredAt: dayjs().add(7, 'day'),
       }
+
+      // this.logger.info(`Done GenRefreshTokenFunc ${dayjs().diff(start)} ms`)
       return this.jwtService.sign(payload)
     }
   }

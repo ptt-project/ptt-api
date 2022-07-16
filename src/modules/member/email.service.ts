@@ -13,6 +13,8 @@ import { internalSeverError } from 'src/utils/response-error'
 import { response } from 'src/utils/response'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
 import { EntityManager } from 'typeorm'
+import { PinoLogger } from 'nestjs-pino'
+import dayjs from 'dayjs'
 
 export type UpdateEmailToMemberType = (
   member: Member,
@@ -38,13 +40,22 @@ export type ValidateEmailType = (
 
 @Injectable()
 export class EmailService {
+  constructor(private readonly logger: PinoLogger) {
+    this.logger.setContext(EmailService.name)
+  }
+
   editEmailHandler(
     validatePassword: Promise<ValidatePasswordType>,
     validateEmail: Promise<ValidateEmailType>,
     updateEmailToMember: Promise<UpdateEmailToMemberType>,
-    notifyNewEmail: Promise<NotifyNewEmailType>
+    notifyNewEmail: Promise<NotifyNewEmailType>,
   ) {
-    return async (member: Member, body: EditEmailRequestDto, manager: EntityManager) => {
+    return async (
+      member: Member,
+      body: EditEmailRequestDto,
+      manager: EntityManager,
+    ) => {
+      const start = dayjs()
       const { password, newEmail } = body
 
       const vadlidatePasswordError = await (await validatePassword)(
@@ -53,11 +64,7 @@ export class EmailService {
       )
 
       if (vadlidatePasswordError !== '') {
-        return response(
-          undefined,
-          OldPassowrdInvalid,
-          vadlidatePasswordError,
-        )
+        return response(undefined, OldPassowrdInvalid, vadlidatePasswordError)
       }
 
       const vadlidateEmailError = await (await validateEmail)(
@@ -86,17 +93,12 @@ export class EmailService {
         )
       }
 
-      const notifyNewEmailError = await (await notifyNewEmail)(
-        member,
-        newEmail,
-      )
+      const notifyNewEmailError = await (await notifyNewEmail)(member, newEmail)
       if (notifyNewEmailError !== '') {
-        return internalSeverError(
-          UnableToSendEmail,
-          notifyNewEmailError,
-        )
+        return internalSeverError(UnableToSendEmail, notifyNewEmailError)
       }
 
+      this.logger.info(`Done EditEmailHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
@@ -106,6 +108,7 @@ export class EmailService {
       password: string,
       passwordParams: string,
     ): Promise<string> => {
+      const start = dayjs()
       const invalidPasswordParams = await checkPassword(
         passwordParams,
         password,
@@ -114,6 +117,7 @@ export class EmailService {
         return 'password is incorrect'
       }
 
+      this.logger.info(`Done VadlidatePasswordFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }
@@ -124,11 +128,12 @@ export class EmailService {
       member: Member,
       manager: EntityManager,
     ): Promise<string> => {
+      const start = dayjs()
       const emailOwner = await manager.findOne(Member, {
         where: {
           email,
           deletedAt: null,
-        }
+        },
       })
 
       if (emailOwner) {
@@ -139,12 +144,18 @@ export class EmailService {
         }
       }
 
+      this.logger.info(`Done VadlidateEmailFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }
 
   async updateEmailToMemberFunc(): Promise<UpdateEmailToMemberType> {
-    return async (member: Member, newEmail: string, manager: EntityManager): Promise<string> => {
+    return async (
+      member: Member,
+      newEmail: string,
+      manager: EntityManager,
+    ): Promise<string> => {
+      const start = dayjs()
       try {
         member.email = newEmail
         await manager.save(member)
@@ -152,14 +163,17 @@ export class EmailService {
         return error
       }
 
+      this.logger.info(`Done UpdateEmailToMemberFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }
 
   async notifyNewEmailFunc(): Promise<NotifyNewEmailType> {
     return async (member: Member, newEmail: string): Promise<string> => {
+      const start = dayjs()
       // send email // Failed to send email
 
+      this.logger.info(`Done NotifyNewEmailFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }
