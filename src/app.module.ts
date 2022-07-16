@@ -21,6 +21,7 @@ import { MobileModule } from './modules/mobile/mobile.modules'
 import { AddressModule } from './modules/address/address.modules'
 import { SellerModule } from './modules/seller/seller.modules'
 import { ReviewModule } from './modules/review/review.modules'
+import { CategoryModule } from './modules/category/category.modules'
 
 console.log('__dirname', __dirname)
 @Module({
@@ -69,6 +70,7 @@ console.log('__dirname', __dirname)
     AddressModule,
     SellerModule,
     ReviewModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
