@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Patch, Put } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
-import { Auth, ReqUser } from '../auth/auth.decorator'
+import { Auth, ReqUser, Seller } from '../auth/auth.decorator'
 import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
 import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
@@ -29,7 +29,7 @@ export class MemberController {
     )(member, body)
   }
 
-  @Auth()
+  @Seller()
   @Get('profile')
   async getProfile(@ReqUser() member: Member) {
     return this.memberService.getProfileHandler(

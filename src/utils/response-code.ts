@@ -52,6 +52,8 @@ export const UnableUpdateNotMainAddressByMemberId = _addressError + 4
 export const UnableUpdateIsMainAddressById = _addressError + 5
 export const UnableInquiryAddressById = _addressError + 6
 export const UnableInquiryAddressesByMemberId = _addressError + 7
+export const UnableUpdatePickupAddressByMemberId = _addressError + 8
+export const UnableUpdateReturnItemAddressByMemberId = _addressError + 9
 
 // seller module
 const _sellerError = 106000
@@ -60,7 +62,6 @@ export const UnableInsertShopToDb = _sellerError + 2
 export const UnableUpdateShopToDb = _sellerError + 3
 export const UnableToGetShopInfo = _sellerError + 4
 export const UnableToUpdateShopInfo = _sellerError + 5
-
 
 // review module
 const _reviewError = 107000

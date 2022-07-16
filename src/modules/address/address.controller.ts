@@ -32,6 +32,8 @@ export class AddressController {
   ) {
     return await this.memberService.createAddressHandler(
       this.memberService.UpdateNotMainAddressesByMemberIdToDbFunc(etm),
+      this.memberService.UpdateNotPickupAddressesByMemberIdToDbFunc(etm),
+      this.memberService.UpdateNotReturnItemAddressesByMemberIdToDbFunc(etm),
       this.memberService.InsertAddressToDbFunc(etm),
     )(member, body)
   }
@@ -45,7 +47,10 @@ export class AddressController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.memberService.updateAddressHandler(
+      this.memberService.InquiryAddressByIdFunc(etm),
       this.memberService.UpdateNotMainAddressesByMemberIdToDbFunc(etm),
+      this.memberService.UpdateNotPickupAddressesByMemberIdToDbFunc(etm),
+      this.memberService.UpdateNotReturnItemAddressesByMemberIdToDbFunc(etm),
       this.memberService.UpdateAddressByIdToDbFunc(etm),
     )(member, addressId, body)
   }
@@ -67,12 +72,13 @@ export class AddressController {
   @Transaction()
   async deleteAddress(
     @Param('addressId') addressId: number,
+    @ReqUser() member: Member,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.memberService.deleteAddressHandler(
       this.memberService.InquiryAddressByIdFunc(etm),
       this.memberService.DeleteAddressByIdToDbFunc(etm),
-    )(addressId)
+    )(member, addressId)
   }
 
   @Get(':addressId')

@@ -39,6 +39,12 @@ export class CreateAddressRequestDto {
 
   @IsOptional()
   isWork?: boolean
+
+  @IsOptional()
+  isPickup?: boolean
+
+  @IsOptional()
+  isReturnItem?: boolean
 }
 
 export class MemberUpdateAddressRequestDto {
@@ -80,4 +86,10 @@ export class MemberUpdateAddressRequestDto {
 
   @IsOptional()
   isWork?: boolean
+
+  @IsOptional()
+  isPickup?: boolean
+
+  @IsOptional()
+  isReturnItem?: boolean
 }
