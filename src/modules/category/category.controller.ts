@@ -11,7 +11,7 @@ import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser, Seller } from '../auth/auth.decorator'
 import { ShopService } from '../seller/shop.service'
 import { CategoryService } from './category.service'
-import { ActiveToggleRequestDto, CreateCategoryRequestDto } from './dto/category.dto'
+import { ActiveToggleRequestDto, CreateCategoryRequestDto, OrderingCategoryRequestDto } from './dto/category.dto'
 
 @Auth()
 @Seller()
@@ -51,7 +51,6 @@ export class CategoryController {
   @Patch(':categoryId/active-toggle')
   @Transaction()
   async activeToggleCategory(
-    @ReqUser() member: Member,
     @Param('categoryId') categoryId: number,
     @Body() body: ActiveToggleRequestDto,
     @TransactionManager() etm: EntityManager,
@@ -60,5 +59,17 @@ export class CategoryController {
       this.categoryService.getCategoryByCategoryIdFunc(etm),
       this.categoryService.updateActiveCategoryFunc(etm),
     )(categoryId, body)
+  }
+
+  @Patch('ordering')
+  @Transaction()
+  async orderingCategory(
+    @Body() body: OrderingCategoryRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.categoryService.orderingCategoryHandler(
+      this.categoryService.getCategoryByCategoryIdFunc(etm),
+      this.categoryService.updatePriorityCategoryFunc(etm),
+    )(body)
   }
 }

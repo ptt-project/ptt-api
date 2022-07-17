@@ -27,3 +27,8 @@ export type UpdateActiveCategoryToDbType = (
   categoryId : number,
   params: UpdateActiveCategoryToDbParams,
 ) => Promise<string>
+
+export type UpdatePriorityCategoryToDbType = (
+  categoryId : number,
+  priority: number,
+) => Promise<string>

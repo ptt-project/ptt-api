@@ -1,4 +1,5 @@
-import { IsBoolean, IsBooleanString, IsIn, IsNotEmpty, IsString, MaxLength } from 'class-validator'
+import { Type } from 'class-transformer'
+import { ArrayNotEmpty, IsArray, IsIn, IsNotEmpty, IsNumber, IsNumberString, IsString, MaxLength } from 'class-validator'
 import { StatusType } from 'src/db/entities/Category'
 import { ShopType } from 'src/db/entities/Shop'
 
@@ -14,4 +15,10 @@ export class ActiveToggleRequestDto {
   @IsNotEmpty()
   @IsIn(['active', 'inactive'])
   status: StatusType
+}
+
+export class OrderingCategoryRequestDto {
+  @ArrayNotEmpty()
+  @IsNumber({},{each: true})
+  orders: number[]
 }
