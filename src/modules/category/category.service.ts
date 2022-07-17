@@ -228,7 +228,7 @@ export class CategoryService {
       }
 
       if (!category) {
-        return [category, 'Not found Comment']
+        return [category, 'Not found Category']
       }
 
       this.logger.info(`Done getCategoryByCategoryIdFunc ${dayjs().diff(start)} ms`)
