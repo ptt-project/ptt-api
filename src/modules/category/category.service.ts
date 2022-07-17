@@ -146,7 +146,7 @@ export class CategoryService {
       const start = dayjs()
       let categories: Category[]
       try {
-        categories = await etm.find(Category, { where: { shopId, deletedAt: null } })
+        categories = await etm.find(Category, { where: { shopId, deletedAt: null }, order: { "priority": "ASC" } })
         if (!categories) {
           return [categories, 'Unable to get categories for this shop']
         }
