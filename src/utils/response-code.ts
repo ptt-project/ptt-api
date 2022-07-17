@@ -73,3 +73,5 @@ export const UnableReplyReviewByReviewId = _reviewError + 3
 const _categoryError = 108000
 export const UnableToGetCategories = _categoryError + 1
 export const UnableToCreateCategory = _categoryError + 2
+export const UnableToGetCategoryByCategoryId = _sellerError + 3
+export const UnableToUpdateActiveCategory = _sellerError + 4

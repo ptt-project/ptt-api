@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  Patch,
   Post,
 } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
@@ -9,7 +11,7 @@ import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser, Seller } from '../auth/auth.decorator'
 import { ShopService } from '../seller/shop.service'
 import { CategoryService } from './category.service'
-import { CreateCategoryRequestDto } from './dto/category.dto'
+import { ActiveToggleRequestDto, CreateCategoryRequestDto } from './dto/category.dto'
 
 @Auth()
 @Seller()
@@ -44,5 +46,19 @@ export class CategoryController {
       this.categoryService.InquiryGetCategoriesFunc(etm),
       this.categoryService.InquiryInsertCategoryFunc(etm),
     )(member, body)
+  }
+
+  @Patch(':categoryId/active-toggle')
+  @Transaction()
+  async activeToggleCategory(
+    @ReqUser() member: Member,
+    @Param('categoryId') categoryId: number,
+    @Body() body: ActiveToggleRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.categoryService.activeToggleCategoryHandler(
+      this.categoryService.getCategoryByCategoryIdFunc(etm),
+      this.categoryService.updateActiveCategoryFunc(etm),
+    )(categoryId, body)
   }
 }

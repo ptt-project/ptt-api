@@ -6,20 +6,25 @@ import { EntityManager } from 'typeorm'
 import {
   UnableToCreateCategory,
   UnableToGetCategories,
-  UnableToGetShopInfo
+  UnableToGetCategoryByCategoryId,
+  UnableToGetShopInfo,
+  UnableToUpdateActiveCategory
 } from 'src/utils/response-code'
 
 import {
+  InqueryGetCategoryByCategoryIdToDbType,
   InqueryGetCategoryToDbType,
   InqueryInsertCategoryToDbType,
   InsertCategoryToDbParams,
+  UpdateActiveCategoryToDbParams,
+  UpdateActiveCategoryToDbType,
 } from './category.type'
 
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 import { GetShopInfoType } from '../seller/seller.type'
 import { Category } from 'src/db/entities/Category'
-import { CreateCategoryRequestDto } from './dto/category.dto'
+import { ActiveToggleRequestDto, CreateCategoryRequestDto } from './dto/category.dto'
 
 @Injectable()
 export class CategoryService {
@@ -169,4 +174,89 @@ export class CategoryService {
       return [category, '']
     }
   }
+
+  activeToggleCategoryHandler(
+    getCategoryByCategoryId: Promise<InqueryGetCategoryByCategoryIdToDbType>,
+    updateActiveCategory: Promise<UpdateActiveCategoryToDbType>,
+  ) {
+    return async (categoryId: number, params: ActiveToggleRequestDto) => {
+      const start = dayjs()
+
+      const [category, getCategoryByCategoryIdError] = await (await getCategoryByCategoryId)(
+        categoryId,
+      )
+
+      if (getCategoryByCategoryIdError != '') {
+        return response(
+          undefined,
+          UnableToGetCategoryByCategoryId,
+          getCategoryByCategoryIdError,
+        )
+      }
+
+      const updateActiveCategoryError = await (await updateActiveCategory)(
+        categoryId, params,
+      )
+
+      if (updateActiveCategoryError != '') {
+        return response(
+          undefined,
+          UnableToUpdateActiveCategory,
+          updateActiveCategoryError,
+        )
+      }
+
+      this.logger.info(`Done activeToggleCategoryHandler ${dayjs().diff(start)} ms`)
+      return response(undefined)
+
+    }
+  }
+
+  async getCategoryByCategoryIdFunc(
+    etm: EntityManager,
+  ): Promise<InqueryGetCategoryByCategoryIdToDbType> {
+    return async (categoryId: number): Promise<[Category, string]> => {
+      const start = dayjs()
+      let category: Category
+
+      try {
+        category = await etm
+          .getRepository(Category)
+          .findOne(categoryId, { withDeleted: false })
+      } catch (error) {
+        return [category, error]
+      }
+
+      if (!category) {
+        return [category, 'Not found Comment']
+      }
+
+      this.logger.info(`Done getCategoryByCategoryIdFunc ${dayjs().diff(start)} ms`)
+      return [category, '']
+    }
+  }
+
+  async updateActiveCategoryFunc(
+    etm: EntityManager,
+  ): Promise<UpdateActiveCategoryToDbType> {
+    return async (
+      categoryId : number, 
+      params: UpdateActiveCategoryToDbParams,
+    ): Promise<string> => {
+      const start = dayjs()
+      try {
+        await etm
+          .getRepository(Category)
+          .update(categoryId, { ...params})
+      } catch (error) {
+        return error
+      }
+
+      this.logger.info(
+        `Done updateActiveCategoryFunc ${dayjs().diff(start)} ms`,
+      )
+      return ''
+    }
+  }
+
 }
