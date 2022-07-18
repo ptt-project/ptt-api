@@ -6,10 +6,9 @@ import {
   Patch,
   Post,
 } from '@nestjs/common'
-import { Member } from 'src/db/entities/Member'
+import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
-import { Auth, ReqUser, Seller } from '../auth/auth.decorator'
-import { ShopService } from '../seller/shop.service'
+import { Auth, ReqShop, Seller } from '../auth/auth.decorator'
 import { CategoryService } from './category.service'
 import { ActiveToggleRequestDto, CreateCategoryRequestDto, OrderingCategoryRequestDto } from './dto/category.dto'
 
@@ -19,33 +18,30 @@ import { ActiveToggleRequestDto, CreateCategoryRequestDto, OrderingCategoryReque
 export class CategoryController {
   constructor(
     private readonly categoryService: CategoryService,
-    private readonly shopService: ShopService,
   ) {}
 
   @Get('/')
   @Transaction()
   async getCategories(
-    @ReqUser() member: Member,
+    @ReqShop() shop: Shop,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.categoryService.getCategoriesHandler(
-      this.shopService.InquiryShopByMemberIdFunc(etm),
       this.categoryService.InquiryGetCategoriesFunc(etm),
-    )(member)
+    )(shop)
   }
 
   @Post('/')
   @Transaction()
   async createCategory(
-    @ReqUser() member: Member,
+    @ReqShop() shop: Shop,
     @Body() body: CreateCategoryRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.categoryService.createCategoryHandler(
-      this.shopService.InquiryShopByMemberIdFunc(etm),
       this.categoryService.InquiryGetCategoriesFunc(etm),
       this.categoryService.InquiryInsertCategoryFunc(etm),
-    )(member, body)
+    )(shop, body)
   }
 
   @Patch(':categoryId/active-toggle')

@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common'
-import { Member } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
 import { EntityManager } from 'typeorm'
 
@@ -7,7 +6,6 @@ import {
   UnableToCreateCategory,
   UnableToGetCategories,
   UnableToGetCategoryByCategoryId,
-  UnableToGetShopInfo,
   UnableToUpdateActiveCategory,
   UnableToUpdatePriorityCategory
 } from 'src/utils/response-code'
@@ -24,9 +22,9 @@ import {
 
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
-import { GetShopInfoType } from '../seller/seller.type'
 import { Category } from 'src/db/entities/Category'
 import { ActiveToggleRequestDto, CreateCategoryRequestDto, OrderingCategoryRequestDto } from './dto/category.dto'
+import { Shop } from 'src/db/entities/Shop'
 
 @Injectable()
 export class CategoryService {
@@ -35,29 +33,12 @@ export class CategoryService {
   }
   
   getCategoriesHandler(
-    getShopInfo: Promise<
-      GetShopInfoType
-    >,
     getCategories: Promise<
       InqueryGetCategoryToDbType
     >,
   ) {
-    return async (member: Member) => {
+    return async (shop: Shop) => {
       const start = dayjs()
-      const { id: memberId } = member
-      console.log('getCategoriesHandler')
-
-      const [shop, getShopInfoError] = await (await getShopInfo)(
-        memberId,
-      )
-
-      if (getShopInfoError != '') {
-        return response(
-          undefined,
-          UnableToGetShopInfo,
-          getShopInfoError,
-        )
-      }
 
       const [categories, getCategoriesError] = await (await getCategories)(
         shop.id,
@@ -77,9 +58,6 @@ export class CategoryService {
   }
 
   createCategoryHandler(
-    getShopInfo: Promise<
-      GetShopInfoType
-    >,
     getCategories: Promise<
       InqueryGetCategoryToDbType
     >,
@@ -87,21 +65,8 @@ export class CategoryService {
       InqueryInsertCategoryToDbType
     >,
   ) {
-    return async (member: Member, params: CreateCategoryRequestDto) => {
+    return async (shop: Shop, params: CreateCategoryRequestDto) => {
       const start = dayjs()
-      const { id: memberId } = member
-
-      const [shop, getShopInfoError] = await (await getShopInfo)(
-        memberId,
-      )
-
-      if (getShopInfoError != '') {
-        return response(
-          undefined,
-          UnableToGetShopInfo,
-          getShopInfoError,
-        )
-      }
 
       const [categories, getCategoriesError] = await (await getCategories)(
         shop.id,
