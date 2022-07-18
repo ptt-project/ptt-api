@@ -13,12 +13,14 @@ import { LoggerModule } from 'nestjs-pino'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 
+import { BullModule } from '@nestjs/bull'
 import { VersionMiddleware } from './utils/middlewares/version.middleware'
 import './initialize'
 import { AuthModule } from './modules/auth/auth.modules'
 import { MemberModule } from './modules/member/member.modules'
 import { MobileModule } from './modules/mobile/mobile.modules'
 import { AddressModule } from './modules/address/address.modules'
+import { JobModule } from './jobs/job.module'
 
 console.log('__dirname', __dirname)
 @Module({
@@ -26,6 +28,15 @@ console.log('__dirname', __dirname)
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot(), //setting from ormconfig.ts
     ScheduleModule.forRoot(),
+    BullModule.forRoot({
+      redis: {
+        host: process.env.REDIS_HOST,
+        port: Number(process.env.REDIS_PORT),
+      },
+      defaultJobOptions: {
+        removeOnComplete: 10000,
+      },
+    }),
     LoggerModule.forRoot({
       pinoHttp: {
         level:
@@ -51,6 +62,7 @@ console.log('__dirname', __dirname)
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),
+    JobModule,
     AuthModule,
     MemberModule,
     MobileModule,

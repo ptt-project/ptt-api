@@ -14,6 +14,8 @@ import { InvalidJSONString } from './utils/response-code'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import cookieParser from 'cookie-parser'
 import { Logger } from 'nestjs-pino'
+import { bullServerAdapter } from './jobs/bull-board.provider'
+import basicAuth from 'express-basic-auth'
 
 const loggerProduction: LogLevel[] = ['warn', 'error', 'log']
 const logger =
@@ -58,6 +60,18 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }))
   app.use(urlencoded({ limit: '50mb', extended: true }))
   app.use(cookieParser())
+
+  bullServerAdapter.setBasePath('/bull-board')
+  app.use(
+    '/bull-board',
+    basicAuth({
+      users: {
+        admin: 'P@ssw0rd',
+      },
+      challenge: true,
+    }),
+    bullServerAdapter.getRouter(),
+  )
 
   await app.listen(3000)
 }
