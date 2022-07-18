@@ -247,7 +247,8 @@ export class AuthService {
       const start = dayjs()
       let member: Member
       try {
-        member = await Member.createQueryBuilder('members')
+        member = await etm
+          .createQueryBuilder(Member, 'members')
           .leftJoinAndSelect('members.shop', 'shops')
           .where('members.deletedAt IS NULL')
           .andWhere('members.id = :id', { id })
