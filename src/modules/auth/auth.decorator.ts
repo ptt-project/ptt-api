@@ -22,3 +22,8 @@ export const ReqUser = createParamDecorator((data, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest()
   return request.user
 })
+
+export const ReqShop = createParamDecorator((data, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest()
+  return request.user.shop
+})

@@ -15,10 +15,11 @@ import { NestExpressApplication } from '@nestjs/platform-express'
 import cookieParser from 'cookie-parser'
 import { Logger } from 'nestjs-pino'
 
+const loggerDebug: LogLevel[] = ['debug', 'warn', 'error', 'log']
 const loggerProduction: LogLevel[] = ['warn', 'error', 'log']
 const logger =
   process.env.LOG_LEVEL === 'debug'
-    ? {}
+    ? { logger: loggerDebug }
     : process.env.LOG_LEVEL === 'production'
     ? { logger: loggerProduction }
     : {}

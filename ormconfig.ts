@@ -19,7 +19,7 @@ const defaultConfig = {
   subscribers: ['dist/db/subscriber/**/*{.js,.ts}'],
   autoLoadEntities: true,
 
-  // logging: ['error', 'info', 'log', 'warn'],
+  logging: logging,
   uuidExtension: 'pgcrypto',
 }
 
