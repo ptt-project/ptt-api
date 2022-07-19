@@ -74,5 +74,6 @@ const _categoryError = 108000
 export const UnableToGetCategories = _categoryError + 1
 export const UnableToCreateCategory = _categoryError + 2
 export const UnableToGetCategoryByCategoryId = _categoryError + 3
-export const UnableToUpdateActiveCategory = _categoryError + 4
+export const UnableToUpdateStatusCategory = _categoryError + 4
 export const UnableToUpdatePriorityCategory = _categoryError + 5
+export const UnableToOrdersIsInvalid = _categoryError + 6

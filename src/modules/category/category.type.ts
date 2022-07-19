@@ -7,7 +7,7 @@ export type InsertCategoryToDbParams = {
   priority: number,
 }
 
-export type UpdateActiveCategoryToDbParams = {
+export type UpdateStatusCategoryToDbParams = {
   status: StatusType,
 }
 
@@ -23,9 +23,9 @@ export type InqueryGetCategoryByCategoryIdToDbType = (
   categoryId : number,
 ) => Promise<[Category, string]>
 
-export type UpdateActiveCategoryToDbType = (
+export type UpdateStatusCategoryToDbType = (
   categoryId : number,
-  params: UpdateActiveCategoryToDbParams,
+  params: UpdateStatusCategoryToDbParams,
 ) => Promise<string>
 
 export type UpdatePriorityCategoryToDbType = (

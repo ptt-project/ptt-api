@@ -10,7 +10,7 @@ import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqShop, Seller } from '../auth/auth.decorator'
 import { CategoryService } from './category.service'
-import { ActiveToggleRequestDto, CreateCategoryRequestDto, OrderingCategoryRequestDto } from './dto/category.dto'
+import { CreateCategoryRequestDto, OrderingCategoryRequestDto, UpdateStatusCategoryRequestDto } from './dto/category.dto'
 
 @Auth()
 @Seller()
@@ -44,28 +44,29 @@ export class CategoryController {
     )(shop, body)
   }
 
-  @Patch(':categoryId/active-toggle')
+  @Patch(':categoryId/status')
   @Transaction()
-  async activeToggleCategory(
+  async updateStatusCategory(
     @Param('categoryId') categoryId: number,
-    @Body() body: ActiveToggleRequestDto,
+    @Body() body: UpdateStatusCategoryRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.categoryService.activeToggleCategoryHandler(
+    return await this.categoryService.updateStatusCategoryHandler(
       this.categoryService.getCategoryByCategoryIdFunc(etm),
-      this.categoryService.updateActiveCategoryFunc(etm),
+      this.categoryService.updateStatusCategoryFunc(etm),
     )(categoryId, body)
   }
 
   @Patch('ordering')
   @Transaction()
   async orderingCategory(
+    @ReqShop() shop: Shop,
     @Body() body: OrderingCategoryRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.categoryService.orderingCategoryHandler(
-      this.categoryService.getCategoryByCategoryIdFunc(etm),
+      this.categoryService.InquiryGetCategoriesFunc(etm),
       this.categoryService.updatePriorityCategoryFunc(etm),
-    )(body)
+    )(shop, body)
   }
 }
