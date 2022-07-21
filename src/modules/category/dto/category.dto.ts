@@ -1,5 +1,4 @@
-import { Type } from 'class-transformer'
-import { ArrayNotEmpty, IsArray, IsIn, IsNotEmpty, IsNumber, IsNumberString, IsString, MaxLength } from 'class-validator'
+import { ArrayNotEmpty, IsIn, IsNotEmpty, IsNumber, IsString, MaxLength } from 'class-validator'
 import { StatusType } from 'src/db/entities/Category'
 import { ShopType } from 'src/db/entities/Shop'
 
@@ -10,7 +9,7 @@ export class CreateCategoryRequestDto {
   name: ShopType
 }
 
-export class ActiveToggleRequestDto {
+export class UpdateStatusCategoryRequestDto {
   @IsString()
   @IsNotEmpty()
   @IsIn(['active', 'inactive'])

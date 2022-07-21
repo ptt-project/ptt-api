@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
-import { EntityManager } from 'typeorm'
+import { EntityManager, UpdateResult } from 'typeorm'
 
 import {
   UnableToCreateCategory,
   UnableToGetCategories,
   UnableToGetCategoryByCategoryId,
-  UnableToUpdateActiveCategory,
-  UnableToUpdatePriorityCategory
+  UnableToUpdateStatusCategory,
+  UnableToUpdatePriorityCategory,
+  UnableToOrdersIsInvalid,
 } from 'src/utils/response-code'
 
 import {
@@ -15,16 +16,17 @@ import {
   InqueryGetCategoryToDbType,
   InqueryInsertCategoryToDbType,
   InsertCategoryToDbParams,
-  UpdateActiveCategoryToDbParams,
-  UpdateActiveCategoryToDbType,
+  UpdateStatusCategoryToDbParams,
+  UpdateStatusCategoryToDbType,
   UpdatePriorityCategoryToDbType,
 } from './category.type'
 
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 import { Category } from 'src/db/entities/Category'
-import { ActiveToggleRequestDto, CreateCategoryRequestDto, OrderingCategoryRequestDto } from './dto/category.dto'
+import { UpdateStatusCategoryRequestDto, CreateCategoryRequestDto, OrderingCategoryRequestDto } from './dto/category.dto'
 import { Shop } from 'src/db/entities/Shop'
+import { internalSeverError } from 'src/utils/response-error'
 
 @Injectable()
 export class CategoryService {
@@ -142,11 +144,11 @@ export class CategoryService {
     }
   }
 
-  activeToggleCategoryHandler(
+  updateStatusCategoryHandler(
     getCategoryByCategoryId: Promise<InqueryGetCategoryByCategoryIdToDbType>,
-    updateActiveCategory: Promise<UpdateActiveCategoryToDbType>,
+    updateActiveCategory: Promise<UpdateStatusCategoryToDbType>,
   ) {
-    return async (categoryId: number, params: ActiveToggleRequestDto) => {
+    return async (categoryId: number, params: UpdateStatusCategoryRequestDto) => {
       const start = dayjs()
 
       const [category, getCategoryByCategoryIdError] = await (await getCategoryByCategoryId)(
@@ -168,13 +170,25 @@ export class CategoryService {
       if (updateActiveCategoryError != '') {
         return response(
           undefined,
-          UnableToUpdateActiveCategory,
+          UnableToUpdateStatusCategory,
           updateActiveCategoryError,
         )
       }
 
-      this.logger.info(`Done activeToggleCategoryHandler ${dayjs().diff(start)} ms`)
-      return response(undefined)
+      const [categoryResult, getCategoryByCategoryIdResultError] = await (await getCategoryByCategoryId)(
+        categoryId,
+      )
+
+      if (getCategoryByCategoryIdResultError != '') {
+        return response(
+          undefined,
+          UnableToGetCategoryByCategoryId,
+          getCategoryByCategoryIdResultError,
+        )
+      }
+
+      this.logger.info(`Done updateStatusCategoryHandler ${dayjs().diff(start)} ms`)
+      return response(categoryResult)
 
     }
   }
@@ -203,12 +217,12 @@ export class CategoryService {
     }
   }
 
-  async updateActiveCategoryFunc(
+  async updateStatusCategoryFunc(
     etm: EntityManager,
-  ): Promise<UpdateActiveCategoryToDbType> {
+  ): Promise<UpdateStatusCategoryToDbType> {
     return async (
       categoryId : number, 
-      params: UpdateActiveCategoryToDbParams,
+      params: UpdateStatusCategoryToDbParams,
     ): Promise<string> => {
       const start = dayjs()
       try {
@@ -220,7 +234,7 @@ export class CategoryService {
       }
 
       this.logger.info(
-        `Done updateActiveCategoryFunc ${dayjs().diff(start)} ms`,
+        `Done updateStatusCategoryFunc ${dayjs().diff(start)} ms`,
       )
       return ''
     }
@@ -228,46 +242,61 @@ export class CategoryService {
 
 
   orderingCategoryHandler(
-    getCategoryByCategoryId: Promise<InqueryGetCategoryByCategoryIdToDbType>,
+    getCategories: Promise<InqueryGetCategoryToDbType>,
     updatePriorityCategory: Promise<UpdatePriorityCategoryToDbType>
   ) {
-    return async (params: OrderingCategoryRequestDto) => {
+    return async (shop: Shop, params: OrderingCategoryRequestDto) => {
       const start = dayjs()
 
-      for(const categoryId of params.orders){
-        const [category, getCategoryByCategoryIdError] = await (await getCategoryByCategoryId)(
-          categoryId,
+      const [categories, getCategoriesError] = await (await getCategories)(
+        shop.id,
+      )
+
+      if (getCategoriesError != '') {
+        return response(
+          undefined,
+          UnableToGetCategories,
+          getCategoriesError,
         )
-  
-        if (getCategoryByCategoryIdError != '') {
-          return response(
-            undefined,
-            UnableToGetCategoryByCategoryId,
-            getCategoryByCategoryIdError,
-          )
-        }
+      }
+
+      if(categories.length != params.orders.length){
+        return response(
+          undefined,
+          UnableToOrdersIsInvalid,
+          'orders is invalid',
+        )
       }
 
       let priority = 1
-
       for(const categoryId of params.orders){
         const updatePriorityCategoryError = await (await updatePriorityCategory)(
           categoryId, priority, 
         )
-  
+        
         if (updatePriorityCategoryError != '') {
-          return response(
-            undefined,
+          return internalSeverError(
             UnableToUpdatePriorityCategory,
             updatePriorityCategoryError,
           )
         }
-        
         priority++
       }
 
+      const [categoriesResult, getCategoriesResultError] = await (await getCategories)(
+        shop.id,
+      )
+
+      if (getCategoriesResultError != '') {
+        return response(
+          undefined,
+          UnableToGetCategories,
+          getCategoriesResultError,
+        )
+      }
+
       this.logger.info(`Done orderingCategoryHandler ${dayjs().diff(start)} ms`)
-      return response(undefined)
+      return response(categoriesResult)
 
     }
   }
@@ -280,12 +309,18 @@ export class CategoryService {
       priority: number,
     ): Promise<string> => {
       const start = dayjs()
+      let updateResult: UpdateResult
+
       try {
-        await etm
+        updateResult = await etm
           .getRepository(Category)
           .update(categoryId, {priority})
       } catch (error) {
         return error
+      }
+
+      if(updateResult.affected == 0){
+        return 'Category id ' + categoryId + ' Not found'
       }
 
       this.logger.info(
