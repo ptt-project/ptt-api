@@ -1,6 +1,7 @@
 import { AppEntity } from './AppEntity'
-import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm'
+import { Column, Entity, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
 import { Shop } from './Shop'
+import { CategoryProduct } from './CategoryProduct'
 
 export type CreatedByType = 'seller' | 'admin'
 export type StatusType = 'active' | 'inactive'
@@ -42,4 +43,11 @@ export class Category extends AppEntity {
   )
   @JoinColumn({ name: 'shop_id', referencedColumnName: 'id' })
   shop: Shop
+
+  @OneToMany(
+    () => CategoryProduct,
+    categoryProduct => categoryProduct.category,
+  )
+  @JoinColumn({ referencedColumnName: 'category_id' })
+  categoryProducts: CategoryProduct[]
 }
