@@ -7,31 +7,37 @@ import { Shop } from './Shop'
 
 @Entity({ name: 'products' })
 export class Product extends AppEntity {
-  @Column({ name: 'sku', nullable: false })
+  @Column({ name: 'sku' })
   sku: string
 
-  @Column({ name: 'product_profile_id', nullable: false })
+  @Column({ name: 'product_profile_id' })
   productProfileId: number
 
-  @Column({ name: 'shop_id', nullable: false })
+  @Column({ name: 'shop_id' })
   shopId: number
 
-  @Column({ name: 'platform_category_id', nullable: false })
+  @Column({ name: 'platform_category_id' })
   platformCategoryId: number
 
-  @Column({ name: 'brand_id', nullable: false })
+  @Column({ name: 'brand_id' })
   brandId: number
 
-  @Column({ name: 'option1' })
+  @Column({ name: 'option1', nullable: true })
   option1: string
 
-  @Column({ name: 'option2' })
+  @Column({ name: 'option2', nullable: true })
   option2: string
 
-  @Column({ name: 'price', type: 'decimal', precision: 5, scale: 2 })
+  @Column({
+    name: 'price',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+  })
   price: number
 
-  @Column({ name: 'stock' })
+  @Column({ name: 'stock', nullable: true })
   stock: number
 
   @ManyToOne(

@@ -9,52 +9,52 @@ export type ConditionType = 'old' | 'new'
 export type ProductProfileStatusType = 'public' | 'hidden' | 'out of stock'
 @Entity({ name: 'product_profiles' })
 export class ProductProfile extends AppEntity {
-  @Column({ name: 'name', nullable: false })
+  @Column({ name: 'name' })
   name: string
 
-  @Column({ name: 'detail', type: 'text', nullable: false })
+  @Column({ name: 'detail', type: 'text' })
   detail: string
 
-  @Column({ name: 'shop_id', nullable: false })
+  @Column({ name: 'shop_id' })
   shopId: number
 
-  @Column({ name: 'platform_category_id', nullable: false })
+  @Column({ name: 'platform_category_id' })
   platformCategoryId: number
 
-  @Column({ name: 'brand_id', nullable: false })
+  @Column({ name: 'brand_id' })
   brandId: number
 
-  @Column({ name: 'status', nullable: false })
+  @Column({ name: 'status' })
   status: ProductProfileStatusType
 
-  @Column({ name: 'approval', nullable: false, default: false })
+  @Column({ name: 'approval', default: false })
   approval: boolean
 
   @Column({ name: 'weight', type: 'decimal', precision: 5, scale: 2 })
   weight: number
 
-  @Column({ name: 'exp' })
+  @Column({ name: 'exp', nullable: true })
   exp: number
 
-  @Column({ name: 'condition' })
+  @Column({ name: 'condition', nullable: true })
   condition: ConditionType
 
-  @Column({ name: 'is_send_lated' })
+  @Column({ name: 'is_send_lated', nullable: true })
   isSendLated: boolean
 
-  @Column({ name: 'extra_day' })
+  @Column({ name: 'extra_day', nullable: true })
   extraDay: number
 
-  @Column({ name: 'video_link' })
+  @Column({ name: 'video_link', nullable: true })
   videoLink: string
 
-  @Column({ name: 'image_ids', type: 'simple-json' })
+  @Column({ name: 'image_ids', type: 'simple-json', nullable: true })
   imageIds: string[]
 
-  @Column({ name: 'watched', default: 0 })
+  @Column({ name: 'watched', default: 0, nullable: true })
   watched: number
 
-  @Column({ name: 'like', default: 0 })
+  @Column({ name: 'like', default: 0, nullable: true })
   like: number
 
   @OneToMany(

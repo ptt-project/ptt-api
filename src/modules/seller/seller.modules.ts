@@ -7,6 +7,6 @@ import { ShopService } from './shop.service'
 @Module({
   controllers: [SellerController],
   providers: [RegisterService, ShopService],
-  exports: [],
+  exports: [RegisterService],
 })
 export class SellerModule {}
