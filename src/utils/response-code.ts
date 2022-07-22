@@ -77,3 +77,10 @@ export const UnableToGetCategoryByCategoryId = _categoryError + 3
 export const UnableToUpdateStatusCategory = _categoryError + 4
 export const UnableToUpdatePriorityCategory = _categoryError + 5
 export const UnableToOrdersIsInvalid = _categoryError + 6
+
+
+const _productError = 109000
+export const CreateProductValidationFailed = _productError + 1
+export const UnableToCreateProductProfile = _productError + 2
+export const UnableToCreateProductOptions = _productError + 3
+export const UnableToCreateProducts = _productError + 4

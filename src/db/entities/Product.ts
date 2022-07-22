@@ -19,7 +19,7 @@ export class Product extends AppEntity {
   @Column({ name: 'platform_category_id' })
   platformCategoryId: number
 
-  @Column({ name: 'brand_id' })
+  @Column({ name: 'brand_id', nullable: true })
   brandId: number
 
   @Column({ name: 'option1', nullable: true })
