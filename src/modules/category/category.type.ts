@@ -1,34 +1,70 @@
 import { Category, CreatedByType, StatusType } from 'src/db/entities/Category'
+import { Product } from 'src/db/entities/Product'
+import { SelectQueryBuilder } from 'typeorm'
 
 export type InsertCategoryToDbParams = {
-  name: string,
-  shopId: number,
-  createdBy: CreatedByType,
-  priority: number,
+  name: string
+  shopId: number
+  createdBy: CreatedByType
+  priority: number
 }
 
 export type UpdateStatusCategoryToDbParams = {
-  status: StatusType,
+  status: StatusType
 }
 
-export type InqueryGetCategoryToDbType = (
+export type InquiryCategoryToDbType = (
   shopId: number,
 ) => Promise<[Category[], string]>
 
-export type InqueryInsertCategoryToDbType = (
+export type InsertCategoryToDbType = (
   params: InsertCategoryToDbParams,
 ) => Promise<[Category, string]>
 
-export type InqueryGetCategoryByCategoryIdToDbType = (
-  categoryId : number,
+export type InquiryCategoryByIdType = (
+  categoryId: number,
 ) => Promise<[Category, string]>
 
 export type UpdateStatusCategoryToDbType = (
-  categoryId : number,
+  categoryId: number,
   params: UpdateStatusCategoryToDbParams,
 ) => Promise<string>
 
 export type UpdatePriorityCategoryToDbType = (
-  categoryId : number,
+  categoryId: number,
   priority: number,
 ) => Promise<string>
+
+export type DeleteCategoryToDbType = (category: Category) => Promise<string>
+
+export type DeleteCategoryProductToDbByCategoryIdType = (
+  categoryId: number,
+) => Promise<string>
+
+export type UpdateCategoryParams = {
+  name: string
+  productCount: number
+}
+
+export type UpdateCategoryToDbType = (
+  categoryId: number,
+  params: UpdateCategoryParams,
+) => Promise<string>
+
+export type InsertCategoryProductToDbType = (
+  categoryId: number,
+  productIds: number[],
+) => Promise<string>
+
+export type DeleteCategoryProductToDbType = (
+  categoryId: number,
+  productIds: number[],
+) => Promise<string>
+
+export type InquiryProductIdsByCategoryIdType = (
+  categoryId: number,
+) => Promise<[number[], string]>
+
+export type InquiryProductByCatgoryIdType = (
+  categoryId: number,
+) => Promise<[SelectQueryBuilder<Product>, string]>

@@ -1,12 +1,18 @@
-import { ArrayNotEmpty, IsIn, IsNotEmpty, IsNumber, IsString, MaxLength } from 'class-validator'
+import {
+  ArrayNotEmpty,
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  MaxLength,
+} from 'class-validator'
 import { StatusType } from 'src/db/entities/Category'
-import { ShopType } from 'src/db/entities/Shop'
 
 export class CreateCategoryRequestDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(40)
-  name: ShopType
+  name: string
 }
 
 export class UpdateStatusCategoryRequestDto {
@@ -18,6 +24,16 @@ export class UpdateStatusCategoryRequestDto {
 
 export class OrderingCategoryRequestDto {
   @ArrayNotEmpty()
-  @IsNumber({},{each: true})
+  @IsNumber({}, { each: true })
   orders: number[]
+}
+
+export class UpdateCategoryRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(40)
+  name: string
+
+  @IsNotEmpty()
+  productIds: number[]
 }

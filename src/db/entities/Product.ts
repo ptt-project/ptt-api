@@ -1,5 +1,13 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  ManyToMany,
+} from 'typeorm'
 import { AppEntity } from './AppEntity'
+import { Category } from './Category'
 import { CategoryProduct } from './CategoryProduct'
 import { PlatformCategory } from './PlatformCategory'
 import { ProductProfile } from './ProductProfile'
@@ -67,4 +75,10 @@ export class Product extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'product_id' })
   categoryProducts: CategoryProduct[]
+
+  @ManyToMany(
+    () => Category,
+    category => category.products,
+  )
+  categories: Category[]
 }
