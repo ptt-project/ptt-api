@@ -68,3 +68,7 @@ export type InquiryProductIdsByCategoryIdType = (
 export type InquiryProductByCatgoryIdType = (
   categoryId: number,
 ) => Promise<[SelectQueryBuilder<Product>, string]>
+
+export type InquiryCategoryByNameType = (
+  name: string,
+) => Promise<[Category, string]>

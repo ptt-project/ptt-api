@@ -15,6 +15,7 @@ import {
   UnableUpdateCategoryToDb,
   UnableDeleteCategoryProductToDb,
   UnableInquiryProductIdsByCategoryId,
+  UnableInquiryCategoryByName,
 } from 'src/utils/response-code'
 
 import {
@@ -32,6 +33,7 @@ import {
   InsertCategoryProductToDbType,
   DeleteCategoryProductToDbType,
   InquiryProductIdsByCategoryIdType,
+  InquiryCategoryByNameType,
 } from './category.type'
 
 import { PinoLogger } from 'nestjs-pino'
@@ -395,12 +397,13 @@ export class CategoryService {
     inquiryProductIdsByCategoryId: Promise<InquiryProductIdsByCategoryIdType>,
     deleteCategoryProductToDb: Promise<DeleteCategoryProductToDbType>,
     insertCategoryProductToDb: Promise<InsertCategoryProductToDbType>,
+    inquiryCategoryByNameFunc: Promise<InquiryCategoryByNameType>,
     updateCategoryToDb: Promise<UpdateCategoryToDbType>,
     inquiryCategoryById: Promise<InquiryCategoryByIdType>,
   ) {
     return async (categoryId: number, body: UpdateCategoryRequestDto) => {
       const start = dayjs()
-      const { productIds } = body
+      const { name, productIds } = body
       const [currentProductIds, errorInquiryProductIdsByCategoryId] = await (
         await inquiryProductIdsByCategoryId
       )(categoryId)
@@ -445,8 +448,28 @@ export class CategoryService {
         )
       }
 
+      const [categoryExist, errorInquiryCategoryByNameFunc] = await (
+        await inquiryCategoryByNameFunc
+      )(name)
+
+      if (errorInquiryCategoryByNameFunc != '') {
+        return response(
+          undefined,
+          UnableInquiryCategoryByName,
+          errorInquiryCategoryByNameFunc,
+        )
+      }
+
+      if (categoryExist && categoryExist.id !== categoryId) {
+        return response(
+          undefined,
+          UnableInquiryCategoryByName,
+          'This name is already exist ',
+        )
+      }
+
       const updateCategoryParams = {
-        name: body.name,
+        name,
         productCount: body.productIds.length,
       }
       const errorUpdateCategoryToDb = await (await updateCategoryToDb)(
@@ -475,6 +498,25 @@ export class CategoryService {
 
       this.logger.info(`Done UpdateCategoryHandler ${dayjs().diff(start)} ms`)
       return response({ ...category, productIds })
+    }
+  }
+
+  async inquiryCategoryByNameFunc(
+    etm: EntityManager,
+  ): Promise<InquiryCategoryByNameType> {
+    return async (name: string) => {
+      const start = dayjs()
+      let category: Category
+      try {
+        category = await etm.findOne(Category, { where: { name } })
+      } catch (error) {
+        return [category, error]
+      }
+
+      this.logger.info(
+        `Done InquiryCategoryByNameFunc ${dayjs().diff(start)} ms`,
+      )
+      return [category, '']
     }
   }
 

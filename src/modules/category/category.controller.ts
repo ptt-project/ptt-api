@@ -93,6 +93,7 @@ export class CategoryController {
       this.productService.inquiryProductIdsByCategoryIdFunc(etm),
       this.productService.deleteCategoryProductToDb(etm),
       this.productService.insertCategoryProductToDbFunc(etm),
+      this.categoryService.inquiryCategoryByNameFunc(etm),
       this.categoryService.updateCategoryToDbFunc(etm),
       this.categoryService.inquiryCategoryByCategoryIdFunc(etm),
     )(categoryId, body)
