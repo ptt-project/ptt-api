@@ -17,11 +17,4 @@ export class CategoryProduct extends AppEntity {
   )
   @JoinColumn({ name: 'category_id', referencedColumnName: 'id' })
   category: Category
-
-  @ManyToOne(
-    () => Product,
-    product => product.categoryProducts,
-  )
-  @JoinColumn({ name: 'product_id', referencedColumnName: 'id' })
-  product: Product
 }

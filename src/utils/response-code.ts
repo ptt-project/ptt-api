@@ -84,3 +84,4 @@ export const CreateProductValidationFailed = _productError + 1
 export const UnableToCreateProductProfile = _productError + 2
 export const UnableToCreateProductOptions = _productError + 3
 export const UnableToCreateProducts = _productError + 4
+export const UnableToGetProducts = _productError + 5

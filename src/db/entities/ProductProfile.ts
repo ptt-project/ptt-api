@@ -1,6 +1,5 @@
 import { Column, Entity, JoinColumn, OneToMany, ManyToOne } from 'typeorm'
 import { AppEntity } from './AppEntity'
-import { PlatformCategory } from './PlatformCategory'
 import { Product } from './Product'
 import { ProductOption } from './ProductOption'
 import { Shop } from './Shop'
@@ -32,6 +31,15 @@ export class ProductProfile extends AppEntity {
 
   @Column({ name: 'weight', type: 'decimal', precision: 5, scale: 2 })
   weight: number
+
+  @Column({ name: 'width', nullable: false })
+  width: number
+
+  @Column({ name: 'length', nullable: false })
+  length: number
+  
+  @Column({ name: 'height', nullable: false })
+  height: number
 
   @Column({ name: 'exp', nullable: true })
   exp: number
@@ -77,11 +85,4 @@ export class ProductProfile extends AppEntity {
   )
   @JoinColumn({ name: 'shop_id', referencedColumnName: 'id' })
   shop: Shop
-
-  @ManyToOne(
-    () => PlatformCategory,
-    platformCategory => platformCategory.productProfiles,
-  )
-  @JoinColumn({ name: 'platform_category_id', referencedColumnName: 'id' })
-  platformCategory: PlatformCategory
 }

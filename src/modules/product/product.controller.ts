@@ -29,6 +29,7 @@ export class ProductController {
       this.productService.InsertProductProfileToDbFunc(etm),
       this.productService.InsertProductOptionsToDbFunc(etm),
       this.productService.InsertProductsToDbFunc(etm),
+      this.productService.InquiryProductProfileFromDbFunc(etm),
     )(shop, body)
   }
 }

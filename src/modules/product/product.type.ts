@@ -17,6 +17,9 @@ export type InsertProductProfileToDbParams = {
   extraDay?: number
   videoLink?: string
   imageIds?: string[]
+  width: number
+  length: number
+  height: number
 }
 
 export type InsertProductOptionsToDbParams = {
@@ -26,12 +29,9 @@ export type InsertProductOptionsToDbParams = {
 }
 
 export type InsertProductsToDbParams = {
-  sku: string
+  sku?: string
   productProfileId: number
-  shopId: number
-  platformCategoryId: number
-  brandId?: number
-  option1: string
+  option1?: string
   option2?: string
   price: number
   stock: number
@@ -52,3 +52,7 @@ export type InsertProductOptionsToDbFuncType = (
 export type InsertProductsToDbFuncType = (
   params: InsertProductsToDbParams[],
 ) => Promise<[Product[], string]>
+
+export type InquiryProductProfileFromDbFuncType = (
+  productProfileId: number,
+) => Promise<[ProductProfile, string]>

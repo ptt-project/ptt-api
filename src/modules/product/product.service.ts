@@ -7,6 +7,7 @@ import {
   UnableToCreateProductOptions,
   UnableToCreateProducts,
   CreateProductValidationFailed,
+  UnableToGetProducts,
 } from 'src/utils/response-code'
 
 import {
@@ -17,6 +18,7 @@ import {
   InsertProductsToDbFuncType,
   InsertProductsToDbParams,
   ValidateProductParamsFuncType,
+  InquiryProductProfileFromDbFuncType,
 } from './product.type'
 
 import { PinoLogger } from 'nestjs-pino'
@@ -47,6 +49,9 @@ export class ProductService {
     >,
     createProducts: Promise<
       InsertProductsToDbFuncType
+    >,
+    getProductProfile: Promise<
+      InquiryProductProfileFromDbFuncType
     >,
   ) {
     return async (shop: Shop, params: CreateProductProfileRequestDto) => {
@@ -79,49 +84,80 @@ export class ProductService {
         )
       }
 
-      const newProductOptions: InsertProductOptionsToDbParams[] = params.productOptions.map(
-        pdo => ({...pdo, shopId: shop.id, productProfileId: productProfile.id})
+      if (params.isMultipleOptions) {
+        const newProductOptions: InsertProductOptionsToDbParams[] = params.productOptions.map(
+          pdo => ({...pdo, shopId: shop.id, productProfileId: productProfile.id})
+          )
+
+        const [productOptions, createProductOptionsError] = await (await createProductOptions)(
+          newProductOptions,
         )
 
-      const [productOptions, createProductOptionsError] = await (await createProductOptions)(
-        newProductOptions,
-      )
+        if (createProductOptionsError != '') {
+          return response(
+            undefined,
+            UnableToCreateProductOptions,
+            createProductOptionsError,
+          )
+        }
 
-      if (createProductOptionsError != '') {
-        return response(
-          undefined,
-          UnableToCreateProductOptions,
-          createProductOptionsError,
+        const newProducts: InsertProductsToDbParams[] = params.products.map(
+          pd => {
+              return {
+                ...pd,
+                productProfileId: productProfile.id,
+              }
+            }
+          )
+
+        const [products, createProductsError] = await (await createProducts)(
+          newProducts,
         )
+
+        if (createProductsError != '') {
+          return response(
+            undefined,
+            UnableToCreateProducts,
+            createProductsError,
+          )
+        }
+      } else {
+        const newProducts: InsertProductsToDbParams[] = [
+          {
+            price: params.price,
+            stock: params.stock,
+            sku: params.sku,
+            productProfileId: productProfile.id,
+          }
+        ]
+
+        const [products, createProductsError] = await (await createProducts)(
+          newProducts,
+        )
+
+        if (createProductsError != '') {
+          return response(
+            undefined,
+            UnableToCreateProducts,
+            createProductsError,
+          )
+        }
       }
 
-      const newProducts: InsertProductsToDbParams[] = params.products.map(
-        pd => {
-            return {
-              ...pd,
-              shopId: shop.id,
-              productProfileId: productProfile.id,
-              platformCategoryId: params.platformCategoryId,
-              sku: pd.sku || randomStr(10),
-              brandId: params.brandId,
-            }
-          }
-        )
-
-      const [products, createProductsError] = await (await createProducts)(
-        newProducts,
+      const [savedProductProfile, getProductProfileError] = await (await getProductProfile)(
+        productProfile.id,
       )
 
-      if (createProductsError != '') {
+      if (getProductProfileError != '') {
         return response(
           undefined,
-          UnableToCreateProducts,
-          createProductsError,
+          UnableToGetProducts,
+          getProductProfileError,
         )
       }
 
       this.logger.info(`Done createProductHandler ${dayjs().diff(start)} ms`)
-      return response(productProfile)
+      return response(savedProductProfile)
     }
   }
 
@@ -130,31 +166,37 @@ export class ProductService {
       const start = dayjs()
       
       let error = ''
-      const productOptionsMetaData = params.productOptions.reduce((mem, cur) => {
-        if (!cur.name) error = 'productOptions element must have "name" attribute'
-        else if (!cur.options) error = 'productOptions element must have "options" attribute'
-        else if (!Array.isArray(cur.options)) error = 'productOptions element must have "options" must be Array'
-        else if (cur.options.length == 0) error = 'productOptions element must have "options" must not empty'
-        return mem.length === 0
-          ? cur.options.map(option => [option])
-          : mem.reduce(
-            (m, option) => ([...m, ...cur.options.map(e => [...option, e])]), []
-          )
-      }, [])
 
-      if (error !== '') return error
+      if (params.isMultipleOptions) {
+        const productOptionsMetaData = params.productOptions.reduce((mem, cur) => {
+          if (!cur.name) error = 'productOptions element must have "name" attribute'
+          else if (!cur.options) error = 'productOptions element must have "options" attribute'
+          else if (!Array.isArray(cur.options)) error = 'productOptions element must have "options" must be Array'
+          else if (cur.options.length == 0) error = 'productOptions element must have "options" must not empty'
+          return mem.length === 0
+            ? cur.options.map(option => [option])
+            : mem.reduce(
+              (m, option) => ([...m, ...cur.options.map(e => [...option, e])]), []
+            )
+        }, [])
 
-      if (params.products.length !== productOptionsMetaData.length)
-        return `products must have ${productOptionsMetaData.length} elements`
+        if (error !== '') return error
 
-      if (!productOptionsMetaData.every(option => {
-        const condition = option.reduce((mem, cur, index) => {
-          mem[`option${index + 1}`] = cur
-         return mem
-        }, {});
-        return !!_.find(params.products, condition)
-      })) {
-        return 'products elements are misssing for some options'
+        if (params.products.length !== productOptionsMetaData.length)
+          return `products must have ${productOptionsMetaData.length} elements`
+
+        if (!productOptionsMetaData.every(option => {
+          const condition = option.reduce((mem, cur, index) => {
+            mem[`option${index + 1}`] = cur
+          return mem
+          }, {});
+          return !!_.find(params.products, condition)
+        })) {
+          return 'products elements are misssing for some options'
+        }
+      } else {
+        if (params.price === undefined) return 'price is required'
+        if (params.stock === undefined) return 'stock is required'
       }
       
       this.logger.info(`Done ValidateProductParamsFunc ${dayjs().diff(start)} ms`)
@@ -197,6 +239,7 @@ export class ProductService {
       return [savedProductOptions, '']
     }
   }
+
   async InsertProductsToDbFunc(
     etm: EntityManager,
   ): Promise<InsertProductsToDbFuncType> {
@@ -204,14 +247,41 @@ export class ProductService {
       const start = dayjs()
       let savedProducts: Product[]
       try {
-        const products = Product.create(params)
+        const filledSkuParams = params.map(product => ({...product, sku: product.sku || 'happyshoping-tmp-sku'}))
+        const products = Product.create(filledSkuParams)
         savedProducts = await etm.save(products)
+        for(const product of savedProducts){
+          if (product.sku === 'happyshoping-tmp-sku') {
+            product.sku = `sku-${product.id}`
+          }
+        }
+        savedProducts = await etm.save(savedProducts)
       } catch (error) {
         return [null, error]
       }
 
       this.logger.info(`Done InsertProductsToDbFunc ${dayjs().diff(start)} ms`)
       return [savedProducts, '']
+    }
+  }
+
+  async InquiryProductProfileFromDbFunc(
+    etm: EntityManager,
+  ): Promise<InquiryProductProfileFromDbFuncType> {
+    return async (productProfileId: number): Promise<[ProductProfile, string]> => {
+      const start = dayjs()
+      let productProfile: ProductProfile[] = []
+      try {
+        productProfile = await etm.findByIds(ProductProfile, [productProfileId], {
+          relations: ['products', 'productOptions']
+        })
+        console.log(productProfile[0].products)
+      } catch (error) {
+        return [null, error]
+      }
+
+      this.logger.info(`Done InquiryProductProfileFromDbFunc ${dayjs().diff(start)} ms`)
+      return [productProfile[0], '']
     }
   }
 }

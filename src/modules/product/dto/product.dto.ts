@@ -81,11 +81,38 @@ export class CreateProductProfileRequestDto {
   imageIds?: string[]
 
   @IsArray()
-  @ArrayNotEmpty()
-  products: CreateProductDto[]
+  @IsOptional()
+  products?: CreateProductDto[]
 
   @IsArray()
-  @ArrayNotEmpty()
-  productOptions: CreateProductOptionDto[]
+  @IsOptional()
+  productOptions?: CreateProductOptionDto[]
 
+  @IsBoolean()
+  @IsNotEmpty()
+  isMultipleOptions: boolean
+
+  @IsNumber()
+  @IsOptional()
+  price?: number
+
+  @IsNumber()
+  @IsOptional()
+  stock?: number
+
+  @IsString()
+  @IsOptional()
+  sku?: string
+
+  @IsNumber()
+  @IsNotEmpty()
+  width: number
+
+  @IsNumber()
+  @IsNotEmpty()
+  length: number
+
+  @IsNumber()
+  @IsNotEmpty()
+  height: number
 }
