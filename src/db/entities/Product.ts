@@ -8,7 +8,6 @@ import {
 } from 'typeorm'
 import { AppEntity } from './AppEntity'
 import { Category } from './Category'
-import { CategoryProduct } from './CategoryProduct'
 import { PlatformCategory } from './PlatformCategory'
 import { ProductProfile } from './ProductProfile'
 import { Shop } from './Shop'
@@ -68,17 +67,4 @@ export class Product extends AppEntity {
   )
   @JoinColumn({ name: 'platform_category_id', referencedColumnName: 'id' })
   platformCategory: PlatformCategory
-
-  @OneToMany(
-    () => CategoryProduct,
-    categoryProduct => categoryProduct.product,
-  )
-  @JoinColumn({ referencedColumnName: 'product_id' })
-  categoryProducts: CategoryProduct[]
-
-  @ManyToMany(
-    () => Category,
-    category => category.products,
-  )
-  categories: Category[]
 }

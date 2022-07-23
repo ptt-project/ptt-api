@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
 import { EntityManager, In, SelectQueryBuilder } from 'typeorm'
 
-import { UnableInquiryProductByCatgoryIdFunc } from 'src/utils/response-code'
+import { UnableinquiryProductProfileByCatgoryIdFunc } from 'src/utils/response-code'
 
 import {
   InquiryProductByCatgoryIdType,
-  InquiryProductIdsByCategoryIdType,
+  inquiryProductProfileIdsByCategoryIdType,
   InsertCategoryProductToDbType,
   DeleteCategoryProductToDbType,
   DeleteCategoryProductToDbByCategoryIdType,
@@ -14,11 +14,11 @@ import {
 
 import { PinoLogger } from 'nestjs-pino'
 
-import { Product } from 'src/db/entities/Product'
 import { paginate } from 'nestjs-typeorm-paginate'
 import { getProductQueryDTO } from './dto/product.dto'
 import dayjs from 'dayjs'
-import { CategoryProduct } from 'src/db/entities/CategoryProduct'
+import { CategoryProductProfile } from 'src/db/entities/CategoryProductProfile'
+import { ProductProfile } from 'src/db/entities/ProductProfile'
 
 @Injectable()
 export class ProductService {
@@ -26,74 +26,82 @@ export class ProductService {
     this.logger.setContext(ProductService.name)
   }
 
-  inquiryProductByCatgoryIdHandler(
-    inquiryProductByCatgoryIdFunc: Promise<InquiryProductByCatgoryIdType>,
+  inquiryProductProfileByCatgoryIdHandler(
+    inquiryProductProfileByCatgoryIdFunc: Promise<
+      InquiryProductByCatgoryIdType
+    >,
   ) {
     return async (categoryId: number, query: getProductQueryDTO) => {
       const start = dayjs()
       const { limit = 10, page = 1 } = query
 
-      const [products, errorInquiryProductByCatgoryIdFunc] = await (
-        await inquiryProductByCatgoryIdFunc
-      )(categoryId)
+      const [
+        productProfiles,
+        errorInquiryProductProfileByCatgoryIdFunc,
+      ] = await (await inquiryProductProfileByCatgoryIdFunc)(categoryId)
 
-      if (errorInquiryProductByCatgoryIdFunc != '') {
+      if (errorInquiryProductProfileByCatgoryIdFunc != '') {
         response(
           undefined,
-          UnableInquiryProductByCatgoryIdFunc,
-          errorInquiryProductByCatgoryIdFunc,
+          UnableinquiryProductProfileByCatgoryIdFunc,
+          errorInquiryProductProfileByCatgoryIdFunc,
         )
       }
       this.logger.info(
-        `Done InquiryProductByCatgoryIdFunc ${dayjs().diff(start)} ms`,
+        `Done InquiryProductProfileByCatgoryIdFunc ${dayjs().diff(start)} ms`,
       )
 
-      const result = await paginate<Product>(products, { limit, page })
+      const result = await paginate<ProductProfile>(productProfiles, {
+        limit,
+        page,
+      })
       return response(result)
     }
   }
 
-  async inquiryProductByCatgoryIdFunc(
+  async inquiryProductProfileByCatgoryIdFunc(
     etm: EntityManager,
   ): Promise<InquiryProductByCatgoryIdType> {
     return async (categoryId: number) => {
-      let products: SelectQueryBuilder<Product>
+      let productProfiles: SelectQueryBuilder<ProductProfile>
 
       try {
-        products = etm
-          .createQueryBuilder(Product, 'products')
-          .innerJoin('products.categoryProducts', 'categoryProducts')
-          .innerJoinAndMapOne(
-            'products.productProfile',
-            'products.productProfile',
-            'productProfiles',
+        productProfiles = etm
+          .createQueryBuilder(ProductProfile, 'productProfiles')
+          .innerJoin(
+            'productProfiles.categoryProductProfiles',
+            'categoryProductProfiles',
           )
-          .where('products.deletedAt IS NULL')
-          .andWhere('categoryProducts.categoryId = :categoryId', { categoryId })
+          .where('productProfiles.deletedAt IS NULL')
+          .andWhere('categoryProductProfiles.categoryId = :categoryId', {
+            categoryId,
+          })
       } catch (error) {
-        return [products, error]
+        return [productProfiles, error]
       }
 
-      return [products, '']
+      return [productProfiles, '']
     }
   }
 
   async insertCategoryProductToDbFunc(
     etm: EntityManager,
   ): Promise<InsertCategoryProductToDbType> {
-    return async (categoryId: number, productIds: number[]) => {
+    return async (categoryId: number, productProfileIds: number[]) => {
       const start = dayjs()
       try {
-        const categoryProducts = productIds.map((productId: number) => {
-          return CategoryProduct.create({
-            categoryId,
-            productId,
-          })
-        })
+        const categoryProductProfiles = productProfileIds.map(
+          (productProfileId: number) => {
+            return CategoryProductProfile.create({
+              categoryId,
+              productProfileId,
+            })
+          },
+        )
 
-        await etm.save(categoryProducts)
+        await etm.save(categoryProductProfiles)
       } catch (error) {
-        return error
+        return error.driverError.detail
       }
 
       this.logger.info(
@@ -103,20 +111,20 @@ export class ProductService {
     }
   }
 
-  async inquiryProductIdsByCategoryIdFunc(
+  async inquiryProductProfileIdsByCategoryIdFunc(
     etm: EntityManager,
-  ): Promise<InquiryProductIdsByCategoryIdType> {
+  ): Promise<inquiryProductProfileIdsByCategoryIdType> {
     return async (categoryId: number) => {
       const start = dayjs()
       let productIds: number[]
       try {
-        const categoryProducts = await etm.find(CategoryProduct, {
+        const categoryProductProfiles = await etm.find(CategoryProductProfile, {
           where: { categoryId },
         })
 
-        productIds = categoryProducts.map(
-          (categoryProduct: CategoryProduct) => {
-            return categoryProduct.productId
+        productIds = categoryProductProfiles.map(
+          (categoryProduct: CategoryProductProfile) => {
+            return categoryProduct.productProfileId
           },
         )
       } catch (error) {
@@ -124,7 +132,9 @@ export class ProductService {
       }
 
       this.logger.info(
-        `Done InquiryProductIdsByCategoryIdFunc ${dayjs().diff(start)} ms`,
+        `Done inquiryProductProfileIdsByCategoryIdFunc ${dayjs().diff(
+          start,
+        )} ms`,
       )
       return [productIds, '']
     }
@@ -133,17 +143,17 @@ export class ProductService {
   async deleteCategoryProductToDb(
     etm: EntityManager,
   ): Promise<DeleteCategoryProductToDbType> {
-    return async (categoryId: number, productIds: number[]) => {
+    return async (categoryId: number, productProfileIds: number[]) => {
       const start = dayjs()
       try {
-        const categoryProducts = await etm.find(CategoryProduct, {
+        const categoryProductProfiles = await etm.find(CategoryProductProfile, {
           where: {
             categoryId,
-            productId: In(productIds),
+            productProfileId: In(productProfileIds),
           },
         })
 
-        await etm.remove(categoryProducts)
+        await etm.remove(categoryProductProfiles)
       } catch (error) {
         return error
       }
@@ -161,11 +171,11 @@ export class ProductService {
     return async (categoryId: number) => {
       const start = dayjs()
       try {
-        const categoryProducts = await etm.find(CategoryProduct, {
+        const categoryProductProfiles = await etm.find(CategoryProductProfile, {
           where: { categoryId, deletedAt: null },
         })
 
-        await etm.remove(categoryProducts)
+        await etm.remove(categoryProductProfiles)
       } catch (error) {
         return error
       }

@@ -90,7 +90,7 @@ export class CategoryController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.categoryService.updateCategoryHandler(
-      this.productService.inquiryProductIdsByCategoryIdFunc(etm),
+      this.productService.inquiryProductProfileIdsByCategoryIdFunc(etm),
       this.productService.deleteCategoryProductToDb(etm),
       this.productService.insertCategoryProductToDbFunc(etm),
       this.categoryService.inquiryCategoryByNameFunc(etm),
@@ -107,7 +107,7 @@ export class CategoryController {
   ) {
     return await this.categoryService.inquiryCategoryHandler(
       this.categoryService.inquiryCategoryByCategoryIdFunc(etm),
-      this.productService.inquiryProductIdsByCategoryIdFunc(etm),
+      this.productService.inquiryProductProfileIdsByCategoryIdFunc(etm),
     )(categoryId)
   }
 
@@ -131,8 +131,8 @@ export class CategoryController {
     @Query() query: getProductQueryDTO,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.productService.inquiryProductByCatgoryIdHandler(
-      this.productService.inquiryProductByCatgoryIdFunc(etm),
+    return await this.productService.inquiryProductProfileByCatgoryIdHandler(
+      this.productService.inquiryProductProfileByCatgoryIdFunc(etm),
     )(categoryId, query)
   }
 }

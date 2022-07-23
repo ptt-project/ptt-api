@@ -1,5 +1,5 @@
 import { Category, CreatedByType, StatusType } from 'src/db/entities/Category'
-import { Product } from 'src/db/entities/Product'
+import { ProductProfile } from 'src/db/entities/ProductProfile'
 import { SelectQueryBuilder } from 'typeorm'
 
 export type InsertCategoryToDbParams = {
@@ -61,13 +61,13 @@ export type DeleteCategoryProductToDbType = (
   productIds: number[],
 ) => Promise<string>
 
-export type InquiryProductIdsByCategoryIdType = (
+export type inquiryProductProfileIdsByCategoryIdType = (
   categoryId: number,
 ) => Promise<[number[], string]>
 
 export type InquiryProductByCatgoryIdType = (
   categoryId: number,
-) => Promise<[SelectQueryBuilder<Product>, string]>
+) => Promise<[SelectQueryBuilder<ProductProfile>, string]>
 
 export type InquiryCategoryByNameType = (
   name: string,

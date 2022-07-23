@@ -14,7 +14,7 @@ import {
   UnableInsertCategoryProductToDb,
   UnableUpdateCategoryToDb,
   UnableDeleteCategoryProductToDb,
-  UnableInquiryProductIdsByCategoryId,
+  UnableinquiryProductProfileIdsByCategoryId,
   UnableInquiryCategoryByName,
 } from 'src/utils/response-code'
 
@@ -32,7 +32,7 @@ import {
   UpdateCategoryToDbType,
   InsertCategoryProductToDbType,
   DeleteCategoryProductToDbType,
-  InquiryProductIdsByCategoryIdType,
+  inquiryProductProfileIdsByCategoryIdType,
   InquiryCategoryByNameType,
 } from './category.type'
 
@@ -394,7 +394,9 @@ export class CategoryService {
   }
 
   updateCategoryHandler(
-    inquiryProductIdsByCategoryId: Promise<InquiryProductIdsByCategoryIdType>,
+    inquiryProductProfileIdsByCategoryId: Promise<
+      inquiryProductProfileIdsByCategoryIdType
+    >,
     deleteCategoryProductToDb: Promise<DeleteCategoryProductToDbType>,
     insertCategoryProductToDb: Promise<InsertCategoryProductToDbType>,
     inquiryCategoryByNameFunc: Promise<InquiryCategoryByNameType>,
@@ -403,30 +405,31 @@ export class CategoryService {
   ) {
     return async (categoryId: number, body: UpdateCategoryRequestDto) => {
       const start = dayjs()
-      const { name, productIds } = body
-      const [currentProductIds, errorInquiryProductIdsByCategoryId] = await (
-        await inquiryProductIdsByCategoryId
-      )(categoryId)
+      const { name, productProfileIds } = body
+      const [
+        currentProductProfileIds,
+        errorInquiryProductProfileIdsByCategoryId,
+      ] = await (await inquiryProductProfileIdsByCategoryId)(categoryId)
 
-      if (errorInquiryProductIdsByCategoryId != '') {
+      if (errorInquiryProductProfileIdsByCategoryId != '') {
         return response(
           undefined,
-          UnableInquiryProductIdsByCategoryId,
-          errorInquiryProductIdsByCategoryId,
+          UnableinquiryProductProfileIdsByCategoryId,
+          errorInquiryProductProfileIdsByCategoryId,
         )
       }
 
-      const removeProductIds = currentProductIds.filter(
-        x => !productIds.includes(x),
+      const removeProductProfileIds = currentProductProfileIds.filter(
+        x => !productProfileIds.includes(x),
       )
 
-      const newProductIds = productIds.filter(
-        x => !currentProductIds.includes(x),
+      const newProductProfileIds = productProfileIds.filter(
+        x => !currentProductProfileIds.includes(x),
       )
 
       const errorDeleteCategoryProductToDb = await (
         await deleteCategoryProductToDb
-      )(categoryId, removeProductIds)
+      )(categoryId, removeProductProfileIds)
 
       if (errorDeleteCategoryProductToDb != '') {
         return response(
@@ -438,7 +441,7 @@ export class CategoryService {
 
       const errorInsertCategoryProductToDb = await (
         await insertCategoryProductToDb
-      )(categoryId, newProductIds)
+      )(categoryId, newProductProfileIds)
 
       if (errorInsertCategoryProductToDb != '') {
         return response(
@@ -470,7 +473,7 @@ export class CategoryService {
 
       const updateCategoryParams = {
         name,
-        productCount: body.productIds.length,
+        productCount: productProfileIds.length,
       }
       const errorUpdateCategoryToDb = await (await updateCategoryToDb)(
         categoryId,
@@ -497,7 +500,7 @@ export class CategoryService {
       }
 
       this.logger.info(`Done UpdateCategoryHandler ${dayjs().diff(start)} ms`)
-      return response({ ...category, productIds })
+      return response({ ...category, productProfileIds })
     }
   }
 
@@ -544,7 +547,9 @@ export class CategoryService {
 
   inquiryCategoryHandler(
     inquiryCategoryById: Promise<InquiryCategoryByIdType>,
-    inquiryProductIdsByCategoryId: Promise<InquiryProductIdsByCategoryIdType>,
+    inquiryProductProfileIdsByCategoryId: Promise<
+      inquiryProductProfileIdsByCategoryIdType
+    >,
   ) {
     return async (categoryId: number) => {
       const start = dayjs()
@@ -560,20 +565,21 @@ export class CategoryService {
         )
       }
 
-      const [productIds, errorInquiryProductIdsByCategoryId] = await (
-        await inquiryProductIdsByCategoryId
-      )(categoryId)
+      const [
+        productProfileIds,
+        errorInquiryProductProfileIdsByCategoryId,
+      ] = await (await inquiryProductProfileIdsByCategoryId)(categoryId)
 
-      if (errorInquiryProductIdsByCategoryId != '') {
+      if (errorInquiryProductProfileIdsByCategoryId != '') {
         return response(
           undefined,
-          UnableInquiryProductIdsByCategoryId,
-          errorInquiryProductIdsByCategoryId,
+          UnableinquiryProductProfileIdsByCategoryId,
+          errorInquiryProductProfileIdsByCategoryId,
         )
       }
 
       this.logger.info(`Done InquiryCategoryHandler ${dayjs().diff(start)} ms`)
-      return response({ ...category, productIds })
+      return response({ ...category, productProfileIds })
     }
   }
 }

@@ -35,5 +35,5 @@ export class UpdateCategoryRequestDto {
   name: string
 
   @IsNotEmpty()
-  productIds: number[]
+  productProfileIds: number[]
 }
