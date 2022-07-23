@@ -373,7 +373,7 @@ export class CategoryService {
       }
 
       this.logger.info(`Done DeleteCategoryHandler ${dayjs().diff(start)} ms`)
-      return response(category)
+      return response({ id: category.id })
     }
   }
 
