@@ -19,7 +19,7 @@ export class Product extends AppEntity {
   @Column({
     name: 'price',
     type: 'decimal',
-    precision: 5,
+    precision: 12,
     scale: 2,
     nullable: true,
   })
