@@ -38,6 +38,7 @@ export type InsertProductsToDbParams = {
 }
 
 export type ValidateProductParamsFuncType = (
+  shopId: number,
   params: CreateProductProfileRequestDto,
 ) => Promise<string>
 

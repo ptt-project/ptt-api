@@ -25,7 +25,7 @@ export class ProductController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.productService.createProductHandler(
-      this.productService.ValidateProductParamsFunc(),
+      this.productService.ValidateProductParamsFunc(etm),
       this.productService.InsertProductProfileToDbFunc(etm),
       this.productService.InsertProductOptionsToDbFunc(etm),
       this.productService.InsertProductsToDbFunc(etm),

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
-import { EntityManager } from 'typeorm'
+import { EntityManager, In } from 'typeorm'
 
 import {
   UnableToCreateProductProfile,
@@ -57,7 +57,7 @@ export class ProductService {
     return async (shop: Shop, params: CreateProductProfileRequestDto) => {
       const start = dayjs()
 
-      const validateError = await (await validateParams)(params)
+      const validateError = await (await validateParams)(shop.id, params)
 
       if (validateError !== '') {
         return response(
@@ -161,11 +161,14 @@ export class ProductService {
     }
   }
 
-  async ValidateProductParamsFunc(): Promise<ValidateProductParamsFuncType> {
-    return async (params: CreateProductProfileRequestDto): Promise<string> => {
+  async ValidateProductParamsFunc(
+    etm: EntityManager,
+  ): Promise<ValidateProductParamsFuncType> {
+    return async (shopId: number, params: CreateProductProfileRequestDto): Promise<string> => {
       const start = dayjs()
       
       let error = ''
+      let skus = []
 
       if (params.isMultipleOptions) {
         const productOptionsMetaData = params.productOptions.reduce((mem, cur) => {
@@ -194,9 +197,45 @@ export class ProductService {
         })) {
           return 'products elements are misssing for some options'
         }
+
+        const skuNote = {}
+        params.products.forEach(product => {
+          if (product.sku){
+            if (skuNote[product.sku]) {
+              error = 'sku should be unique'
+            }
+            else {
+              skus.push(product.sku)
+              skuNote[product.sku] = true
+            }
+          }
+        })
       } else {
         if (params.price === undefined) return 'price is required'
         if (params.stock === undefined) return 'stock is required'
+        if (params.sku) {
+          skus = [params.sku]
+        }
+      }
+      if (error !== '') return error
+
+      let products: Product[]
+      try {
+        products = await etm.find(Product, {
+          where: {
+            deletedAt: null,
+            sku: In(skus),
+            productProfile: {
+              shopId,
+            },
+          },
+          relations: ['productProfile']})
+      } catch(error) {
+        return error
+      }
+
+      if (products.length) {
+        return `sku '${products.map(product => product.sku).join(', ')}' has been used in this shop`
       }
       
       this.logger.info(`Done ValidateProductParamsFunc ${dayjs().diff(start)} ms`)
