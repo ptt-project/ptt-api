@@ -8,6 +8,13 @@ import {
   UnableToCreateProducts,
   CreateProductValidationFailed,
   UnableToGetProducts,
+  UnableInquiryProductProfileByProductProfileId,
+  UnableUpdateStatusProductByProductProfileId,
+  UnableInquiryProductsByProductProfileId,
+  UnableDeleteProductsByProductProfileId,
+  UnableDeleteProductOptionsByProductProfileId,
+  UnableInquiryProductOptionsByProductProfileId,
+  UnableDeleteProductProfileByProductProfileId,
 } from 'src/utils/response-code'
 
 import {
@@ -19,17 +26,24 @@ import {
   InsertProductsToDbParams,
   ValidateProductParamsFuncType,
   InquiryProductProfileFromDbFuncType,
+  InquiryProductProfileByProductProfileIdType,
+  InquiryProductOptionsByProductProfileIdType,
+  InquiryProductsByProductProfileIdType,
+  DeleteProductProfileByProductProfileIdType,
+  DeleteProductOptionsByProductProfileIdType,
+  DeleteProductsByProductProfileIdType,
+  UpdateProductProfileStatusByProductProfileIdType,
 } from './product.type'
-
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 import { CreateProductProfileRequestDto } from './dto/product.dto'
 import { Shop } from 'src/db/entities/Shop'
-import { ProductProfile } from 'src/db/entities/ProductProfile'
+import { ProductProfile, ProductProfileStatusType } from 'src/db/entities/ProductProfile'
 import { ProductOption } from 'src/db/entities/ProductOption'
 import { Product } from 'src/db/entities/Product'
 import { randomStr } from 'src/utils/helpers'
 import _ from 'lodash'
+import { internalSeverError } from 'src/utils/response-error'
 
 @Injectable()
 export class ProductService {
@@ -321,6 +335,352 @@ export class ProductService {
 
       this.logger.info(`Done InquiryProductProfileFromDbFunc ${dayjs().diff(start)} ms`)
       return [productProfile[0], '']
+    }
+  }
+
+  getProductByProductIdHandler(
+    InquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
+    InquiryProductOptionsByProductProfileId: Promise<InquiryProductOptionsByProductProfileIdType>,
+    InquiryProductsByProductProfileId: Promise<InquiryProductsByProductProfileIdType>,
+    ) {
+    return async (productProfileId: number) => {
+      const start = dayjs()
+      const [productProfile, inquiryProductProfileByProductProfileIdError] = await (
+        await InquiryProductProfileByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductProfileByProductProfileIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          inquiryProductProfileByProductProfileIdError,
+        )
+      }
+
+      const [productOptions, inquiryProductOptionsByProductProfileIdError] = await (
+        await InquiryProductOptionsByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductOptionsByProductProfileIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductOptionsByProductProfileId,
+          inquiryProductOptionsByProductProfileIdError,
+        )
+      }
+
+      const [products, inquiryProductsByProductProfileIdError] = await (
+        await InquiryProductsByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductsByProductProfileIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductsByProductProfileId,
+          inquiryProductsByProductProfileIdError,
+        )
+      }
+
+      this.logger.info(`Done getProductByProductIdHandler ${dayjs().diff(start)} ms`)
+      const result = {
+        productProfile: productProfile,
+        productOptions: productOptions,
+        products: products,
+      }
+      return response(result)
+    }
+  }
+
+  async InquiryProductProfileByProductProfileIdFunc(
+    etm: EntityManager,
+  ): Promise<InquiryProductProfileByProductProfileIdType> {
+    return async (productProfileId: number): Promise<[ProductProfile, string]> => {
+      const start = dayjs()
+      let produceProfile: ProductProfile
+
+      try {
+        produceProfile = await etm
+          .getRepository(ProductProfile)
+          .findOne(productProfileId, { withDeleted: false })
+      } catch (error) {
+        return [produceProfile, error]
+      }
+
+      if (!produceProfile) {
+        return [produceProfile, 'Not found produce profile']
+      }
+
+      this.logger.info(`Done InquiryProductProfileByProductProfileIdFunc ${dayjs().diff(start)} ms`)
+      return [produceProfile, '']
+    }
+  }
+
+  async InquiryProductOptionsByProductProfileIdFunc(
+    etm: EntityManager,
+  ): Promise<InquiryProductOptionsByProductProfileIdType> {
+    return async (productProfileId: number): Promise<[ProductOption[], string]> => {
+      const start = dayjs()
+      let productOptions: ProductOption[]
+
+      try {
+        productOptions = await etm
+          .getRepository(ProductOption)
+          .find({where: { deletedAt: null, productProfileId }})
+      } catch (error) {
+        return [productOptions, error]
+      }
+
+      if (!productOptions) {
+        return [productOptions, 'Not found product options']
+      }
+
+      this.logger.info(`Done InquiryProductOptionsByProductProfileIdFunc ${dayjs().diff(start)} ms`)
+      return [productOptions, '']
+    }
+  }
+
+  async InquiryProductsByProductProfileIdFunc(
+    etm: EntityManager,
+  ): Promise<InquiryProductsByProductProfileIdType> {
+    return async (productProfileId: number): Promise<[Product[], string]> => {
+      const start = dayjs()
+      let products: Product[]
+
+      try {
+        products = await etm
+          .getRepository(Product)
+          .find({where: { deletedAt: null, productProfileId }})
+      } catch (error) {
+        return [products, error]
+      }
+
+      if (!products) {
+        return [products, 'Not found products']
+      }
+
+      this.logger.info(`Done InquiryProductsByProductProfileIdFunc ${dayjs().diff(start)} ms`)
+      return [products, '']
+    }
+  }
+
+  deleteProductByProductIdHandler(
+    InquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
+    DeleteProductProfileById: Promise<DeleteProductProfileByProductProfileIdType>,
+    InquiryProductOptionsByProductProfileId: Promise<InquiryProductOptionsByProductProfileIdType>,
+    DeleteProductOptionsById: Promise<DeleteProductOptionsByProductProfileIdType>,
+    InquiryProductsByProductProfileId: Promise<InquiryProductsByProductProfileIdType>,
+    DeleteProductsById: Promise<DeleteProductsByProductProfileIdType>,
+    ) {
+    return async (productProfileId: number) => {
+      const start = dayjs()
+      const [productProfile, inquiryProductProfileByProductProfileIdError] = await (
+        await InquiryProductProfileByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductProfileByProductProfileIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          inquiryProductProfileByProductProfileIdError,
+        )
+      }
+
+      const deleteProductProfileByIdError = await (
+        await DeleteProductProfileById
+      )(productProfile)
+
+      if (deleteProductProfileByIdError != '') {
+        return response(
+          undefined,
+          UnableDeleteProductProfileByProductProfileId,
+          deleteProductProfileByIdError,
+        )
+      }
+
+      const [productOptions, inquiryProductOptionsByProductProfileIdError] = await (
+        await InquiryProductOptionsByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductOptionsByProductProfileIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductOptionsByProductProfileId,
+          inquiryProductOptionsByProductProfileIdError,
+        )
+      }
+
+      if(productOptions.length > 0){
+        for(const productOption of productOptions){
+          const deleteProductOptionsByIdError = await (await DeleteProductOptionsById)(
+            productOption, 
+          )
+          
+          if (deleteProductOptionsByIdError != '') {
+            return internalSeverError(
+              UnableDeleteProductOptionsByProductProfileId,
+              deleteProductOptionsByIdError,
+            )
+          }
+        }
+      }
+
+      const [products, inquiryProductsByProductProfileIdError] = await (
+        await InquiryProductsByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductsByProductProfileIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductsByProductProfileId,
+          inquiryProductsByProductProfileIdError,
+        )
+      }
+
+      if(products.length > 0){
+        for(const product of products){
+          const deleteProductsByIdError = await (await DeleteProductsById)(
+            product, 
+          )
+          
+          if (deleteProductsByIdError != '') {
+            return internalSeverError(
+              UnableDeleteProductsByProductProfileId,
+              deleteProductsByIdError,
+            )
+          }
+        }
+      }
+
+      this.logger.info(`Done getProductByProductIdHandler ${dayjs().diff(start)} ms`)
+      return response(undefined)
+    }
+  }
+
+  async DeleteProductProfileByIdFunc(
+    etm: EntityManager,
+  ): Promise<DeleteProductProfileByProductProfileIdType> {
+    return async (productProfile: ProductProfile): Promise<string> => {
+      const start = dayjs()
+      try {
+        await etm
+          .getRepository(ProductProfile)
+          .softRemove(productProfile)
+      } catch (error) {
+        return error
+      }
+      this.logger.info(`Done DeleteProductProfileByProductProfileIdFunc ${dayjs().diff(start)} ms`)
+      return ''
+    }
+  }
+
+  async DeleteProductOptionsByIdFunc(
+    etm: EntityManager,
+  ): Promise<DeleteProductOptionsByProductProfileIdType> {
+    return async (productOption: ProductOption): Promise<string> => {
+      const start = dayjs()
+      try {
+        await etm
+          .getRepository(ProductOption)
+          .softRemove(productOption)
+      } catch (error) {
+        return error
+      }
+      this.logger.info(`Done DeleteProductProfileByProductProfileIdFunc ${dayjs().diff(start)} ms`)
+      return ''
+    }
+  }
+
+  async DeleteProductsByIdFunc(
+    etm: EntityManager,
+  ): Promise<DeleteProductsByProductProfileIdType> {
+    return async (product: Product): Promise<string> => {
+      const start = dayjs()
+      try {
+        await etm
+          .getRepository(Product)
+          .softRemove(product)
+      } catch (error) {
+        return error
+      }
+      this.logger.info(`Done DeleteProductProfileByProductProfileIdFunc ${dayjs().diff(start)} ms`)
+      return ''
+    }
+  }
+
+  hiddenToggleProductHandler(
+    InquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
+    UpdateProductProfileStatusByProductProfileId: Promise<UpdateProductProfileStatusByProductProfileIdType>,
+    ) {
+    return async (productProfileId: number) => {
+      const start = dayjs()
+      const [productProfile, inquiryProductProfileByProductProfileIdError] = await (
+        await InquiryProductProfileByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductProfileByProductProfileIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          inquiryProductProfileByProductProfileIdError,
+        )
+      }
+
+      let status: ProductProfileStatusType 
+      if(productProfile.status == 'public'){
+        status = 'hidden'
+      } else if (productProfile.status == 'hidden'){
+        status = 'public'
+      }
+
+      const UpdateStatusProductByProductProfileIdError = await (
+        await UpdateProductProfileStatusByProductProfileId
+      )(productProfileId, status)
+
+      if (UpdateStatusProductByProductProfileIdError != '') {
+        return response(
+          undefined,
+          UnableUpdateStatusProductByProductProfileId,
+          UpdateStatusProductByProductProfileIdError,
+        )
+      } 
+
+      const [productProfileResult, inquiryProductProfileByProductProfileIdResultError] = await (
+        await InquiryProductProfileByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductProfileByProductProfileIdResultError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          inquiryProductProfileByProductProfileIdResultError,
+        )
+      }
+
+      this.logger.info(`Done getProductByProductIdHandler ${dayjs().diff(start)} ms`)
+      return response(productProfileResult)
+    }
+  }
+
+  async UpdateProductProfileStatusByProductProfileIdFunc(
+    etm: EntityManager,
+  ): Promise<UpdateProductProfileStatusByProductProfileIdType> {
+    return async (
+      productProfileId : number, 
+      status: ProductProfileStatusType,
+    ): Promise<string> => {
+      const start = dayjs()
+      try {
+        await etm
+          .getRepository(ProductProfile)
+          .update(productProfileId, { status})
+      } catch (error) {
+        return error
+      }
+
+      this.logger.info(
+        `Done UpdateProductProfileStatusByProductProfileIdFunc ${dayjs().diff(start)} ms`,
+      )
+      return ''
     }
   }
 }

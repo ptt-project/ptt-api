@@ -57,3 +57,32 @@ export type InsertProductsToDbFuncType = (
 export type InquiryProductProfileFromDbFuncType = (
   productProfileId: number,
 ) => Promise<[ProductProfile, string]>
+
+export type InquiryProductProfileByProductProfileIdType = (
+  produceProfileId: number,
+) => Promise<[ProductProfile, string]>
+    
+export type InquiryProductOptionsByProductProfileIdType = (
+  produceProfileId: number,
+) => Promise<[ProductOption[], string]>
+
+export type InquiryProductsByProductProfileIdType = (
+  produceProfileId: number,
+) => Promise<[Product[], string]>
+
+export type DeleteProductProfileByProductProfileIdType = (
+  produceProfile: ProductProfile,
+) => Promise<string>
+      
+export type DeleteProductOptionsByProductProfileIdType = (
+  productOption: ProductOption,
+) => Promise<string>
+
+export type DeleteProductsByProductProfileIdType = (
+  product: Product,
+) => Promise<string>
+
+export type UpdateProductProfileStatusByProductProfileIdType = (
+  produceProfileId: number,
+  status:ProductProfileStatusType,
+) => Promise<string>
