@@ -42,6 +42,7 @@ import { ProductProfile, ProductProfileStatusType } from 'src/db/entities/Produc
 import { ProductOption } from 'src/db/entities/ProductOption'
 import { Product } from 'src/db/entities/Product'
 import { internalSeverError } from 'src/utils/response-error'
+import _ from 'lodash'
 
 @Injectable()
 export class ProductService {
