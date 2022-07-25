@@ -75,11 +75,11 @@ export type DeleteProductProfileByProductProfileIdType = (
 ) => Promise<string>
       
 export type DeleteProductOptionsByProductProfileIdType = (
-  productOption: ProductOption,
+  produceProfileId: number,
 ) => Promise<string>
 
 export type DeleteProductsByProductProfileIdType = (
-  product: Product,
+  produceProfileId: number,
 ) => Promise<string>
 
 export type UpdateProductProfileStatusByProductProfileIdType = (

@@ -59,9 +59,7 @@ export class ProductController {
     return await this.productService.deleteProductByProductIdHandler(
       this.productService.InquiryProductProfileByProductProfileIdFunc(etm),
       this.productService.DeleteProductProfileByIdFunc(etm),
-      this.productService.InquiryProductOptionsByProductProfileIdFunc(etm),
       this.productService.DeleteProductOptionsByIdFunc(etm),
-      this.productService.InquiryProductsByProductProfileIdFunc(etm),
       this.productService.DeleteProductsByIdFunc(etm),
     )(productProfileId)
   }

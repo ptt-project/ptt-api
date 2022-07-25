@@ -41,8 +41,6 @@ import { Shop } from 'src/db/entities/Shop'
 import { ProductProfile, ProductProfileStatusType } from 'src/db/entities/ProductProfile'
 import { ProductOption } from 'src/db/entities/ProductOption'
 import { Product } from 'src/db/entities/Product'
-import { randomStr } from 'src/utils/helpers'
-import _ from 'lodash'
 import { internalSeverError } from 'src/utils/response-error'
 
 @Injectable()
@@ -407,7 +405,7 @@ export class ProductService {
       }
 
       if (!produceProfile) {
-        return [produceProfile, 'Not found produce profile']
+        return [produceProfile, 'Not found product profile']
       }
 
       this.logger.info(`Done InquiryProductProfileByProductProfileIdFunc ${dayjs().diff(start)} ms`)
@@ -466,9 +464,7 @@ export class ProductService {
   deleteProductByProductIdHandler(
     InquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
     DeleteProductProfileById: Promise<DeleteProductProfileByProductProfileIdType>,
-    InquiryProductOptionsByProductProfileId: Promise<InquiryProductOptionsByProductProfileIdType>,
     DeleteProductOptionsById: Promise<DeleteProductOptionsByProductProfileIdType>,
-    InquiryProductsByProductProfileId: Promise<InquiryProductsByProductProfileIdType>,
     DeleteProductsById: Promise<DeleteProductsByProductProfileIdType>,
     ) {
     return async (productProfileId: number) => {
@@ -497,62 +493,33 @@ export class ProductService {
         )
       }
 
-      const [productOptions, inquiryProductOptionsByProductProfileIdError] = await (
-        await InquiryProductOptionsByProductProfileId
-      )(productProfileId)
-
-      if (inquiryProductOptionsByProductProfileIdError != '') {
-        return response(
-          undefined,
-          UnableInquiryProductOptionsByProductProfileId,
-          inquiryProductOptionsByProductProfileIdError,
+      const deleteProductOptionsByIdError = await (await DeleteProductOptionsById)(
+        productProfileId, 
+      )
+      
+      if (deleteProductOptionsByIdError != '') {
+        return internalSeverError(
+          UnableDeleteProductOptionsByProductProfileId,
+          deleteProductOptionsByIdError,
         )
       }
 
-      if(productOptions.length > 0){
-        for(const productOption of productOptions){
-          const deleteProductOptionsByIdError = await (await DeleteProductOptionsById)(
-            productOption, 
-          )
-          
-          if (deleteProductOptionsByIdError != '') {
-            return internalSeverError(
-              UnableDeleteProductOptionsByProductProfileId,
-              deleteProductOptionsByIdError,
-            )
-          }
-        }
-      }
-
-      const [products, inquiryProductsByProductProfileIdError] = await (
-        await InquiryProductsByProductProfileId
-      )(productProfileId)
-
-      if (inquiryProductsByProductProfileIdError != '') {
-        return response(
-          undefined,
-          UnableInquiryProductsByProductProfileId,
-          inquiryProductsByProductProfileIdError,
+      const deleteProductsByIdError = await (await DeleteProductsById)(
+        productProfileId, 
+      )
+      
+      if (deleteProductsByIdError != '') {
+        return internalSeverError(
+          UnableDeleteProductsByProductProfileId,
+          deleteProductsByIdError,
         )
       }
 
-      if(products.length > 0){
-        for(const product of products){
-          const deleteProductsByIdError = await (await DeleteProductsById)(
-            product, 
-          )
-          
-          if (deleteProductsByIdError != '') {
-            return internalSeverError(
-              UnableDeleteProductsByProductProfileId,
-              deleteProductsByIdError,
-            )
-          }
-        }
-      }
+      const result = {id: productProfileId}
 
-      this.logger.info(`Done getProductByProductIdHandler ${dayjs().diff(start)} ms`)
-      return response(undefined)
+
+      this.logger.info(`Done deleteProductByProductIdHandler ${dayjs().diff(start)} ms`)
+      return response(result)
     }
   }
 
@@ -568,7 +535,7 @@ export class ProductService {
       } catch (error) {
         return error
       }
-      this.logger.info(`Done DeleteProductProfileByProductProfileIdFunc ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done DeleteProductProfileByIdFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }
@@ -576,16 +543,14 @@ export class ProductService {
   async DeleteProductOptionsByIdFunc(
     etm: EntityManager,
   ): Promise<DeleteProductOptionsByProductProfileIdType> {
-    return async (productOption: ProductOption): Promise<string> => {
+    return async (productProfileId: number): Promise<string> => {
       const start = dayjs()
       try {
-        await etm
-          .getRepository(ProductOption)
-          .softRemove(productOption)
+        await etm.update(ProductOption, {productProfileId}, {deletedAt:dayjs()})
       } catch (error) {
         return error
       }
-      this.logger.info(`Done DeleteProductProfileByProductProfileIdFunc ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done DeleteProductOptionsByIdFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }
@@ -593,16 +558,14 @@ export class ProductService {
   async DeleteProductsByIdFunc(
     etm: EntityManager,
   ): Promise<DeleteProductsByProductProfileIdType> {
-    return async (product: Product): Promise<string> => {
+    return async (productProfileId: number): Promise<string> => {
       const start = dayjs()
       try {
-        await etm
-          .getRepository(Product)
-          .softRemove(product)
+        await etm.update(Product, {productProfileId}, {deletedAt:dayjs()})
       } catch (error) {
         return error
       }
-      this.logger.info(`Done DeleteProductProfileByProductProfileIdFunc ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done DeleteProductsByIdFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }
@@ -656,7 +619,7 @@ export class ProductService {
         )
       }
 
-      this.logger.info(`Done getProductByProductIdHandler ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done hiddenToggleProductHandler ${dayjs().diff(start)} ms`)
       return response(productProfileResult)
     }
   }
