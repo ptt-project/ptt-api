@@ -71,4 +71,12 @@ export class UpdateShopInfoRequestDto {
   @IsNotEmpty()
   @MaxLength(500)
   shopDescription: string
+
+  @IsOptional()
+  @IsString()
+  profileImagePath?: string
+
+  @IsOptional()
+  @IsString()
+  coverImagePath?: string
 }

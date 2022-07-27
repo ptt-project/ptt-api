@@ -81,6 +81,12 @@ export class Shop extends AppEntity {
   @Column({ name: 'cancel_rate', type: "decimal", precision: 5, scale: 2, nullable: false, default: 0 })
   cancelRate: number
 
+  @Column({ name: 'profile_image_path', nullable: true })
+  profileImagePath: string
+
+  @Column({ name: 'cover_image_path', nullable: true })
+  coverImagePath: string
+
   @Column({ name: 'member_id', nullable: true })
   memberId: number
 
