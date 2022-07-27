@@ -37,6 +37,48 @@ export type InsertProductsToDbParams = {
   stock: number
 }
 
+export type UpdateProductProfileToDbParams = {
+  name: string
+  detail: string
+  platformCategoryId: number
+  brandId?: number
+  weight: number
+  exp?: number
+  condition?: ConditionType
+  isSendLated?: boolean
+  extraDay?: number
+  videoLink?: string
+  imageIds?: string[]
+  width: number
+  length: number
+  height: number
+}
+
+
+export type UpdateProductOptionsToDbParams = {
+  id: number
+  name: string
+  options: string[]
+}
+
+export type UpdateProductsToDbParams = {
+  id: number
+  sku?: string
+  productProfileId: number
+  option1?: string
+  option2?: string
+  price: number
+  stock: number
+}
+
+export type UpdateProductsToDbType = (
+  params: UpdateProductsToDbParams,
+) => Promise<string>
+
+export type UpdateProductOptionsToDbType = (
+  params: UpdateProductOptionsToDbParams,
+) => Promise<string>
+
 export type ValidateProductParamsFuncType = (
   shopId: number,
   params: CreateProductProfileRequestDto,
@@ -53,6 +95,11 @@ export type InsertProductOptionsToDbFuncType = (
 export type InsertProductsToDbFuncType = (
   params: InsertProductsToDbParams[],
 ) => Promise<[Product[], string]>
+
+export type UpdateProductProfileToDbFuncType = (
+  productProfileId: number,
+  params: UpdateProductProfileToDbParams,
+) => Promise<string>
 
 export type InquiryProductProfileFromDbFuncType = (
   productProfileId: number,
@@ -80,6 +127,14 @@ export type DeleteProductOptionsByProductProfileIdType = (
 
 export type DeleteProductsByProductProfileIdType = (
   produceProfileId: number,
+) => Promise<string>
+
+export type DeleteProductByIdType = (
+  produceProfileId: number[],
+) => Promise<string>
+
+export type DeleteProductOptionByIdType = (
+  produceOptionId: number[],
 ) => Promise<string>
 
 export type UpdateProductProfileStatusByProductProfileIdType = (

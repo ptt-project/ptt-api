@@ -15,6 +15,11 @@ import {
   UnableDeleteProductOptionsByProductProfileId,
   UnableInquiryProductOptionsByProductProfileId,
   UnableDeleteProductProfileByProductProfileId,
+  UnableUpdateProductProfileByProductProfileId,
+  UnableRemoveProductOptionByProductOptionId,
+  UnableUpdateProductOption,
+  UnableRemoveProductsById,
+  UnableUpdateProduct,
 } from 'src/utils/response-code'
 
 import {
@@ -33,10 +38,18 @@ import {
   DeleteProductOptionsByProductProfileIdType,
   DeleteProductsByProductProfileIdType,
   UpdateProductProfileStatusByProductProfileIdType,
+  UpdateProductProfileToDbFuncType,
+  UpdateProductProfileToDbParams,
+  UpdateProductOptionsToDbParams,
+  UpdateProductsToDbParams,
+  DeleteProductByIdType,
+  UpdateProductsToDbType,
+  DeleteProductOptionByIdType,
+  UpdateProductOptionsToDbType,
 } from './product.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
-import { CreateProductProfileRequestDto } from './dto/product.dto'
+import { CreateProductProfileRequestDto, UpdateProductProfileRequestDto } from './dto/product.dto'
 import { Shop } from 'src/db/entities/Shop'
 import { ProductProfile, ProductProfileStatusType } from 'src/db/entities/ProductProfile'
 import { ProductOption } from 'src/db/entities/ProductOption'
@@ -263,6 +276,7 @@ export class ProductService {
       const start = dayjs()
       let savedProductProfile: ProductProfile
       try {
+        console.log('params',params)
         const productProfile = ProductProfile.create(params)
         savedProductProfile = await etm.save(productProfile)
       } catch (error) {
@@ -644,6 +658,557 @@ export class ProductService {
       this.logger.info(
         `Done UpdateProductProfileStatusByProductProfileIdFunc ${dayjs().diff(start)} ms`,
       )
+      return ''
+    }
+  }
+
+  updateProductHandler(
+    validateParams: Promise<ValidateProductParamsFuncType>,
+    InquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
+    InquiryProductOptionsByProductProfileId: Promise<InquiryProductOptionsByProductProfileIdType>,
+    InquiryProductsByProductProfileId: Promise<InquiryProductsByProductProfileIdType>,
+    UpdateProductProfileByProductProfileId: Promise<UpdateProductProfileToDbFuncType>,
+    UpdateProductByProductId: Promise<UpdateProductsToDbType>,
+    UpdateProductOptionByProductOptionId: Promise<UpdateProductOptionsToDbType>,
+    createProductOptions: Promise<InsertProductOptionsToDbFuncType>,
+    createProducts: Promise<InsertProductsToDbFuncType>,
+    DeleteProductOptionsByProductProfileId: Promise<DeleteProductOptionsByProductProfileIdType>,
+    DeleteProductsByProductProfileId: Promise<DeleteProductsByProductProfileIdType>,
+    RemoveProductByProductId: Promise<DeleteProductByIdType>,
+    RemoveProductOptionByProductOptionId: Promise<DeleteProductOptionByIdType>,
+  ) {
+    return async (shop: Shop, productProfileId: number, params: UpdateProductProfileRequestDto) => {
+      const start = dayjs()
+
+      const validateError = await (await validateParams)(shop.id, params)
+
+      if (validateError !== '') {
+        return response(
+          undefined,
+          CreateProductValidationFailed,
+          validateError,
+        )
+      }
+
+      const [productProfile, inquiryProductProfileByProductProfileIdError] = await (
+        await InquiryProductProfileByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductProfileByProductProfileIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          inquiryProductProfileByProductProfileIdError,
+        )
+      }
+
+      const [productOptions, inquiryProductOptionsByProductProfileIdError] = await (
+        await InquiryProductOptionsByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductOptionsByProductProfileIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductOptionsByProductProfileId,
+          inquiryProductOptionsByProductProfileIdError,
+        )
+      }
+
+      const [products, inquiryProductsByProductProfileIdError] = await (
+        await InquiryProductsByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductsByProductProfileIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductsByProductProfileId,
+          inquiryProductsByProductProfileIdError,
+        )
+      }
+      
+      const newUpdateProductProfile: UpdateProductProfileToDbParams = {
+        name: params.name,
+        detail: params.detail,
+        platformCategoryId: params.platformCategoryId,
+        brandId: params.brandId,
+        weight: params.weight,
+        exp: params.exp ,
+        condition: params.condition ,
+        isSendLated: params.isSendLated ,
+        extraDay: params.extraDay ,
+        videoLink: params.videoLink ,
+        imageIds: params.imageIds,
+        width: params.width,
+        length: params.length,
+        height: params.height,
+      }
+
+      Object.keys(newUpdateProductProfile).forEach(key => newUpdateProductProfile[key] === undefined ? delete newUpdateProductProfile[key] : {});
+
+      const updateProductProfileByProductProfileIdError = await (
+        await UpdateProductProfileByProductProfileId
+      )(productProfileId, newUpdateProductProfile)
+
+      if (updateProductProfileByProductProfileIdError != '') {
+        return response(
+          undefined,
+          UnableUpdateProductProfileByProductProfileId,
+          updateProductProfileByProductProfileIdError,
+        )
+      }
+
+      if (params.isMultipleOptions) {
+
+        if (productOptions.length > 0){
+
+          let newProductOptions: InsertProductOptionsToDbParams[] = []
+          let updateProductOptions: UpdateProductOptionsToDbParams[] = []
+
+          for(const productOption of params.productOptions){
+
+            if(productOption.id == undefined) {
+              newProductOptions.push({
+                name: productOption.name,
+                productProfileId: productProfileId,
+                options: productOption.options  
+              })
+            } else {
+              let found: boolean = false
+              for(const currentProductOption of productOptions){
+                if(productOption.id == currentProductOption.id){
+                  found = true
+                  if(productOption.name != currentProductOption.name 
+                      || JSON.stringify(productOption.options) != JSON.stringify(currentProductOption.options)){
+                    updateProductOptions.push({
+                      id: productOption.id,
+                      name: productOption.name,
+                      options: productOption.options
+                    })
+                  }
+                }
+              }
+              if(found == false) {
+                return internalSeverError(
+                  UnableInquiryProductOptionsByProductProfileId,
+                  'Not found product options ',
+                )
+              }
+            }
+          }
+
+          let removeProductOptions: number[] = []
+          for(const currentProductOption of productOptions){
+            let found: boolean = false
+            for(const productOption of params.productOptions){
+              if(productOption.id == undefined){
+                continue
+              }
+              if(productOption.id == currentProductOption.id){
+                found = true
+                break
+              } else {
+
+              }
+            }
+            if(found == false){
+              removeProductOptions.push(currentProductOption.id)
+            }
+          }
+
+          const [createNewProductOptions, createNewProductOptionsError] = await (await createProductOptions)(
+            newProductOptions,
+          )
+  
+          if (createNewProductOptionsError != '') {
+            return response(
+              undefined,
+              UnableToCreateProductOptions,
+              createNewProductOptionsError,
+            )
+          }
+
+          const removeProductOptionByProductOptionIdError = await (await RemoveProductOptionByProductOptionId)(
+            removeProductOptions, 
+          )
+          if (removeProductOptionByProductOptionIdError != '') {
+            return internalSeverError(
+              UnableRemoveProductOptionByProductOptionId,
+              removeProductOptionByProductOptionIdError,
+            )
+          }
+
+          for(const updateProductOption of updateProductOptions){
+            const updateProductOptionError = await (await UpdateProductOptionByProductOptionId)(
+              updateProductOption
+            )
+            if (updateProductOptionError != '') {
+              return internalSeverError(
+                UnableUpdateProductOption,
+                updateProductOptionError,
+              )
+            }
+          }
+
+        } else {
+          const newProductOptions: InsertProductOptionsToDbParams[] = params.productOptions.map(
+            pdo => ({...pdo, shopId: shop.id, productProfileId: productProfile.id})
+            )
+
+          const [productOptions, createProductOptionsError] = await (await createProductOptions)(
+            newProductOptions,
+          )
+  
+          if (createProductOptionsError != '') {
+            return response(
+              undefined,
+              UnableToCreateProductOptions,
+              createProductOptionsError,
+            )
+          }
+        }
+
+        if (products.length > 0 ) {
+          let newProducts: InsertProductsToDbParams[] = []
+          let updateProducts: UpdateProductsToDbParams[] = []
+
+          for(const product of params.products){
+
+            if(product.id == undefined) {
+              newProducts.push({
+                sku: product.sku,
+                productProfileId: productProfileId,
+                option1: product.option1,
+                option2: product.option2,
+                price: product.price,
+                stock: product.stock  
+              })
+            } else {
+              let found: boolean = false
+              for(const currentProduct of products){
+                if(product.id == currentProduct.id){
+                  found = true
+                  if(product.option1 != currentProduct.option1 
+                    || product.option2 != currentProduct.option2
+                    || product.price != currentProduct.price
+                    || product.stock != currentProduct.stock
+                    || product.sku != currentProduct.sku
+                  ) {
+                    if((product.sku != undefined)){
+                      updateProducts.push({
+                        id: product.id,
+                        sku: product.sku,
+                        productProfileId: productProfileId,
+                        option1: product.option1,
+                        option2: product.option2,
+                        price: product.price,
+                        stock: product.stock  
+                      })
+                    } else {
+                      updateProducts.push({
+                        id: product.id,
+                        sku: currentProduct.sku,
+                        productProfileId: productProfileId,
+                        option1: product.option1,
+                        option2: product.option2,
+                        price: product.price,
+                        stock: product.stock  
+                      })
+                    }
+                  }
+                }
+              }
+              if(found == false) {
+                return internalSeverError(
+                  UnableInquiryProductsByProductProfileId,
+                  'Not found products ',
+                )
+              }
+            }
+          }
+
+          let removeProduct: number[] = []
+          for(const currentProduct of products){
+            let found: boolean = false
+            for(const product of params.products){
+              if(product.id == undefined){
+                continue
+              }
+              if(product.id == currentProduct.id){
+                found = true
+                break
+              } 
+            }
+            if(found == false){
+              removeProduct.push(currentProduct.id)
+            }
+          }
+
+          if(newProducts.length > 0){
+            const [createNewProducts, createProductsError] = await (await createProducts)(
+              newProducts,
+            )
+    
+            if (createProductsError != '') {
+              return response(
+                undefined,
+                UnableToCreateProducts,
+                createProductsError,
+              )
+            }
+          }
+
+          if(removeProduct.length > 0){
+            const removeProductsByIdError = await (await RemoveProductByProductId)(
+              removeProduct, 
+            )
+            if (removeProductsByIdError != '') {
+              return internalSeverError(
+                UnableRemoveProductsById,
+                removeProductsByIdError,
+              )
+            }
+          }
+          
+          if(updateProducts.length > 0){
+            for(const updateProduct of updateProducts){
+              if (updateProduct.sku == undefined){
+              }
+              const updateProductError = await (await UpdateProductByProductId)(
+                updateProduct
+              )
+              if (updateProductError != '') {
+                return internalSeverError(
+                  UnableUpdateProduct,
+                  updateProductError,
+                )
+              }
+            }
+          }
+
+        } else {
+          const newProducts: InsertProductsToDbParams[] = params.products.map(
+            pd => {
+                return {
+                  ...pd,
+                  productProfileId: productProfile.id,
+                }
+              }
+            )
+  
+          const [products, createProductsError] = await (await createProducts)(
+            newProducts,
+          )
+  
+          if (createProductsError != '') {
+            return response(
+              undefined,
+              UnableToCreateProducts,
+              createProductsError,
+            )
+          }
+
+        }
+
+
+      } else {
+        if (productOptions.length > 0){
+          const deleteProductOptionsByIdError = await (await DeleteProductOptionsByProductProfileId)(
+            productProfileId, 
+          )
+          if (deleteProductOptionsByIdError != '') {
+            return internalSeverError(
+              UnableDeleteProductOptionsByProductProfileId,
+              deleteProductOptionsByIdError,
+            )
+          }
+    
+          const deleteProductsByIdError = await (await DeleteProductsByProductProfileId)(
+            productProfileId, 
+          )
+          if (deleteProductsByIdError != '') {
+            return internalSeverError(
+              UnableDeleteProductsByProductProfileId,
+              deleteProductsByIdError,
+            )
+          }
+        }
+
+        const newProducts: InsertProductsToDbParams[] = [
+          {
+            price: params.price,
+            stock: params.stock,
+            sku: params.sku,
+            productProfileId: productProfile.id,
+          }
+        ]
+
+        const [products, createProductsError] = await (await createProducts)(
+          newProducts,
+        )
+
+        if (createProductsError != '') {
+          return response(
+            undefined,
+            UnableToCreateProducts,
+            createProductsError,
+          )
+        }
+      }
+
+      const [productProfileResult, inquiryProductProfileByProductProfileIdResultError] = await (
+        await InquiryProductProfileByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductProfileByProductProfileIdResultError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          inquiryProductProfileByProductProfileIdResultError,
+        )
+      }
+
+      const [productOptionsResult, inquiryProductOptionsByProductProfileIdResultError] = await (
+        await InquiryProductOptionsByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductOptionsByProductProfileIdResultError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductOptionsByProductProfileId,
+          inquiryProductOptionsByProductProfileIdResultError,
+        )
+      }
+
+      const [productsResult, inquiryProductsByProductProfileIdResultError] = await (
+        await InquiryProductsByProductProfileId
+      )(productProfileId)
+
+      if (inquiryProductsByProductProfileIdResultError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductsByProductProfileId,
+          inquiryProductsByProductProfileIdResultError,
+        )
+      }
+
+      this.logger.info(`Done getProductByProductIdHandler ${dayjs().diff(start)} ms`)
+      const result = {
+        productProfile: productProfileResult,
+        productOptions: productOptionsResult,
+        products: productsResult,
+      }
+      return response(result)
+    }
+  }
+
+  async UpdateProductProfileByProductProfileIdFunc(
+    etm: EntityManager,
+  ): Promise<UpdateProductProfileToDbFuncType> {
+    return async (
+      productProfileId: number,
+      params: UpdateProductProfileToDbParams
+    ): Promise<string> => {
+      const start = dayjs()
+
+      try {
+        await etm.update(ProductProfile, productProfileId, { ...params })
+      } catch (error) {
+        console.log(error)
+        return error
+      }
+      this.logger.info(`Done UpdateProductProfileByProductProfileIdFunc ${dayjs().diff(start)} ms`)
+      return ''
+    }
+  }
+
+  async UpdateProductOptionsByProductOptionIdFunc(
+    etm: EntityManager,
+  ): Promise<UpdateProductProfileToDbFuncType> {
+    return async (
+      productProfileId: number,
+      params: UpdateProductProfileToDbParams
+    ): Promise<string> => {
+      const start = dayjs()
+
+      try {
+        await etm.update(ProductProfile, productProfileId, { ...params })
+      } catch (error) {
+        return error
+      }
+      this.logger.info(`Done UpdateProductOptionsByProductOptionIdFunc ${dayjs().diff(start)} ms`)
+      return ''
+    }
+  }
+
+  async UpdateProductByProductIdFunc(
+    etm: EntityManager,
+  ): Promise<UpdateProductsToDbType> {
+    return async (
+      params: UpdateProductsToDbParams,
+    ): Promise<string> => {
+      const start = dayjs()
+
+      try {
+        await etm.update(Product, params.id, { ...params })
+      } catch (error) {
+        return error
+      }
+      this.logger.info(`Done UpdateProductByProductIdFunc ${dayjs().diff(start)} ms`)
+      return ''
+    }
+  }
+
+  async UpdateProductOptionByProductOptionIdFunc(
+    etm: EntityManager,
+  ): Promise<UpdateProductOptionsToDbType> {
+    return async (
+      params: UpdateProductOptionsToDbParams,
+    ): Promise<string> => {
+      const start = dayjs()
+
+      try {
+        await etm.update(ProductOption, params.id, { ...params })
+      } catch (error) {
+        return error
+      }
+      this.logger.info(`Done UpdateProductOptionByProductOptionIdFunc ${dayjs().diff(start)} ms`)
+      return ''
+    }
+  }
+
+  async RemoveProductByProductIdFunc(
+    etm: EntityManager,
+  ): Promise<DeleteProductByIdType> {
+    return async (
+      productId: number[],
+    ): Promise<string> => {
+      const start = dayjs()
+      
+
+      try {
+        await etm.update(Product, productId, { deletedAt:dayjs() })
+      } catch (error) {
+        return error
+      }
+      this.logger.info(`Done RemoveProductByProductIdFunc ${dayjs().diff(start)} ms`)
+      return ''
+    }
+  }
+
+  async RemoveProductOptionByProductOptionIdFunc(
+    etm: EntityManager,
+  ): Promise<DeleteProductOptionByIdType> {
+    return async (
+      productOptionId: number[],
+    ): Promise<string> => {
+      const start = dayjs()
+
+      try {
+        await etm.update(ProductOption, productOptionId, { deletedAt:dayjs() })
+      } catch (error) {
+        return error
+      }
+      this.logger.info(`Done RemoveProductOptionByProductOptionIdFunc ${dayjs().diff(start)} ms`)
       return ''
     }
   }

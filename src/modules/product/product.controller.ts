@@ -6,11 +6,12 @@ import {
   Param,
   Patch,
   Post,
+  Put,
 } from '@nestjs/common'
 import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqShop, Seller } from '../auth/auth.decorator'
-import { CreateProductProfileRequestDto } from './dto/product.dto'
+import { CreateProductProfileRequestDto, UpdateProductProfileRequestDto } from './dto/product.dto'
 import { ProductService } from './product.service'
 
 @Auth()
@@ -74,5 +75,30 @@ export class ProductController {
       this.productService.InquiryProductProfileByProductProfileIdFunc(etm),
       this.productService.UpdateProductProfileStatusByProductProfileIdFunc(etm),
     )(productProfileId)
+  }
+
+  @Put('products-profile/:productProfileId')
+  @Transaction()
+  async updateProduct(
+    @ReqShop() shop: Shop,
+    @Param('productProfileId') productProfileId: number,
+    @Body() body: UpdateProductProfileRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.productService.updateProductHandler(
+      this.productService.ValidateProductParamsFunc(etm),
+      this.productService.InquiryProductProfileByProductProfileIdFunc(etm),
+      this.productService.InquiryProductOptionsByProductProfileIdFunc(etm),
+      this.productService.InquiryProductsByProductProfileIdFunc(etm),
+      this.productService.UpdateProductProfileByProductProfileIdFunc(etm),
+      this.productService.UpdateProductByProductIdFunc(etm),
+      this.productService.UpdateProductOptionByProductOptionIdFunc(etm),
+      this.productService.InsertProductOptionsToDbFunc(etm),
+      this.productService.InsertProductsToDbFunc(etm),
+      this.productService.DeleteProductOptionsByIdFunc(etm),
+      this.productService.DeleteProductsByIdFunc(etm),
+      this.productService.RemoveProductByProductIdFunc(etm),
+      this.productService.RemoveProductOptionByProductOptionIdFunc(etm),
+    )(shop, productProfileId, body)
   }
 }
