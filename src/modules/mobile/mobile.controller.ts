@@ -23,12 +23,12 @@ export class MobileController {
   async addMobile(
     @ReqUser() member: Member,
     @Body() body: addMobileRequestDto,
-    @TransactionManager() manager: EntityManager,
+    @TransactionManager() etm: EntityManager,
   ) {
     return await this.mobileService.addMobileHandler(
-      this.otpService.inquiryVerifyOtpFunc(),
-      this.mobileService.addMobileFunc(),
-    )(member, body, manager)
+      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.mobileService.addMobileFunc(etm),
+    )(member, body)
   }
 
   @Auth()
@@ -37,13 +37,13 @@ export class MobileController {
   async setMainMobile(
     @ReqUser() member: Member,
     @Body() body: setMainMobileRequestDto,
-    @TransactionManager() manager: EntityManager,
+    @TransactionManager() etm: EntityManager,
   ) {
     return await this.mobileService.setMainMobileHandler(
-      this.otpService.inquiryVerifyOtpFunc(),
-      this.mobileService.getMobileFormDbByMobilePhoneFunc(),
-      this.mobileService.setMainMobileFunc(),
-    )(member, body, manager)
+      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.mobileService.getMobileFormDbByMobilePhoneFunc(etm),
+      this.mobileService.setMainMobileFunc(etm),
+    )(member, body)
   }
 
   @Auth()
@@ -52,12 +52,12 @@ export class MobileController {
   async deleteMobile(
     @ReqUser() member: Member,
     @Body() body: deleteMobileRequestDto,
-    @TransactionManager() manager: EntityManager,
+    @TransactionManager() etm: EntityManager,
   ) {
     return await this.mobileService.deleteMobileHandler(
-      this.otpService.inquiryVerifyOtpFunc(),
-      this.mobileService.getMobileFormDbByMobilePhoneFunc(),
-      this.mobileService.deleteMobileFunc(),
-    )(member, body, manager)
+      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.mobileService.getMobileFormDbByMobilePhoneFunc(etm),
+      this.mobileService.deleteMobileFunc(etm),
+    )(member, body)
   }
 }

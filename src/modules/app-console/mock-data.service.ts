@@ -8,7 +8,6 @@ import { InsertShopToDbParams } from '../seller/seller.type'
 import { PlatformCategory } from 'src/db/entities/PlatformCategory'
 import { Brand } from 'src/db/entities/Brand'
 import { Product } from 'src/db/entities/Product'
-import { Category } from 'src/db/entities/Category'
 import { ProductOption } from 'src/db/entities/ProductOption'
 import { truncates } from 'src/utils/db'
 
@@ -55,8 +54,8 @@ export class MockDataConsoleService {
       refCode: '',
     }
     const [member, errorCreateUser] = await (
-      await this.authService.insertMemberToDbFunc()
-    )(createUserParams, etm)
+      await this.authService.insertMemberToDbFunc(etm)
+    )(createUserParams)
     if (errorCreateUser != '') {
       return console.log('create user error =>', errorCreateUser)
     }
@@ -84,19 +83,19 @@ export class MockDataConsoleService {
       return console.log('create shop error =>', insertShopToDbError)
     }
 
-    const platformCategory = PlatformCategory.create({
+    const platformCategory = etm.create(PlatformCategory, {
       name: 'platform-category01',
       status: 'active',
       productCount: 2,
     })
     await etm.save(platformCategory)
 
-    const brand = Brand.create({
+    const brand = etm.create(Brand, {
       name: 'brand01',
     })
     await etm.save(brand)
 
-    const productProfile = ProductProfile.create({
+    const productProfile = etm.create(ProductProfile, {
       name: 'product profile01',
       detail: 'product profile details',
       shopId: shop.id,
@@ -108,14 +107,14 @@ export class MockDataConsoleService {
     })
     await etm.save(productProfile)
 
-    const productOption = ProductOption.create({
+    const productOption = etm.create(ProductOption, {
       name: 'color',
       productProfileId: productProfile.id,
       options: ['red', 'black'],
     })
     await etm.save(productOption)
 
-    const product01 = Product.create({
+    const product01 = etm.create(Product, {
       sku: 'product-001',
       productProfileId: productProfile.id,
       shopId: shop.id,
@@ -127,7 +126,7 @@ export class MockDataConsoleService {
     })
     await etm.save(product01)
 
-    const product02 = Product.create({
+    const product02 = etm.create(Product, {
       sku: 'product-002',
       productProfileId: productProfile.id,
       shopId: shop.id,

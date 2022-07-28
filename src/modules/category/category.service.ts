@@ -138,7 +138,7 @@ export class CategoryService {
       const start = dayjs()
       let category: Category
       try {
-        const category = Category.create(params)
+        const category = etm.create(Category, params)
         await etm.save(category)
       } catch (error) {
         return [null, error]
@@ -211,7 +211,7 @@ export class CategoryService {
       let category: Category
 
       try {
-        category = await etm.getRepository(Category).findOne(categoryId, {
+        category = await etm.findOne(Category, categoryId, {
           withDeleted: false,
         })
       } catch (error) {
@@ -238,7 +238,7 @@ export class CategoryService {
     ): Promise<string> => {
       const start = dayjs()
       try {
-        await etm.getRepository(Category).update(categoryId, { ...params })
+        await etm.update(Category, categoryId, { ...params })
       } catch (error) {
         return error
       }
@@ -309,9 +309,7 @@ export class CategoryService {
       let updateResult: UpdateResult
 
       try {
-        updateResult = await etm
-          .getRepository(Category)
-          .update(categoryId, { priority })
+        updateResult = await etm.update(Category, categoryId, { priority })
       } catch (error) {
         return error
       }
@@ -529,9 +527,7 @@ export class CategoryService {
     return async (categoryId: number, params: UpdateCategoryParams) => {
       const start = dayjs()
       try {
-        const result = await etm
-          .getRepository(Category)
-          .update(categoryId, { ...params })
+        const result = await etm.update(Category, categoryId, { ...params })
 
         if (result.affected === 0) {
           return `Can't update category row affected is 0`

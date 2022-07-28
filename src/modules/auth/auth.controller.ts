@@ -24,27 +24,34 @@ export class AuthController {
   @Transaction()
   async register(
     @Body() body: RegisterRequestDto,
-    @TransactionManager() manager: EntityManager,
+    @TransactionManager() etm: EntityManager,
   ) {
     return await this.authService.registerHandler(
-      this.otpService.inquiryVerifyOtpFunc(),
-      this.authService.inquiryMemberExistFunc(),
-      this.authService.insertMemberToDbFunc(),
-      this.mobileService.addMobileFunc(),
-    )(body, manager)
+      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.authService.inquiryMemberExistFunc(etm),
+      this.authService.insertMemberToDbFunc(etm),
+      this.mobileService.addMobileFunc(etm),
+    )(body)
   }
 
   @Post('register/validate')
-  async validate(@Body() body: ValidateRegisterRequestDto) {
+  async validate(
+    @Body() body: ValidateRegisterRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
     return await this.authService.validateRegisterHandler(
-      this.authService.inquiryMemberExistFunc(),
+      this.authService.inquiryMemberExistFunc(etm),
     )(body)
   }
 
   @Post('login')
-  async login(@Req() request, @Body() body: LoginRequestDto) {
+  async login(
+    @Req() request,
+    @Body() body: LoginRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
     const longinResponse = await this.loginService.loginHandler(
-      this.loginService.inquiryUserExistByUsernameFunc(),
+      this.loginService.inquiryUserExistByUsernameFunc(etm),
       this.loginService.validatePasswordFunc(),
       this.authService.genAccessTokenFunc(),
       this.authService.genRefreshTokenFunc(),

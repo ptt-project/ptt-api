@@ -13,7 +13,6 @@ export type InquiryMemberExistType = (
 
 export type InsertMemberToDbTye = (
   params: RegisterRequestDto,
-  manager: EntityManager,
 ) => Promise<[Member, string]>
 
 export type GenAccessTokenType = (member: Member) => Promise<string>

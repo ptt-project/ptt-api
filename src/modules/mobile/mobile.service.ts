@@ -36,11 +36,7 @@ export class MobileService {
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     inquiryAddMobile: Promise<InquiryAddMobileType>,
   ) {
-    return async (
-      member: Member,
-      body: addMobileRequestDto,
-      manager: EntityManager,
-    ) => {
+    return async (member: Member, body: addMobileRequestDto) => {
       const start = dayjs()
       const verifyOtpData: verifyOtpRequestDto = {
         reference: body.mobile,
@@ -49,7 +45,7 @@ export class MobileService {
       }
       const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
         await inquiryVerifyOtp
-      )(verifyOtpData, manager)
+      )(verifyOtpData)
 
       if (verifyOtpErrorCode != 0) {
         return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
@@ -59,7 +55,6 @@ export class MobileService {
       const addMobileErrorMessege = await (await inquiryAddMobile)(
         { mobile, isPrimary: false },
         member,
-        manager,
       )
 
       if (addMobileErrorMessege != '') {
@@ -76,11 +71,7 @@ export class MobileService {
     inquiryGetMobileFromDb: Promise<InquiryGetMobileType>,
     inquirySetMainMobile: Promise<InquirySetMainMobileType>,
   ) {
-    return async (
-      member: Member,
-      body: setMainMobileRequestDto,
-      manager: EntityManager,
-    ) => {
+    return async (member: Member, body: setMainMobileRequestDto) => {
       const start = dayjs()
       const verifyOtpData: verifyOtpRequestDto = {
         reference: body.mobile,
@@ -89,7 +80,7 @@ export class MobileService {
       }
       const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
         await inquiryVerifyOtp
-      )(verifyOtpData, manager)
+      )(verifyOtpData)
 
       if (verifyOtpErrorCode != 0) {
         return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
@@ -99,7 +90,7 @@ export class MobileService {
 
       const [mobileRow, getMobileRowError] = await (
         await inquiryGetMobileFromDb
-      )(mobile, member, manager)
+      )(mobile, member)
 
       if (getMobileRowError != '') {
         return response(undefined, UnableToSetMainMobile, getMobileRowError)
@@ -108,7 +99,6 @@ export class MobileService {
       const addMobileErrorMessege = await (await inquirySetMainMobile)(
         mobileRow,
         member,
-        manager,
       )
 
       if (addMobileErrorMessege != '') {
@@ -125,11 +115,7 @@ export class MobileService {
     inquiryGetMobileFromDb: Promise<InquiryGetMobileType>,
     inquiryDeleteMobile: Promise<InquiryDeleteMobileType>,
   ) {
-    return async (
-      member: Member,
-      body: deleteMobileRequestDto,
-      manager: EntityManager,
-    ) => {
+    return async (member: Member, body: deleteMobileRequestDto) => {
       const start = dayjs()
       if (!member.mobile) {
         return response(
@@ -145,7 +131,7 @@ export class MobileService {
       }
       const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
         await inquiryVerifyOtp
-      )(verifyOtpData, manager)
+      )(verifyOtpData)
 
       if (verifyOtpErrorCode != 0) {
         return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
@@ -155,7 +141,7 @@ export class MobileService {
 
       const [mobileRow, getMobileRowError] = await (
         await inquiryGetMobileFromDb
-      )(mobile, member, manager)
+      )(mobile, member)
 
       if (getMobileRowError != '') {
         return response(undefined, UnableToSetMainMobile, getMobileRowError)
@@ -163,7 +149,6 @@ export class MobileService {
       const addMobileErrorMessege = await (await inquiryDeleteMobile)(
         mobileRow,
         member,
-        manager,
       )
 
       if (addMobileErrorMessege != '') {
@@ -175,12 +160,14 @@ export class MobileService {
     }
   }
 
-  async getMobileFormDbByMobilePhoneFunc(): Promise<InquiryGetMobileType> {
-    return async (mobile: string, member: Member, manager: EntityManager) => {
+  async getMobileFormDbByMobilePhoneFunc(
+    etm: EntityManager,
+  ): Promise<InquiryGetMobileType> {
+    return async (mobile: string, member: Member) => {
       const start = dayjs()
       let mobileRow: Mobile
       try {
-        mobileRow = await manager.findOne(Mobile, {
+        mobileRow = await etm.findOne(Mobile, {
           where: {
             mobile,
             member,
@@ -202,16 +189,12 @@ export class MobileService {
     }
   }
 
-  async addMobileFunc(): Promise<InquiryAddMobileType> {
-    return async (
-      body: addMobileRegisterDto,
-      member: Member,
-      manager: EntityManager,
-    ) => {
+  async addMobileFunc(etm: EntityManager): Promise<InquiryAddMobileType> {
+    return async (body: addMobileRegisterDto, member: Member) => {
       const start = dayjs()
       let mobile: Mobile
       try {
-        mobile = await manager.findOne(Mobile, {
+        mobile = await etm.findOne(Mobile, {
           where: {
             mobile: body.mobile,
             deletedAt: null,
@@ -230,13 +213,13 @@ export class MobileService {
               },
             })
             oldMobileMember.mobile = null
-            await manager.save(oldMobileMember)
+            await etm.save(oldMobileMember)
           }
 
-          await manager.softRemove(mobile)
+          await etm.softRemove(mobile)
         }
 
-        mobile = Mobile.create({
+        mobile = etm.create(Mobile, {
           mobile: body.mobile,
           member,
           isPrimary: body.isPrimary,
@@ -244,10 +227,10 @@ export class MobileService {
 
         if (body.isPrimary) {
           member.mobile = body.mobile
-          await manager.save(member)
+          await etm.save(member)
         }
 
-        await manager.save(mobile)
+        await etm.save(mobile)
       } catch (error) {
         console.log(error)
         return error
@@ -258,11 +241,13 @@ export class MobileService {
     }
   }
 
-  async setMainMobileFunc(): Promise<InquirySetMainMobileType> {
-    return async (mobile: Mobile, member: Member, manager: EntityManager) => {
+  async setMainMobileFunc(
+    etm: EntityManager,
+  ): Promise<InquirySetMainMobileType> {
+    return async (mobile: Mobile, member: Member) => {
       const start = dayjs()
       try {
-        const oldPrimary = await manager.findOne(Mobile, {
+        const oldPrimary = await etm.findOne(Mobile, {
           where: {
             member,
             isPrimary: true,
@@ -272,14 +257,14 @@ export class MobileService {
 
         if (oldPrimary) {
           oldPrimary.isPrimary = false
-          manager.save(oldPrimary)
+          etm.save(oldPrimary)
         }
 
         mobile.isPrimary = true
-        await manager.save(mobile)
+        await etm.save(mobile)
 
         member.mobile = mobile.mobile
-        await manager.save(member)
+        await etm.save(member)
       } catch (error) {
         return error
       }
@@ -289,15 +274,15 @@ export class MobileService {
     }
   }
 
-  async deleteMobileFunc(): Promise<InquiryDeleteMobileType> {
-    return async (mobile: Mobile, member: Member, manager: EntityManager) => {
+  async deleteMobileFunc(etm: EntityManager): Promise<InquiryDeleteMobileType> {
+    return async (mobile: Mobile, member: Member) => {
       const start = dayjs()
       try {
         if (mobile.isPrimary) {
           member.mobile = null
-          await manager.save(member)
+          await etm.save(member)
         }
-        await manager.softRemove(mobile)
+        await etm.softRemove(mobile)
       } catch (error) {
         return error
       }

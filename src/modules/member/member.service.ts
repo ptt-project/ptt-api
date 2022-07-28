@@ -76,7 +76,7 @@ export class MemberService {
     ): Promise<string> => {
       const start = dayjs()
       try {
-        await etm.getRepository(Member).update(memberId, { ...params })
+        await etm.update(Member, memberId, { ...params })
       } catch (error) {
         return error
       }

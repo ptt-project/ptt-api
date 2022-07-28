@@ -26,7 +26,6 @@ export type InquiryValidateSendOtpType = (
 
 export type InquiryVerifyOtpType = (
   params: verifyOtpRequestDto | RegisterRequestDto,
-  manager: EntityManager,
 ) => Promise<[number, string]>
 
 export type VerifyOtpHandler = (

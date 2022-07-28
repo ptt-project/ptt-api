@@ -6,23 +6,19 @@ import { addMobileRegisterDto, addMobileRequestDto } from './dto/mobile.dto'
 export type InquiryAddMobileType = (
   body: addMobileRequestDto | addMobileRegisterDto,
   member: Member,
-  manager: EntityManager,
 ) => Promise<string>
 
 export type InquirySetMainMobileType = (
   mobile: Mobile,
   member: Member,
-  manager: EntityManager,
 ) => Promise<string>
 
 export type InquiryDeleteMobileType = (
   mobile: Mobile,
   member: Member,
-  manager: EntityManager,
 ) => Promise<string>
 
 export type InquiryGetMobileType = (
   mobile: string,
   member: Member,
-  manager: EntityManager,
 ) => Promise<[Mobile, string]>

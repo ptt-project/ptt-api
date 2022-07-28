@@ -8,22 +8,25 @@ export class OtpController {
   constructor(private readonly otpService: OtpService) {}
 
   @Post('request')
-  async requestOtp(@Body() body: sendOtpRequestDto) {
+  async requestOtp(
+    @Body() body: sendOtpRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
     return await this.otpService.requestOtpHandler(
-      this.otpService.verifyForSendOtp(),
+      this.otpService.verifyForSendOtp(etm),
       this.otpService.sendOtp(),
-      this.otpService.saveOtpToDb(),
+      this.otpService.saveOtpToDb(etm),
     )(body)
   }
 
   @Post('verify')
-  @Transaction({ isolation: 'SERIALIZABLE' })
+  @Transaction()
   async verifyOtp(
     @Body() body: verifyOtpRequestDto,
-    @TransactionManager() manager: EntityManager,
+    @TransactionManager() etm: EntityManager,
   ) {
     return await this.otpService.verifyOtpHandler(
-      this.otpService.inquiryVerifyOtpFunc(),
-    )(body, manager)
+      this.otpService.inquiryVerifyOtpFunc(etm),
+    )(body)
   }
 }

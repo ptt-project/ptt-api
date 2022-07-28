@@ -17,6 +17,7 @@ import {
 
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
+import { EntityManager } from 'typeorm'
 
 @Injectable()
 export class LoginService {
@@ -67,14 +68,14 @@ export class LoginService {
     }
   }
 
-  async inquiryUserExistByUsernameFunc(): Promise<
-    InquiryUserExistByUsernameType
-  > {
+  async inquiryUserExistByUsernameFunc(
+    etm: EntityManager,
+  ): Promise<InquiryUserExistByUsernameType> {
     return async (username: string): Promise<[Member, string]> => {
       const start = dayjs()
       let member: Member
       try {
-        member = await Member.findOne({
+        member = await etm.findOne(Member, {
           where: [
             {
               username,

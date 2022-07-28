@@ -92,7 +92,7 @@ export class ProductService {
       try {
         const categoryProductProfiles = productProfileIds.map(
           (productProfileId: number) => {
-            return CategoryProductProfile.create({
+            return etm.create(CategoryProductProfile, {
               categoryId,
               productProfileId,
             })

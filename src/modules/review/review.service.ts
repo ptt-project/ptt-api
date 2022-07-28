@@ -26,7 +26,7 @@ export class ReviewService {
   }
 
   getReviewsBySellerIdHandler(
-    InquiryReviewsBySellerId: Promise< InquiryReviewsBySellerIdType>,
+    InquiryReviewsBySellerId: Promise<InquiryReviewsBySellerIdType>,
   ) {
     return async (member: Member, query?: getReviewQueryDTO) => {
       const start = dayjs()
@@ -44,29 +44,27 @@ export class ReviewService {
           inquiryCommentsError,
         )
       }
-      
-      const result =  await paginate<Review>(reviews, { limit, page })
+
+      const result = await paginate<Review>(reviews, { limit, page })
       this.logger.info(
         `Done paginate InquiryReviewsBySellerIdFunc ${dayjs().diff(start)} ms`,
       )
-      
+
       this.logger.info(
         `Done getReviewsBySellerIdHandler ${dayjs().diff(start)} ms`,
       )
-      return response(
-        result,
-      )
+      return response(result)
     }
   }
 
   async InquiryReviewsBySellerIdFunc(
     etm: EntityManager,
-  ): Promise< InquiryReviewsBySellerIdType> {
+  ): Promise<InquiryReviewsBySellerIdType> {
     return async (
       sellerId: number,
       isReply?: string,
       star?: string,
-    ): Promise<[ SelectQueryBuilder<Review>, string]> => {
+    ): Promise<[SelectQueryBuilder<Review>, string]> => {
       const start = dayjs()
       let reviews: SelectQueryBuilder<Review>
       try {
@@ -82,7 +80,6 @@ export class ReviewService {
         if (star) {
           reviews.andWhere('reviews.star = :star', { star })
         }
-
       } catch (error) {
         return [reviews, error]
       }
@@ -95,7 +92,9 @@ export class ReviewService {
     }
   }
 
-  getReviewsByReviewIdHandler(InquiryReviewsByReviewId: Promise<InquiryReviewsByReviewIdType>) {
+  getReviewsByReviewIdHandler(
+    InquiryReviewsByReviewId: Promise<InquiryReviewsByReviewIdType>,
+  ) {
     return async (reviewId: number) => {
       const start = dayjs()
       const [review, InquiryReviewsByReviewIdError] = await (
@@ -110,7 +109,9 @@ export class ReviewService {
         )
       }
 
-      this.logger.info(`Done getReviewsByReviewIdHandler ${dayjs().diff(start)} ms`)
+      this.logger.info(
+        `Done getReviewsByReviewIdHandler ${dayjs().diff(start)} ms`,
+      )
       return response(review)
     }
   }
@@ -123,9 +124,7 @@ export class ReviewService {
       let review: Review
 
       try {
-        review = await etm
-          .getRepository(Review)
-          .findOne(reviewId, { withDeleted: false })
+        review = await etm.findOne(Review, reviewId, { withDeleted: false })
       } catch (error) {
         return [review, error]
       }
@@ -134,7 +133,9 @@ export class ReviewService {
         return [review, 'Not found Comment']
       }
 
-      this.logger.info(`Done InquiryReviewsByReviewIdFunc ${dayjs().diff(start)} ms`)
+      this.logger.info(
+        `Done InquiryReviewsByReviewIdFunc ${dayjs().diff(start)} ms`,
+      )
       return [review, '']
     }
   }
@@ -157,10 +158,9 @@ export class ReviewService {
         )
       }
 
-      const replyReviewByReviewIdToDError = await (await replyReviewByReviewIdToDb)(
-        reviewId,
-        body,
-      )
+      const replyReviewByReviewIdToDError = await (
+        await replyReviewByReviewIdToDb
+      )(reviewId, body)
 
       if (replyReviewByReviewIdToDError != '') {
         return response(
@@ -170,7 +170,9 @@ export class ReviewService {
         )
       }
 
-      this.logger.info(`Done replyReviewByReviewIdHandler ${dayjs().diff(start)} ms`)
+      this.logger.info(
+        `Done replyReviewByReviewIdHandler ${dayjs().diff(start)} ms`,
+      )
       return response(undefined)
     }
   }
@@ -184,9 +186,7 @@ export class ReviewService {
     ): Promise<string> => {
       const start = dayjs()
       try {
-        await etm
-          .getRepository(Review)
-          .update(reviewId, { ...params, isReply: true })
+        await etm.update(Review, reviewId, { ...params, isReply: true })
       } catch (error) {
         return error
       }
