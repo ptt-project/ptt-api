@@ -65,3 +65,22 @@ export const UnableToUpdateShopInfo = _sellerError + 5
 
 // review module
 const _reviewError = 107000
+export const UnableInquiryInquiryReviewsBySellerId = _reviewError + 1
+export const UnableInquiryReviewsByReviewId = _reviewError + 2
+export const UnableReplyReviewByReviewId = _reviewError + 3
+
+const _categoryError = 108000
+export const UnableToGetCategories = _categoryError + 1
+export const UnableToInsertCategory = _categoryError + 2
+export const UnableToGetCategoryByCategoryId = _categoryError + 3
+export const UnableToUpdateStatusCategory = _categoryError + 4
+export const UnableToUpdatePriorityCategory = _categoryError + 5
+export const UnableToOrdersIsInvalid = _categoryError + 6
+export const UnableDeleteCategoryToDb = _categoryError + 7
+export const UnableDeleteCategoryProductToDbByCategoryId = _categoryError + 8
+export const UnableInsertCategoryProductToDb = _categoryError + 9
+export const UnableUpdateCategoryToDb = _categoryError + 10
+export const UnableDeleteCategoryProductToDb = _categoryError + 11
+export const UnableinquiryProductProfileIdsByCategoryId = _categoryError + 12
+export const UnableinquiryProductProfileByCatgoryIdFunc = _categoryError + 13
+export const UnableInquiryCategoryByName = _categoryError + 14

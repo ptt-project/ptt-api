@@ -3,6 +3,7 @@ import { Column, Entity, OneToOne, OneToMany, JoinColumn } from 'typeorm'
 import { Address } from './Address'
 import { AppEntity } from './AppEntity'
 import { Mobile } from './Mobile'
+import { Shop } from './Shop'
 
 export type MemberGenderType = 'F' | 'M' | 'O'
 export type MemberRoleType = 'Buyer' | 'Seller'
@@ -72,4 +73,10 @@ export class Member extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'member_id' })
   addresses: Address[]
+
+  @OneToOne(
+    () => Shop,
+    shop => shop.member,
+  )
+  shop: Shop
 }

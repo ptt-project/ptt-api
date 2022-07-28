@@ -7,6 +7,11 @@ import { TokenType } from './auth.type'
 import { Request } from 'express'
 import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
+import {
+  Connection,
+  EntityManager,
+  getConnection,
+} from 'typeorm'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -28,10 +33,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(request: Request, payload: TokenType): Promise<any> {
     const start = dayjs()
+    const connection: Connection = getConnection()
+    const etm: EntityManager = connection.createEntityManager()
     const [response, isError] = await (
       await this.authService.validateTokenHandler(
         this.authService.exiredTokenFunc(),
-        this.authService.inquiryUserExistByIdFunc(),
+        this.authService.inquiryUserExistByIdFunc(etm),
         this.authService.genAccessTokenFunc(),
         this.authService.genRefreshTokenFunc(),
       )

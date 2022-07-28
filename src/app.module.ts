@@ -12,6 +12,7 @@ import { AppService } from './app.service'
 import { LoggerModule } from 'nestjs-pino'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
+import { ConsoleModule } from 'nestjs-console'
 
 import { VersionMiddleware } from './utils/middlewares/version.middleware'
 import './initialize'
@@ -20,6 +21,9 @@ import { MemberModule } from './modules/member/member.modules'
 import { MobileModule } from './modules/mobile/mobile.modules'
 import { AddressModule } from './modules/address/address.modules'
 import { SellerModule } from './modules/seller/seller.modules'
+import { ReviewModule } from './modules/review/review.modules'
+import { CategoryModule } from './modules/category/category.modules'
+import { AppConsoleModule } from './modules/app-console/app-console.moduel'
 
 console.log('__dirname', __dirname)
 @Module({
@@ -43,7 +47,17 @@ console.log('__dirname', __dirname)
           req(req) {
             req.body = req.raw.body
             req.headers = undefined
+            req.remoteAddress = undefined
+            req.remotePort = undefined
+            req.url = undefined
             return req
+          },
+          res(res) {
+            res.headers = undefined
+            res.remoteAddress = undefined
+            res.remotePort = undefined
+            res.url = undefined
+            return res
           },
         },
       },
@@ -52,11 +66,15 @@ console.log('__dirname', __dirname)
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),
+    ConsoleModule,
+    AppConsoleModule,
     AuthModule,
     MemberModule,
     MobileModule,
     AddressModule,
     SellerModule,
+    ReviewModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

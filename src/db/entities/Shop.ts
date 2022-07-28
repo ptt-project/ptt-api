@@ -1,6 +1,8 @@
-import { Column, Entity, OneToOne, JoinColumn } from 'typeorm'
+import { Column, Entity, OneToOne, JoinColumn, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
 import { Member } from './Member'
+import { Product } from './Product'
+import { ProductProfile } from './ProductProfile'
 
 export type ShopType = 'Normal' | 'Mall'
 export type ApprovalType = 'requested' | 'rejected' | 'approved'
@@ -11,7 +13,7 @@ export class Shop extends AppEntity {
     type: 'enum',
     enum: ['Normal', 'Mall'],
     nullable: false,
-    default: 'Normal'
+    default: 'Normal',
   })
   type: ShopType
 
@@ -41,7 +43,7 @@ export class Shop extends AppEntity {
 
   @Column({ name: 'social_media', nullable: true, length: 200 })
   socialMedia: string
-  
+
   @Column({ name: 'note', nullable: true, length: 1000 })
   note: string
 
@@ -56,7 +58,7 @@ export class Shop extends AppEntity {
     type: 'enum',
     enum: ['requested', 'rejected', 'approved'],
     nullable: false,
-    default: 'requested'
+    default: 'requested',
   })
   approvalStatus: ApprovalType
 
@@ -69,16 +71,37 @@ export class Shop extends AppEntity {
   @Column({ name: 'product_count', nullable: false, default: 0 })
   productCount: number
 
-  @Column({ name: 'reply_rate', type: "decimal", precision: 5, scale: 2,nullable: false, default: 0 })
+  @Column({
+    name: 'reply_rate',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: false,
+    default: 0,
+  })
   replyRate: number
 
-  @Column({ name: 'shop_score', type: "decimal", precision: 2, scale: 1, nullable: false, default: 0 })
+  @Column({
+    name: 'shop_score',
+    type: 'decimal',
+    precision: 2,
+    scale: 1,
+    nullable: false,
+    default: 0,
+  })
   shopScore: number
 
   @Column({ name: 'score_count', nullable: false, default: 0 })
   scoreCount: number
 
-  @Column({ name: 'cancel_rate', type: "decimal", precision: 5, scale: 2, nullable: false, default: 0 })
+  @Column({
+    name: 'cancel_rate',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: false,
+    default: 0,
+  })
   cancelRate: number
 
   @Column({ name: 'profile_image_path', nullable: true })
@@ -90,7 +113,24 @@ export class Shop extends AppEntity {
   @Column({ name: 'member_id', nullable: true })
   memberId: number
 
-  @OneToOne(() => Member)
+  @OneToOne(
+    () => Member,
+    member => member.shop,
+  )
   @JoinColumn({ name: 'member_id', referencedColumnName: 'id' })
   member: Member
+
+  @OneToMany(
+    () => Product,
+    product => product.shop,
+  )
+  @JoinColumn({ referencedColumnName: 'shop_id' })
+  products: Product[]
+
+  @OneToMany(
+    () => ProductProfile,
+    productProfile => productProfile.shop,
+  )
+  @JoinColumn({ referencedColumnName: 'shop_id' })
+  productProfiles: ProductProfile[]
 }
