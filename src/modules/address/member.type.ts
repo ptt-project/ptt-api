@@ -1,4 +1,5 @@
 import { Address } from 'src/db/entities/Address'
+import { Member, MemberRoleType } from 'src/db/entities/Member'
 
 export type InsertAddressToDbParams = {
   memberId: number
@@ -43,7 +44,10 @@ export type UpdateAddressByIdType = (
   params: UpdateAddressToDbParams,
 ) => Promise<string>
 
-export type DeleteAddressByIdInDbType = (address: Address) => Promise<string>
+export type DeleteAddressByIdInDbType = (
+  address: Address,
+  role: MemberRoleType,
+) => Promise<string>
 
 export type UpdateIsMainAddressesByIdToDbType = (
   addressId: number,
@@ -56,3 +60,13 @@ export type InquiryAddressByIdType = (
 export type InquiryAddressesByMemberIdType = (
   memberId: number,
 ) => Promise<[Address[], string]>
+
+export type UpdateNotPickupAddressesByMemberIdType = (
+  memberId: number,
+  role: MemberRoleType,
+) => Promise<string>
+
+export type UpdateNotReturnItemAddressesByMemberIdType = (
+  memberId: number,
+  role: MemberRoleType,
+) => Promise<string>

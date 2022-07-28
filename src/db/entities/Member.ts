@@ -5,6 +5,7 @@ import { AppEntity } from './AppEntity'
 import { Mobile } from './Mobile'
 
 export type MemberGenderType = 'F' | 'M' | 'O'
+export type MemberRoleType = 'Buyer' | 'Seller'
 @Entity({ name: 'members' })
 export class Member extends AppEntity {
   @Column({ name: 'username', nullable: false, length: 50 })
@@ -49,6 +50,15 @@ export class Member extends AppEntity {
 
   @Column({ name: 'email', nullable: false, length: 50 })
   email: string
+
+  @Column({
+    name: 'role',
+    type: 'enum',
+    enum: ['Buyer', 'Seller'],
+    default: 'Buyer',
+    nullable: false,
+  })
+  role: MemberRoleType
 
   @OneToMany(
     () => Mobile,

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Address } from 'src/db/entities/Address'
-import { Member } from 'src/db/entities/Member'
+import { Member, MemberRoleType } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
 import { EntityManager } from 'typeorm'
 import {
@@ -16,6 +16,8 @@ import {
   UnableUpdateAddressToDb,
   UnableUpdateIsMainAddressById,
   UnableUpdateNotMainAddressByMemberId,
+  UnableUpdatePickupAddressByMemberId,
+  UnableUpdateReturnItemAddressByMemberId,
 } from 'src/utils/response-code'
 
 import {
@@ -28,6 +30,8 @@ import {
   UpdateIsMainAddressesByIdToDbType,
   InquiryAddressByIdType,
   InquiryAddressesByMemberIdType,
+  UpdateNotPickupAddressesByMemberIdType,
+  UpdateNotReturnItemAddressesByMemberIdType,
 } from './member.type'
 
 @Injectable()
@@ -36,11 +40,17 @@ export class MemberService {
     updateNotMainAddressByMemberId: Promise<
       UpdateNotMainAddressesByMemberIdType
     >,
+    updateNotPickupAddressByMemberId: Promise<
+      UpdateNotPickupAddressesByMemberIdType
+    >,
+    updateNotReturnItemAddressByMemberId: Promise<
+      UpdateNotReturnItemAddressesByMemberIdType
+    >,
     insertAddressToDb: Promise<InsertAddressToDbType>,
   ) {
     return async (member: Member, body: CreateAddressRequestDto) => {
-      const { id: memberId } = member
-      const { isMain } = body
+      const { id: memberId, role } = member
+      const { isMain, isPickup, isReturnItem } = body
 
       if (isMain) {
         const isErrorUpdate = await (await updateNotMainAddressByMemberId)(
@@ -51,6 +61,35 @@ export class MemberService {
           return response(
             undefined,
             UnableUpdateNotMainAddressByMemberId,
+            isErrorUpdate,
+          )
+        }
+      }
+
+      if (isPickup) {
+        const isErrorUpdate = await (await updateNotPickupAddressByMemberId)(
+          memberId,
+          role,
+        )
+
+        if (isErrorUpdate != '') {
+          return response(
+            undefined,
+            UnableUpdatePickupAddressByMemberId,
+            isErrorUpdate,
+          )
+        }
+      }
+
+      if (isReturnItem) {
+        const isErrorUpdate = await (
+          await updateNotReturnItemAddressByMemberId
+        )(memberId, role)
+
+        if (isErrorUpdate != '') {
+          return response(
+            undefined,
+            UnableUpdateReturnItemAddressByMemberId,
             isErrorUpdate,
           )
         }
@@ -96,8 +135,15 @@ export class MemberService {
   }
 
   updateAddressHandler(
+    inquiryAddressById: Promise<InquiryAddressByIdType>,
     updateNotMainAddressByMemberId: Promise<
       UpdateNotMainAddressesByMemberIdType
+    >,
+    updateNotPickupAddressByMemberId: Promise<
+      UpdateNotPickupAddressesByMemberIdType
+    >,
+    updateNotReturnItemAddressByMemberId: Promise<
+      UpdateNotReturnItemAddressesByMemberIdType
     >,
     updateAddressByIdToDb: Promise<UpdateAddressByIdType>,
   ) {
@@ -106,8 +152,28 @@ export class MemberService {
       addressId: number,
       body: MemberUpdateAddressRequestDto,
     ) => {
-      const { id: memberId } = member
-      const { isMain } = body
+      const { id: memberId, role } = member
+      const { isMain, isPickup, isReturnItem } = body
+
+      const [address, inquiryAddressByIdError] = await (
+        await inquiryAddressById
+      )(addressId)
+
+      if (inquiryAddressByIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryAddressById,
+          inquiryAddressByIdError,
+        )
+      }
+
+      if (address.isMain && isMain === false) {
+        return response(
+          undefined,
+          UnableUpdateNotMainAddressByMemberId,
+          "This address flag isMain true, Can't update isMain to false",
+        )
+      }
 
       if (isMain) {
         const isErrorUpdate = await (await updateNotMainAddressByMemberId)(
@@ -118,6 +184,51 @@ export class MemberService {
           return response(
             undefined,
             UnableUpdateNotMainAddressByMemberId,
+            isErrorUpdate,
+          )
+        }
+      }
+
+      if (address.isPickup && isPickup === false) {
+        return response(
+          undefined,
+          UnableUpdatePickupAddressByMemberId,
+          "This address flag isPickup true, Can't update isPickup to false",
+        )
+      }
+
+      if (isPickup) {
+        const isErrorUpdate = await (await updateNotPickupAddressByMemberId)(
+          memberId,
+          role,
+        )
+
+        if (isErrorUpdate != '') {
+          return response(
+            undefined,
+            UnableUpdatePickupAddressByMemberId,
+            isErrorUpdate,
+          )
+        }
+      }
+
+      if (address.isReturnItem && isReturnItem === false) {
+        return response(
+          undefined,
+          UnableUpdateReturnItemAddressByMemberId,
+          "This address flag isReturnItem true, Can't update isReturnItem to false",
+        )
+      }
+
+      if (isReturnItem) {
+        const isErrorUpdate = await (
+          await updateNotReturnItemAddressByMemberId
+        )(memberId, role)
+
+        if (isErrorUpdate != '') {
+          return response(
+            undefined,
+            UnableUpdateReturnItemAddressByMemberId,
             isErrorUpdate,
           )
         }
@@ -226,11 +337,51 @@ export class MemberService {
     }
   }
 
+  async UpdateNotPickupAddressesByMemberIdToDbFunc(
+    etm: EntityManager,
+  ): Promise<UpdateNotPickupAddressesByMemberIdType> {
+    return async (memberId: number, role: MemberRoleType): Promise<string> => {
+      if (role !== 'Seller') {
+        return "Forbidden can't update isPickup"
+      }
+
+      try {
+        await etm
+          .getRepository(Address)
+          .update({ memberId }, { isPickup: false })
+      } catch (error) {
+        return error
+      }
+
+      return ''
+    }
+  }
+
+  async UpdateNotReturnItemAddressesByMemberIdToDbFunc(
+    etm: EntityManager,
+  ): Promise<UpdateNotReturnItemAddressesByMemberIdType> {
+    return async (memberId: number, role: MemberRoleType): Promise<string> => {
+      if (role !== 'Seller') {
+        return "Forbidden can't update isReturnItem"
+      }
+      try {
+        await etm
+          .getRepository(Address)
+          .update({ memberId }, { isReturnItem: false })
+      } catch (error) {
+        return error
+      }
+
+      return ''
+    }
+  }
+
   deleteAddressHandler(
     inquiryAddressById: Promise<InquiryAddressByIdType>,
     deleteAddressByIdToDb: Promise<DeleteAddressByIdInDbType>,
   ) {
-    return async (addressId: number) => {
+    return async (member: Member, addressId: number) => {
+      const { role } = member
       const [address, inquiryAddressByIdError] = await (
         await inquiryAddressById
       )(addressId)
@@ -245,6 +396,7 @@ export class MemberService {
 
       const deleteAddressByIdToDbError = await (await deleteAddressByIdToDb)(
         address,
+        role,
       )
 
       if (deleteAddressByIdToDbError != '') {
@@ -262,7 +414,24 @@ export class MemberService {
   async DeleteAddressByIdToDbFunc(
     etm: EntityManager,
   ): Promise<DeleteAddressByIdInDbType> {
-    return async (address: Address): Promise<string> => {
+    return async (address: Address, role: MemberRoleType): Promise<string> => {
+      const { isMain, isPickup, isReturnItem } = address
+      if (isMain) {
+        return "Can't delete address flag isMain true"
+      } else if (isPickup) {
+        if (role != 'Seller') {
+          return "Forbidden can't delete flag isPickup true"
+        } else {
+          return "Can't delete address flag isPickup true"
+        }
+      } else if (isReturnItem) {
+        if (role != 'Seller') {
+          return "Forbidden can't delete flag isReturnItem true"
+        } else {
+          return "Can't delete address flag isReturnItem true"
+        }
+      }
+
       try {
         await etm.softRemove(address)
       } catch (error) {

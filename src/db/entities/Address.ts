@@ -32,14 +32,20 @@ export class Address extends AppEntity {
   @Column({ name: 'geo_name', nullable: true })
   geoName: string
 
-  @Column({ name: 'is_main', nullable: true })
+  @Column({ name: 'is_main', nullable: true, default: false })
   isMain: boolean
 
-  @Column({ name: 'is_home', nullable: true })
+  @Column({ name: 'is_home', nullable: true, default: false })
   isHome: boolean
 
-  @Column({ name: 'is_work', nullable: true })
+  @Column({ name: 'is_work', nullable: true, default: false })
   isWork: boolean
+
+  @Column({ name: 'is_pickup', nullable: true, default: false })
+  isPickup: boolean
+
+  @Column({ name: 'is_return_item', nullable: true, default: false })
+  isReturnItem: boolean
 
   @ManyToOne(
     () => Member,
