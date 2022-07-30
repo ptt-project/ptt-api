@@ -202,6 +202,12 @@ export class ProductService {
           else if (!cur.options) error = 'productOptions element must have "options" attribute'
           else if (!Array.isArray(cur.options)) error = 'productOptions element must have "options" must be Array'
           else if (cur.options.length == 0) error = 'productOptions element must have "options" must not empty'
+          else {
+            const uniqueOption = [... new Set(cur.options)]
+            if (uniqueOption.length !== cur.options.length) {
+              return error = 'options in productOptions must be unique'
+            }
+          }
           return mem.length === 0
             ? cur.options.map(option => [option])
             : mem.reduce(
@@ -211,6 +217,8 @@ export class ProductService {
 
         if (error !== '') return error
 
+        if (params.products.length > 50)
+          return `products must not have more than 50 elements`
         if (params.products.length !== productOptionsMetaData.length)
           return `products must have ${productOptionsMetaData.length} elements`
 
