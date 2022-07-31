@@ -67,12 +67,14 @@ export class OtpService {
     }
   }
 
-  async verifyForSendOtp(): Promise<InquiryValidateSendOtpType> {
+  async verifyForSendOtp(
+    etm: EntityManager,
+  ): Promise<InquiryValidateSendOtpType> {
     return async (params: sendOtpRequestDto) => {
       const start = dayjs()
       let otp: Otp
       try {
-        otp = await Otp.findOne({
+        otp = await etm.findOne(Otp, {
           where: {
             reference: params.reference,
           },
@@ -113,7 +115,7 @@ export class OtpService {
     }
   }
 
-  saveOtpToDb(): InquirySaveOtpType {
+  saveOtpToDb(etm: EntityManager): InquirySaveOtpType {
     return async (otp: Otp, otpData: SendOtpType) => {
       const start = dayjs()
       // save otpData
@@ -126,7 +128,7 @@ export class OtpService {
           otp.status = 'send'
           otp.createdAt = new Date()
 
-          await otp.save()
+          await etm.save(otp)
         } catch (error) {
           return [otp, UnableToSendOtp]
         }
@@ -135,7 +137,7 @@ export class OtpService {
       } else {
         let newOtp: Otp
         try {
-          newOtp = Otp.create({
+          newOtp = etm.create(Otp, {
             ...otpData,
           })
 
@@ -151,12 +153,12 @@ export class OtpService {
   }
 
   verifyOtpHandler(inquiryVerifyOtp: Promise<InquiryVerifyOtpType>) {
-    return async (otpData: verifyOtpRequestDto, manager: EntityManager) => {
+    return async (otpData: verifyOtpRequestDto) => {
       const start = dayjs()
       const { reference, otpCode, refCode } = otpData
       const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
         await inquiryVerifyOtp
-      )({ refCode, otpCode, reference }, manager)
+      )({ refCode, otpCode, reference })
 
       if (verifyOtpErrorCode != 0) {
         return validateBadRequest(verifyOtpErrorCode, verifyOtpErrorMessege)
@@ -167,8 +169,10 @@ export class OtpService {
     }
   }
 
-  async inquiryVerifyOtpFunc(): Promise<InquiryVerifyOtpType> {
-    return async (otpData: verifyOtpRequestDto, manager: EntityManager) => {
+  async inquiryVerifyOtpFunc(
+    etm: EntityManager,
+  ): Promise<InquiryVerifyOtpType> {
+    return async (otpData: verifyOtpRequestDto) => {
       const start = dayjs()
       if (process.env.SKIP_VERIFY_OTP) {
         return [0, null]
@@ -188,7 +192,7 @@ export class OtpService {
           return [UnableVerifyOtpIsAreadyVerified, 'Otp code is already verify']
         }
         otp.verifyCount += 1
-        await manager.save(otp)
+        await etm.save(otp)
         if (otp.verifyCount > 3) {
           return [
             UnableVerifyOtpLimitExceeded,
@@ -199,7 +203,7 @@ export class OtpService {
           return [UnableVerifyOtpIncorrect, 'Otp code is incorrect']
         }
         otp.status = 'verified'
-        await manager.save(otp)
+        await etm.save(otp)
       } catch (error) {
         return [InternalSeverError, error]
       }

@@ -2,9 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
 import { EntityManager } from 'typeorm'
-import {
-  RegisterSellerRequestDto,
-} from './dto/seller.dto'
+import { RegisterSellerRequestDto } from './dto/seller.dto'
 
 import {
   InvalidSellerRegister,
@@ -29,9 +27,7 @@ export class RegisterService {
   }
 
   registerSellerHandler(
-    validateSellerData: Promise<
-      ValidateSellerRegisterType
-    >,
+    validateSellerData: Promise<ValidateSellerRegisterType>,
     insertShopToDb: Promise<InsertShopToDbType>,
   ) {
     return async (member: Member, body: RegisterSellerRequestDto) => {
@@ -41,32 +37,21 @@ export class RegisterService {
       const validateSellerError = await (await validateSellerData)(
         memberId,
         body,
-        false
+        false,
       )
 
       if (validateSellerError != '') {
-        return response(
-          undefined,
-          InvalidSellerRegister,
-          validateSellerError,
-        )
+        return response(undefined, InvalidSellerRegister, validateSellerError)
       }
-    
 
       const params: InsertShopToDbParams = {
         ...body,
         memberId,
       }
-      const [shop, insertShopToDbError] = await (await insertShopToDb)(
-        params,
-      )
+      const [shop, insertShopToDbError] = await (await insertShopToDb)(params)
 
       if (insertShopToDbError != '') {
-        return response(
-          undefined,
-          UnableInsertShopToDb,
-          insertShopToDbError,
-        )
+        return response(undefined, UnableInsertShopToDb, insertShopToDbError)
       }
 
       this.logger.info(`Done registerSellerHandler ${dayjs().diff(start)} ms`)
@@ -75,9 +60,7 @@ export class RegisterService {
   }
 
   resubmitRegisterSellerHandler(
-    validateSellerData: Promise<
-      ValidateSellerRegisterType
-    >,
+    validateSellerData: Promise<ValidateSellerRegisterType>,
     resubmitShopToDb: Promise<InsertShopToDbType>,
   ) {
     return async (member: Member, body: RegisterSellerRequestDto) => {
@@ -91,13 +74,8 @@ export class RegisterService {
       )
 
       if (validateSellerError != '') {
-        return response(
-          undefined,
-          InvalidSellerRegister,
-          validateSellerError,
-        )
+        return response(undefined, InvalidSellerRegister, validateSellerError)
       }
-    
 
       const params: InsertShopToDbParams = {
         ...body,
@@ -108,14 +86,12 @@ export class RegisterService {
       )
 
       if (resubmitShopToDbError != '') {
-        return response(
-          undefined,
-          UnableUpdateShopToDb,
-          resubmitShopToDbError,
-        )
+        return response(undefined, UnableUpdateShopToDb, resubmitShopToDbError)
       }
 
-      this.logger.info(`Done resubmitRegisterSellerHandler ${dayjs().diff(start)} ms`)
+      this.logger.info(
+        `Done resubmitRegisterSellerHandler ${dayjs().diff(start)} ms`,
+      )
       return response(shop)
     }
   }
@@ -132,18 +108,21 @@ export class RegisterService {
       let shop: Shop
 
       try {
-        shop = await etm.findOne(Shop, { where: [
+        shop = await etm.findOne(Shop, {
+          where: [
             {
               deletedAt: null,
-              email: params.email
-            }, {
+              email: params.email,
+            },
+            {
               deletedAt: null,
-              mobile: params.mobile
-            }, {
+              mobile: params.mobile,
+            },
+            {
               deletedAt: null,
               corperateId: params.corperateId,
-            }
-          ]
+            },
+          ],
         })
         if (!isResubmit && shop && shop.memberId === memberId) {
           return 'You have already register as a seller'
@@ -159,7 +138,10 @@ export class RegisterService {
             return 'corperateId is alredy used'
           }
         }
-        if (params.type === 'Mall' && (!params.corperateId || !params.corperateName)) {
+        if (
+          params.type === 'Mall' &&
+          (!params.corperateId || !params.corperateName)
+        ) {
           return 'corperateId and corperateName is required for Mall shop'
         }
       } catch (error) {
@@ -171,17 +153,13 @@ export class RegisterService {
     }
   }
 
-  async insertShopToDbFunc(
-    etm: EntityManager,
-  ): Promise<InsertShopToDbType> {
-    return async (
-      params: InsertShopToDbParams,
-    ): Promise<[Shop, string]> => {
+  async insertShopToDbFunc(etm: EntityManager): Promise<InsertShopToDbType> {
+    return async (params: InsertShopToDbParams): Promise<[Shop, string]> => {
       const start = dayjs()
       let shop: Shop
 
       try {
-        shop = Shop.create({
+        shop = etm.create(Shop, {
           fullName: params.fullName,
           memberId: params.memberId,
           mobile: params.mobile,
@@ -206,12 +184,8 @@ export class RegisterService {
     }
   }
 
-  async resubmitShopToDbFunc(
-    etm: EntityManager,
-  ): Promise<InsertShopToDbType> {
-    return async (
-      params: InsertShopToDbParams,
-    ): Promise<[Shop, string]> => {
+  async resubmitShopToDbFunc(etm: EntityManager): Promise<InsertShopToDbType> {
+    return async (params: InsertShopToDbParams): Promise<[Shop, string]> => {
       const start = dayjs()
       let shop: Shop
 
@@ -219,7 +193,7 @@ export class RegisterService {
         shop = await etm.findOne(Shop, {
           where: {
             memberId: params.memberId,
-          }
+          },
         })
 
         if (!shop) {
@@ -241,7 +215,7 @@ export class RegisterService {
         shop.corperateId = params.corperateId
         shop.corperateName = params.corperateName
         shop.approvalStatus = 'requested'
-        
+
         await etm.save(shop)
       } catch (error) {
         return [shop, error]

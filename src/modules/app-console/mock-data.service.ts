@@ -54,8 +54,8 @@ export class MockDataConsoleService {
       refCode: '',
     }
     const [member, errorCreateUser] = await (
-      await this.authService.insertMemberToDbFunc()
-    )(createUserParams, etm)
+      await this.authService.insertMemberToDbFunc(etm)
+    )(createUserParams)
     if (errorCreateUser != '') {
       return console.log('create user error =>', errorCreateUser)
     }

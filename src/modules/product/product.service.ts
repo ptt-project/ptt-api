@@ -655,9 +655,7 @@ export class ProductService {
     ): Promise<string> => {
       const start = dayjs()
       try {
-        await etm
-          .getRepository(ProductProfile)
-          .update(productProfileId, { status})
+        await etm.update(ProductProfile,productProfileId, { status})
       } catch (error) {
         return error
       }

@@ -1,6 +1,16 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  ManyToMany,
+} from 'typeorm'
 import { AppEntity } from './AppEntity'
+import { Category } from './Category'
+import { PlatformCategory } from './PlatformCategory'
 import { ProductProfile } from './ProductProfile'
+import { Shop } from './Shop'
 
 @Entity({ name: 'products' })
 export class Product extends AppEntity {
@@ -34,4 +44,18 @@ export class Product extends AppEntity {
   )
   @JoinColumn({ name: 'product_profile_id', referencedColumnName: 'id' })
   productProfile: ProductProfile
+
+  @ManyToOne(
+    () => Shop,
+    shop => shop.products,
+  )
+  @JoinColumn({ name: 'shop_id', referencedColumnName: 'id' })
+  shop: Shop
+
+  @ManyToOne(
+    () => PlatformCategory,
+    platformCategory => platformCategory.products,
+  )
+  @JoinColumn({ name: 'platform_category_id', referencedColumnName: 'id' })
+  platformCategory: PlatformCategory
 }

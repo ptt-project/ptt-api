@@ -67,7 +67,7 @@ export class AuthService {
     insertMemberToDb: Promise<InsertMemberToDbTye>,
     addMobileFunc: Promise<InquiryAddMobileType>,
   ) {
-    return async (body: RegisterRequestDto, manager: EntityManager) => {
+    return async (body: RegisterRequestDto) => {
       const start = dayjs()
       const verifyOtpData: verifyOtpRequestDto = {
         reference: body.mobile,
@@ -76,7 +76,7 @@ export class AuthService {
       }
       const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
         await inquiryVerifyOtp
-      )(verifyOtpData, manager)
+      )(verifyOtpData)
 
       if (verifyOtpErrorCode != 0) {
         return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
@@ -90,10 +90,7 @@ export class AuthService {
         return response(undefined, validateErrorCode, validateErrorMessage)
       }
 
-      const [member, insertMemberError] = await (await insertMemberToDb)(
-        body,
-        manager,
-      )
+      const [member, insertMemberError] = await (await insertMemberToDb)(body)
       if (insertMemberError != '') {
         return internalSeverError(
           UnableInsertMemberToDbError,
@@ -104,7 +101,6 @@ export class AuthService {
       const addMobileErrorMessege = await (await addMobileFunc)(
         { mobile: body.mobile, isPrimary: true },
         member,
-        manager,
       )
       if (addMobileErrorMessege != '') {
         return response(undefined, UnableToAddMobile, addMobileErrorMessege)
@@ -115,14 +111,16 @@ export class AuthService {
     }
   }
 
-  async inquiryMemberExistFunc(): Promise<InquiryMemberExistType> {
+  async inquiryMemberExistFunc(
+    etm: EntityManager,
+  ): Promise<InquiryMemberExistType> {
     return async (
       params: RegisterRequestDto | ValidateRegisterRequestDto,
     ): Promise<[number, string]> => {
       const start = dayjs()
       const { email, username } = params
       try {
-        const member = await Member.findOne({
+        const member = await etm.findOne(Member, {
           where: [
             {
               email,
@@ -150,11 +148,8 @@ export class AuthService {
     }
   }
 
-  async insertMemberToDbFunc(): Promise<InsertMemberToDbTye> {
-    return async (
-      params: RegisterRequestDto,
-      manager: EntityManager,
-    ): Promise<[Member, string]> => {
+  async insertMemberToDbFunc(etm: EntityManager): Promise<InsertMemberToDbTye> {
+    return async (params: RegisterRequestDto): Promise<[Member, string]> => {
       const start = dayjs()
       const {
         username,
@@ -168,7 +163,7 @@ export class AuthService {
 
       let member: Member
       try {
-        member = Member.create({
+        member = etm.create(Member, {
           username: username,
           firstname: firstName,
           lastname: lastName,
@@ -178,7 +173,7 @@ export class AuthService {
           email: email,
         })
 
-        await manager.save(member)
+        await etm.save(member)
       } catch (error) {
         return [member, error]
       }

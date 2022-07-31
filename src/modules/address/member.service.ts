@@ -124,7 +124,7 @@ export class MemberService {
       let address: Address
 
       try {
-        address = await Address.create({ ...params })
+        address = await etm.create(Address, { ...params })
         await etm.save(address)
       } catch (error) {
         return [address, error]
@@ -263,7 +263,7 @@ export class MemberService {
       params: UpdateAddressToDbParams,
     ): Promise<string> => {
       try {
-        await etm.getRepository(Address).update(addressId, { ...params })
+        await etm.update(Address, addressId, { ...params })
       } catch (error) {
         return error
       }
@@ -314,7 +314,7 @@ export class MemberService {
   ): Promise<UpdateIsMainAddressesByIdToDbType> {
     return async (addressId: number): Promise<string> => {
       try {
-        await etm.getRepository(Address).update(addressId, { isMain: true })
+        await etm.update(Address, addressId, { isMain: true })
       } catch (error) {
         return error
       }
@@ -328,7 +328,7 @@ export class MemberService {
   ): Promise<UpdateNotMainAddressesByMemberIdType> {
     return async (memberId: number): Promise<string> => {
       try {
-        await etm.getRepository(Address).update({ memberId }, { isMain: false })
+        await etm.update(Address, { memberId }, { isMain: false })
       } catch (error) {
         return error
       }
@@ -346,9 +346,7 @@ export class MemberService {
       }
 
       try {
-        await etm
-          .getRepository(Address)
-          .update({ memberId }, { isPickup: false })
+        await etm.update(Address, { memberId }, { isPickup: false })
       } catch (error) {
         return error
       }
@@ -365,9 +363,7 @@ export class MemberService {
         return "Forbidden can't update isReturnItem"
       }
       try {
-        await etm
-          .getRepository(Address)
-          .update({ memberId }, { isReturnItem: false })
+        await etm.update(Address, { memberId }, { isReturnItem: false })
       } catch (error) {
         return error
       }
@@ -466,9 +462,7 @@ export class MemberService {
     return async (addressId: number): Promise<[Address, string]> => {
       let address: Address
       try {
-        address = await etm
-          .getRepository(Address)
-          .findOne(addressId, { withDeleted: false })
+        address = await etm.findOne(Address, addressId, { withDeleted: false })
       } catch (error) {
         return [address, error]
       }
@@ -509,9 +503,10 @@ export class MemberService {
     return async (memberId: number): Promise<[Address[], string]> => {
       let address: Address[]
       try {
-        address = await etm
-          .getRepository(Address)
-          .find({ withDeleted: false, where: { memberId } })
+        address = await etm.find(Address, {
+          withDeleted: false,
+          where: { memberId },
+        })
       } catch (error) {
         return [address, error]
       }

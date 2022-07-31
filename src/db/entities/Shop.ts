@@ -1,6 +1,7 @@
 import { Column, Entity, OneToOne, JoinColumn, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
 import { Member } from './Member'
+import { Product } from './Product'
 import { ProductProfile } from './ProductProfile'
 
 export type ShopType = 'Normal' | 'Mall'
@@ -118,6 +119,13 @@ export class Shop extends AppEntity {
   )
   @JoinColumn({ name: 'member_id', referencedColumnName: 'id' })
   member: Member
+
+  @OneToMany(
+    () => Product,
+    product => product.shop,
+  )
+  @JoinColumn({ referencedColumnName: 'shop_id' })
+  products: Product[]
 
   @OneToMany(
     () => ProductProfile,
