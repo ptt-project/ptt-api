@@ -44,7 +44,7 @@ export class ProductController {
     @Param('productProfileId') productProfileId: number,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.productService.getProductByProductIdHandler(
+    return await this.productService.GetProductByProductIdHandler(
       this.productService.InquiryProductProfileByProductProfileIdFunc(etm),
       this.productService.InquiryProductOptionsByProductProfileIdFunc(etm),
       this.productService.InquiryProductsByProductProfileIdFunc(etm),
@@ -57,7 +57,7 @@ export class ProductController {
     @Param('productProfileId') productProfileId: number,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.productService.deleteProductByProductIdHandler(
+    return await this.productService.DeleteProductByProductIdHandler(
       this.productService.InquiryProductProfileByProductProfileIdFunc(etm),
       this.productService.DeleteProductProfileByIdFunc(etm),
       this.productService.DeleteProductOptionsByIdFunc(etm),
@@ -71,7 +71,7 @@ export class ProductController {
     @Param('productProfileId') productProfileId: number,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.productService.hiddenToggleProductHandler(
+    return await this.productService.HiddenToggleProductHandler(
       this.productService.InquiryProductProfileByProductProfileIdFunc(etm),
       this.productService.UpdateProductProfileStatusByProductProfileIdFunc(etm),
     )(productProfileId)
@@ -85,7 +85,7 @@ export class ProductController {
     @Body() body: UpdateProductProfileRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.productService.updateProductHandler(
+    return await this.productService.UpdateProductHandler(
       this.productService.ValidateProductParamsFunc(etm),
       this.productService.InquiryProductProfileByProductProfileIdFunc(etm),
       this.productService.InquiryProductOptionsByProductProfileIdFunc(etm),

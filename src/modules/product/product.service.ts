@@ -358,7 +358,7 @@ export class ProductService {
     }
   }
 
-  getProductByProductIdHandler(
+  GetProductByProductIdHandler(
     InquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
     InquiryProductOptionsByProductProfileId: Promise<InquiryProductOptionsByProductProfileIdType>,
     InquiryProductsByProductProfileId: Promise<InquiryProductsByProductProfileIdType>,
@@ -483,16 +483,16 @@ export class ProductService {
     }
   }
 
-  deleteProductByProductIdHandler(
-    InquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
-    DeleteProductProfileById: Promise<DeleteProductProfileByProductProfileIdType>,
-    DeleteProductOptionsById: Promise<DeleteProductOptionsByProductProfileIdType>,
-    DeleteProductsById: Promise<DeleteProductsByProductProfileIdType>,
+  DeleteProductByProductIdHandler(
+    inquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
+    deleteProductProfileById: Promise<DeleteProductProfileByProductProfileIdType>,
+    deleteProductOptionsById: Promise<DeleteProductOptionsByProductProfileIdType>,
+    deleteProductsById: Promise<DeleteProductsByProductProfileIdType>,
     ) {
     return async (productProfileId: number) => {
       const start = dayjs()
       const [productProfile, inquiryProductProfileByProductProfileIdError] = await (
-        await InquiryProductProfileByProductProfileId
+        await inquiryProductProfileByProductProfileId
       )(productProfileId)
 
       if (inquiryProductProfileByProductProfileIdError != '') {
@@ -504,7 +504,7 @@ export class ProductService {
       }
 
       const deleteProductProfileByIdError = await (
-        await DeleteProductProfileById
+        await deleteProductProfileById
       )(productProfile)
 
       if (deleteProductProfileByIdError != '') {
@@ -515,7 +515,7 @@ export class ProductService {
         )
       }
 
-      const deleteProductOptionsByIdError = await (await DeleteProductOptionsById)(
+      const deleteProductOptionsByIdError = await (await deleteProductOptionsById)(
         productProfileId, 
       )
       
@@ -526,7 +526,7 @@ export class ProductService {
         )
       }
 
-      const deleteProductsByIdError = await (await DeleteProductsById)(
+      const deleteProductsByIdError = await (await deleteProductsById)(
         productProfileId, 
       )
       
@@ -592,14 +592,14 @@ export class ProductService {
     }
   }
 
-  hiddenToggleProductHandler(
-    InquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
-    UpdateProductProfileStatusByProductProfileId: Promise<UpdateProductProfileStatusByProductProfileIdType>,
+  HiddenToggleProductHandler(
+    inquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
+    updateProductProfileStatusByProductProfileId: Promise<UpdateProductProfileStatusByProductProfileIdType>,
     ) {
     return async (productProfileId: number) => {
       const start = dayjs()
       const [productProfile, inquiryProductProfileByProductProfileIdError] = await (
-        await InquiryProductProfileByProductProfileId
+        await inquiryProductProfileByProductProfileId
       )(productProfileId)
 
       if (inquiryProductProfileByProductProfileIdError != '') {
@@ -618,7 +618,7 @@ export class ProductService {
       }
 
       const UpdateStatusProductByProductProfileIdError = await (
-        await UpdateProductProfileStatusByProductProfileId
+        await updateProductProfileStatusByProductProfileId
       )(productProfileId, status)
 
       if (UpdateStatusProductByProductProfileIdError != '') {
@@ -630,7 +630,7 @@ export class ProductService {
       } 
 
       const [productProfileResult, inquiryProductProfileByProductProfileIdResultError] = await (
-        await InquiryProductProfileByProductProfileId
+        await inquiryProductProfileByProductProfileId
       )(productProfileId)
 
       if (inquiryProductProfileByProductProfileIdResultError != '') {
@@ -669,20 +669,20 @@ export class ProductService {
     }
   }
 
-  updateProductHandler(
+  UpdateProductHandler(
     validateParams: Promise<ValidateProductParamsFuncType>,
-    InquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
-    InquiryProductOptionsByProductProfileId: Promise<InquiryProductOptionsByProductProfileIdType>,
-    InquiryProductsByProductProfileId: Promise<InquiryProductsByProductProfileIdType>,
-    UpdateProductProfileByProductProfileId: Promise<UpdateProductProfileToDbFuncType>,
-    UpdateProductByProductId: Promise<UpdateProductsToDbType>,
-    UpdateProductOptionByProductOptionId: Promise<UpdateProductOptionsToDbType>,
+    inquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
+    inquiryProductOptionsByProductProfileId: Promise<InquiryProductOptionsByProductProfileIdType>,
+    inquiryProductsByProductProfileId: Promise<InquiryProductsByProductProfileIdType>,
+    updateProductProfileByProductProfileId: Promise<UpdateProductProfileToDbFuncType>,
+    updateProductByProductId: Promise<UpdateProductsToDbType>,
+    updateProductOptionByProductOptionId: Promise<UpdateProductOptionsToDbType>,
     createProductOptions: Promise<InsertProductOptionsToDbFuncType>,
     createProducts: Promise<InsertProductsToDbFuncType>,
-    DeleteProductOptionsByProductProfileId: Promise<DeleteProductOptionsByProductProfileIdType>,
-    DeleteProductsByProductProfileId: Promise<DeleteProductsByProductProfileIdType>,
-    RemoveProductByProductId: Promise<DeleteProductByIdType>,
-    RemoveProductOptionByProductOptionId: Promise<DeleteProductOptionByIdType>,
+    deleteProductOptionsByProductProfileId: Promise<DeleteProductOptionsByProductProfileIdType>,
+    deleteProductsByProductProfileId: Promise<DeleteProductsByProductProfileIdType>,
+    removeProductByProductId: Promise<DeleteProductByIdType>,
+    removeProductOptionByProductOptionId: Promise<DeleteProductOptionByIdType>,
   ) {
     return async (shop: Shop, productProfileId: number, params: UpdateProductProfileRequestDto) => {
       const start = dayjs()
@@ -698,7 +698,7 @@ export class ProductService {
       }
 
       const [productProfile, inquiryProductProfileByProductProfileIdError] = await (
-        await InquiryProductProfileByProductProfileId
+        await inquiryProductProfileByProductProfileId
       )(productProfileId)
 
       if (inquiryProductProfileByProductProfileIdError != '') {
@@ -710,7 +710,7 @@ export class ProductService {
       }
 
       const [productOptions, inquiryProductOptionsByProductProfileIdError] = await (
-        await InquiryProductOptionsByProductProfileId
+        await inquiryProductOptionsByProductProfileId
       )(productProfileId)
 
       if (inquiryProductOptionsByProductProfileIdError != '') {
@@ -722,7 +722,7 @@ export class ProductService {
       }
 
       const [products, inquiryProductsByProductProfileIdError] = await (
-        await InquiryProductsByProductProfileId
+        await inquiryProductsByProductProfileId
       )(productProfileId)
 
       if (inquiryProductsByProductProfileIdError != '') {
@@ -753,7 +753,7 @@ export class ProductService {
       Object.keys(newUpdateProductProfile).forEach(key => newUpdateProductProfile[key] === undefined ? delete newUpdateProductProfile[key] : {});
 
       const updateProductProfileByProductProfileIdError = await (
-        await UpdateProductProfileByProductProfileId
+        await updateProductProfileByProductProfileId
       )(productProfileId, newUpdateProductProfile)
 
       if (updateProductProfileByProductProfileIdError != '') {
@@ -834,7 +834,7 @@ export class ProductService {
             )
           }
 
-          const removeProductOptionByProductOptionIdError = await (await RemoveProductOptionByProductOptionId)(
+          const removeProductOptionByProductOptionIdError = await (await removeProductOptionByProductOptionId)(
             removeProductOptions, 
           )
           if (removeProductOptionByProductOptionIdError != '') {
@@ -845,7 +845,7 @@ export class ProductService {
           }
 
           for(const updateProductOption of updateProductOptions){
-            const updateProductOptionError = await (await UpdateProductOptionByProductOptionId)(
+            const updateProductOptionError = await (await updateProductOptionByProductOptionId)(
               updateProductOption
             )
             if (updateProductOptionError != '') {
@@ -965,7 +965,7 @@ export class ProductService {
           }
 
           if(removeProduct.length > 0){
-            const removeProductsByIdError = await (await RemoveProductByProductId)(
+            const removeProductsByIdError = await (await removeProductByProductId)(
               removeProduct, 
             )
             if (removeProductsByIdError != '') {
@@ -980,7 +980,7 @@ export class ProductService {
             for(const updateProduct of updateProducts){
               if (updateProduct.sku == undefined){
               }
-              const updateProductError = await (await UpdateProductByProductId)(
+              const updateProductError = await (await updateProductByProductId)(
                 updateProduct
               )
               if (updateProductError != '') {
@@ -1019,7 +1019,7 @@ export class ProductService {
 
       } else {
         if (productOptions.length > 0){
-          const deleteProductOptionsByIdError = await (await DeleteProductOptionsByProductProfileId)(
+          const deleteProductOptionsByIdError = await (await deleteProductOptionsByProductProfileId)(
             productProfileId, 
           )
           if (deleteProductOptionsByIdError != '') {
@@ -1029,7 +1029,7 @@ export class ProductService {
             )
           }
     
-          const deleteProductsByIdError = await (await DeleteProductsByProductProfileId)(
+          const deleteProductsByIdError = await (await deleteProductsByProductProfileId)(
             productProfileId, 
           )
           if (deleteProductsByIdError != '') {
@@ -1063,7 +1063,7 @@ export class ProductService {
       }
 
       const [productProfileResult, inquiryProductProfileByProductProfileIdResultError] = await (
-        await InquiryProductProfileByProductProfileId
+        await inquiryProductProfileByProductProfileId
       )(productProfileId)
 
       if (inquiryProductProfileByProductProfileIdResultError != '') {
@@ -1075,7 +1075,7 @@ export class ProductService {
       }
 
       const [productOptionsResult, inquiryProductOptionsByProductProfileIdResultError] = await (
-        await InquiryProductOptionsByProductProfileId
+        await inquiryProductOptionsByProductProfileId
       )(productProfileId)
 
       if (inquiryProductOptionsByProductProfileIdResultError != '') {
@@ -1087,7 +1087,7 @@ export class ProductService {
       }
 
       const [productsResult, inquiryProductsByProductProfileIdResultError] = await (
-        await InquiryProductsByProductProfileId
+        await inquiryProductsByProductProfileId
       )(productProfileId)
 
       if (inquiryProductsByProductProfileIdResultError != '') {
