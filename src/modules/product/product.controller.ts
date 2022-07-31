@@ -29,7 +29,7 @@ export class ProductController {
     @Body() body: CreateProductProfileRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.productService.createProductHandler(
+    return await this.productService.CreateProductHandler(
       this.productService.ValidateProductParamsFunc(etm),
       this.productService.InsertProductProfileToDbFunc(etm),
       this.productService.InsertProductOptionsToDbFunc(etm),

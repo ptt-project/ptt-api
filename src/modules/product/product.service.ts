@@ -63,7 +63,7 @@ export class ProductService {
     this.logger.setContext(ProductService.name)
   }
 
-  createProductHandler(
+  CreateProductHandler(
     validateParams: Promise<
       ValidateProductParamsFuncType
     >,
@@ -284,8 +284,7 @@ export class ProductService {
       const start = dayjs()
       let savedProductProfile: ProductProfile
       try {
-        console.log('params',params)
-        const productProfile = ProductProfile.create(params)
+        const productProfile = etm.create(ProductProfile, params)
         savedProductProfile = await etm.save(productProfile)
       } catch (error) {
         return [null, error]
@@ -303,7 +302,7 @@ export class ProductService {
       const start = dayjs()
       let savedProductOptions: ProductOption[]
       try {
-        const productOptions = ProductOption.create(params)
+        const productOptions = etm.create(ProductOption, params)
         savedProductOptions = await etm.save(productOptions)
       } catch (error) {
         return [null, error]
@@ -322,7 +321,7 @@ export class ProductService {
       let savedProducts: Product[]
       try {
         const filledSkuParams = params.map(product => ({...product, sku: product.sku || 'happyshoping-tmp-sku'}))
-        const products = Product.create(filledSkuParams)
+        const products = etm.create(Product, filledSkuParams)
         savedProducts = await etm.save(products)
         for(const product of savedProducts){
           if (product.sku === 'happyshoping-tmp-sku') {
