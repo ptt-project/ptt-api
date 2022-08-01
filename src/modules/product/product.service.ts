@@ -359,14 +359,14 @@ export class ProductService {
   }
 
   GetProductByProductIdHandler(
-    InquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
-    InquiryProductOptionsByProductProfileId: Promise<InquiryProductOptionsByProductProfileIdType>,
-    InquiryProductsByProductProfileId: Promise<InquiryProductsByProductProfileIdType>,
+    inquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
+    iquiryProductOptionsByProductProfileId: Promise<InquiryProductOptionsByProductProfileIdType>,
+    inquiryProductsByProductProfileId: Promise<InquiryProductsByProductProfileIdType>,
     ) {
     return async (productProfileId: number) => {
       const start = dayjs()
       const [productProfile, inquiryProductProfileByProductProfileIdError] = await (
-        await InquiryProductProfileByProductProfileId
+        await inquiryProductProfileByProductProfileId
       )(productProfileId)
 
       if (inquiryProductProfileByProductProfileIdError != '') {
@@ -378,7 +378,7 @@ export class ProductService {
       }
 
       const [productOptions, inquiryProductOptionsByProductProfileIdError] = await (
-        await InquiryProductOptionsByProductProfileId
+        await iquiryProductOptionsByProductProfileId
       )(productProfileId)
 
       if (inquiryProductOptionsByProductProfileIdError != '') {
@@ -390,7 +390,7 @@ export class ProductService {
       }
 
       const [products, inquiryProductsByProductProfileIdError] = await (
-        await InquiryProductsByProductProfileId
+        await inquiryProductsByProductProfileId
       )(productProfileId)
 
       if (inquiryProductsByProductProfileIdError != '') {
