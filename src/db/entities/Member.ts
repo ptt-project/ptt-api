@@ -4,6 +4,7 @@ import { Address } from './Address'
 import { AppEntity } from './AppEntity'
 import { Mobile } from './Mobile'
 import { Shop } from './Shop'
+import { Wallet } from './Wallet'
 
 export type MemberGenderType = 'F' | 'M' | 'O'
 export type MemberRoleType = 'Buyer' | 'Seller'
@@ -79,4 +80,10 @@ export class Member extends AppEntity {
     shop => shop.member,
   )
   shop: Shop
+
+  @OneToMany(
+    () => Wallet,
+    wallet => wallet.member,
+  )
+  wallets: Wallet[]
 }

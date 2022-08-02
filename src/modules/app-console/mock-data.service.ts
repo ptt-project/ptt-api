@@ -10,12 +10,15 @@ import { Brand } from 'src/db/entities/Brand'
 import { Product } from 'src/db/entities/Product'
 import { ProductOption } from 'src/db/entities/ProductOption'
 import { truncates } from 'src/utils/db'
+import { WalletService } from '../wallet/wallet.service'
+import { WalletTransaction } from 'src/db/entities/WalletTransaction'
 
 @Console()
 export class MockDataConsoleService {
   constructor(
     private readonly authService: AuthService,
     private readonly regiserSellerService: RegisterService,
+    private readonly walletService: WalletService,
   ) {}
 
   @Command({
@@ -59,6 +62,90 @@ export class MockDataConsoleService {
     if (errorCreateUser != '') {
       return console.log('create user error =>', errorCreateUser)
     }
+
+    const [wallet, errorCreateWallet] = await (
+      await this.walletService.InsertWalletToDbFunc(etm)
+    )(member.id)
+    if (errorCreateWallet != '') {
+      return console.log('create wallet error =>', errorCreateWallet)
+    }
+
+    const walletTransactions = etm.create(WalletTransaction, [
+      {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 100000.00,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ'
+      }, {
+        walletId: wallet.id,
+        status: 'fail',
+        amount: 1000.00,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ'
+      }, {
+        walletId: wallet.id,
+        status: 'pending',
+        amount: 1000.00,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านธนาคาร'
+      }, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: -1000.00,
+        type: 'withdraw',
+        detail: 'ถอนเงิน'
+      }, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: -1000.00,
+        type: 'buy',
+        detail: 'ซื้อสินค้า'
+      }, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: -1000.00,
+        type: 'buy',
+        detail: 'ซื้อสินค้า'
+      }, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 1000.00,
+        type: 'sell',
+        detail: 'ขายสินค้า'
+      }, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: -1000.00,
+        type: 'buy',
+        detail: 'ซื้อสินค้า'
+      }, {
+        walletId: wallet.id,
+        status: 'cancel',
+        amount: 1000.00,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ'
+      }, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 2000.00,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ'
+      },, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 5000.00,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ'
+      },
+    ])
+    await etm.save(walletTransactions)
+
+    wallet.balance = walletTransactions.reduce((balance, transaction) => {
+      if (transaction.status === 'success') return balance + +transaction.amount
+      return balance
+    }, 0.0)
+    etm.save(wallet)
 
     const createShopParams: InsertShopToDbParams = {
       memberId: member.id,
@@ -140,5 +227,6 @@ export class MockDataConsoleService {
 
     console.log('user', member)
     console.log('shop', shop)
+    console.log('wallet', wallet)
   }
 }

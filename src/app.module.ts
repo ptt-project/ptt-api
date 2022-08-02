@@ -24,6 +24,7 @@ import { SellerModule } from './modules/seller/seller.modules'
 import { ReviewModule } from './modules/review/review.modules'
 import { CategoryModule } from './modules/category/category.modules'
 import { AppConsoleModule } from './modules/app-console/app-console.moduel'
+import { WalletModule } from './modules/wallet/wallet.modules'
 
 console.log('__dirname', __dirname)
 @Module({
@@ -75,6 +76,7 @@ console.log('__dirname', __dirname)
     SellerModule,
     ReviewModule,
     CategoryModule,
+    WalletModule,
   ],
   controllers: [AppController],
   providers: [AppService],

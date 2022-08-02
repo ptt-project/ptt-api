@@ -10,6 +10,7 @@ import { OtpService } from '../otp/otp.service'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { MobileService } from '../mobile/mobile.service'
 import dayjs from 'dayjs'
+import { WalletService } from '../wallet/wallet.service'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -18,6 +19,7 @@ export class AuthController {
     private readonly otpService: OtpService,
     private readonly loginService: LoginService,
     private readonly mobileService: MobileService,
+    private readonly walletService: WalletService,
   ) {}
 
   @Post('register')
@@ -31,6 +33,7 @@ export class AuthController {
       this.authService.inquiryMemberExistFunc(etm),
       this.authService.insertMemberToDbFunc(etm),
       this.mobileService.addMobileFunc(etm),
+      this.walletService.InsertWalletToDbFunc(etm),
     )(body)
   }
 

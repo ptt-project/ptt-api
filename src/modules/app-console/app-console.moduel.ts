@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common'
 import { AuthModule } from '../auth/auth.modules'
 import { SellerModule } from '../seller/seller.modules'
+import { WalletModule } from '../wallet/wallet.modules'
 import { AppConsoleService } from './app-console.service'
 import { MockDataConsoleService } from './mock-data.service'
 
 @Module({
-  imports: [AuthModule, SellerModule],
+  imports: [AuthModule, SellerModule, WalletModule],
   providers: [AppConsoleService, MockDataConsoleService],
 })
 export class AppConsoleModule {}
