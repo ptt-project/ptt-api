@@ -45,6 +45,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Transaction()
   async login(
     @Req() request,
     @Body() body: LoginRequestDto,
