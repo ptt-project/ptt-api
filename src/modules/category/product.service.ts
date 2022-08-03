@@ -33,12 +33,12 @@ export class ProductService {
   ) {
     return async (categoryId: number, query: getProductQueryDTO) => {
       const start = dayjs()
-      const { limit = 10, page = 1 } = query
+      const {q, limit = 10, page = 1 } = query
 
       const [
         productProfiles,
         errorInquiryProductProfileByCatgoryIdFunc,
-      ] = await (await inquiryProductProfileByCatgoryIdFunc)(categoryId)
+      ] = await (await inquiryProductProfileByCatgoryIdFunc)(categoryId, q)
 
       if (errorInquiryProductProfileByCatgoryIdFunc != '') {
         response(
@@ -62,7 +62,7 @@ export class ProductService {
   async inquiryProductProfileByCatgoryIdFunc(
     etm: EntityManager,
   ): Promise<InquiryProductByCatgoryIdType> {
-    return async (categoryId: number) => {
+    return async (categoryId: number, q: string) => {
       let productProfiles: SelectQueryBuilder<ProductProfile>
 
       try {
@@ -76,6 +76,11 @@ export class ProductService {
           .andWhere('categoryProductProfiles.categoryId = :categoryId', {
             categoryId,
           })
+
+          if (q != undefined) {
+            const queryName: string = '%'+q+'%'
+            productProfiles.andWhere('productProfiles.name ilike :queryName', { queryName })
+          }
       } catch (error) {
         return [productProfiles, error]
       }

@@ -1,4 +1,5 @@
-import { IsOptional } from 'class-validator'
+import { IsNotEmpty, IsOptional } from 'class-validator'
+import { Double } from 'typeorm'
 
 export class getProductQueryDTO {
   @IsOptional()
@@ -6,4 +7,8 @@ export class getProductQueryDTO {
 
   @IsOptional()
   page?: number
+
+  @IsOptional()
+  @IsNotEmpty()
+  q?: string
 }
