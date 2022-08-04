@@ -20,7 +20,7 @@ import {
   OrderingCategoryRequestDto,
   UpdateCategoryRequestDto,
 } from './dto/category.dto'
-import { getProductQueryDTO } from './dto/product.dto'
+import { GetProductByShopIdQueryDTO, getProductQueryDTO } from './dto/product.dto'
 import { ProductService } from './product.service'
 
 @Auth()
@@ -97,6 +97,18 @@ export class CategoryController {
       this.categoryService.updateCategoryToDbFunc(etm),
       this.categoryService.inquiryCategoryByCategoryIdFunc(etm),
     )(categoryId, body)
+  }
+
+  @Get('products')
+  @Transaction()
+  async getProductsByShopId(
+    @ReqShop() shop: Shop,
+    @Query() query: GetProductByShopIdQueryDTO,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.productService.InquiryProductByShopIdHandler(
+      this.productService.InquiryProductByShopIdFunc(etm),
+    )(shop, query)
   }
 
   @Get(':categoryId')

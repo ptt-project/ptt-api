@@ -84,3 +84,4 @@ export const UnableDeleteCategoryProductToDb = _categoryError + 11
 export const UnableinquiryProductProfileIdsByCategoryId = _categoryError + 12
 export const UnableinquiryProductProfileByCatgoryIdFunc = _categoryError + 13
 export const UnableInquiryCategoryByName = _categoryError + 14
+export const UnableInquiryProductByShopIdFunc = _categoryError + 15

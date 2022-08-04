@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
-import { EntityManager, In, SelectQueryBuilder } from 'typeorm'
+import { Double, EntityManager, In, SelectQueryBuilder } from 'typeorm'
 
-import { UnableinquiryProductProfileByCatgoryIdFunc } from 'src/utils/response-code'
+import { UnableInquiryProductByShopIdFunc, UnableinquiryProductProfileByCatgoryIdFunc } from 'src/utils/response-code'
 
 import {
   InquiryProductByCatgoryIdType,
@@ -10,15 +10,18 @@ import {
   InsertCategoryProductToDbType,
   DeleteCategoryProductToDbType,
   DeleteCategoryProductToDbByCategoryIdType,
+  InquiryProductByShopIdType,
 } from './category.type'
 
 import { PinoLogger } from 'nestjs-pino'
 
 import { paginate } from 'nestjs-typeorm-paginate'
-import { getProductQueryDTO } from './dto/product.dto'
+import { GetProductByShopIdQueryDTO, getProductQueryDTO } from './dto/product.dto'
 import dayjs from 'dayjs'
 import { CategoryProductProfile } from 'src/db/entities/CategoryProductProfile'
 import { ProductProfile } from 'src/db/entities/ProductProfile'
+import { Shop } from 'src/db/entities/Shop'
+import { Product } from 'src/db/entities/Product'
 
 @Injectable()
 export class ProductService {
@@ -191,6 +194,82 @@ export class ProductService {
         )} ms`,
       )
       return ''
+    }
+  }
+
+  InquiryProductByShopIdHandler(
+    inquiryProductByShopId: Promise<
+      InquiryProductByShopIdType
+    >,
+  ) {
+    return async (shop: Shop, params: GetProductByShopIdQueryDTO) => {
+      const start = dayjs()
+      const {limit = 10, page = 1 } = params
+
+      console.log('query', params)
+      const [
+        products,
+        errorInquiryProductByShopIdFunc,
+      ] = await (await inquiryProductByShopId)(shop.id, params)
+
+      if (errorInquiryProductByShopIdFunc != '') {
+        response(
+          undefined,
+          UnableInquiryProductByShopIdFunc,
+          errorInquiryProductByShopIdFunc,
+        )
+      }
+      this.logger.info(
+        `Done InquiryProductByShopIdFunc ${dayjs().diff(start)} ms`,
+      )
+
+      const result = await paginate<Product>(products, {
+        limit,
+        page,
+      })
+      return response(result)
+    }
+  }
+
+  async InquiryProductByShopIdFunc(
+    etm: EntityManager,
+  ): Promise<InquiryProductByShopIdType> {
+    return async (shopId: number, params: GetProductByShopIdQueryDTO) => {
+      let products: SelectQueryBuilder<Product>
+
+      try {
+        products = etm
+          .createQueryBuilder(Product, 'product')
+          .innerJoin(
+            'product.productProfile',
+            'productProfile',
+          )
+          .where('product.deletedAt IS NULL')
+          .andWhere('product.shopId = :shopId', {
+            shopId,
+          })
+
+          if (params != undefined){
+            if (params.productName != undefined) {
+              const queryProductName: string = '%'+params.productName+'%'
+              products.andWhere('productProfile.name ilike :queryProductName', { queryProductName })
+            }
+            
+            if (params.minPrice != undefined) {
+              const queryMinPrice: Double = params.minPrice
+              products.andWhere('product.price >= :queryMinPrice', { queryMinPrice })
+            }
+            
+            if (params.maxPrice != undefined) {
+              const queryMaxPrice: Double = params.maxPrice
+              products.andWhere('product.price <= :queryMaxPrice', { queryMaxPrice })
+            }
+          }
+      } catch (error) {
+        return [products, error]
+      }
+
+      return [products, '']
     }
   }
 }

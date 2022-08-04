@@ -1,6 +1,8 @@
 import { Category, CreatedByType, StatusType } from 'src/db/entities/Category'
+import { Product } from 'src/db/entities/Product'
 import { ProductProfile } from 'src/db/entities/ProductProfile'
 import { SelectQueryBuilder } from 'typeorm'
+import { GetProductByShopIdQueryDTO } from './dto/product.dto'
 
 export type InsertCategoryToDbParams = {
   name: string
@@ -73,3 +75,8 @@ export type InquiryProductByCatgoryIdType = (
 export type InquiryCategoryByNameType = (
   name: string,
 ) => Promise<[Category, string]>
+
+export type InquiryProductByShopIdType = (
+  shopId: number,
+  query: GetProductByShopIdQueryDTO,
+) => Promise<[SelectQueryBuilder<Product>, string]>
