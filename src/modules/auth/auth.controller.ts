@@ -35,6 +35,7 @@ export class AuthController {
   }
 
   @Post('register/validate')
+  @Transaction()
   async validate(
     @Body() body: ValidateRegisterRequestDto,
     @TransactionManager() etm: EntityManager,
