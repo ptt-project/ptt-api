@@ -8,6 +8,7 @@ export class OtpController {
   constructor(private readonly otpService: OtpService) {}
 
   @Post('request')
+  @Transaction()
   async requestOtp(
     @Body() body: sendOtpRequestDto,
     @TransactionManager() etm: EntityManager,
