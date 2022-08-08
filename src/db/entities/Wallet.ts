@@ -2,6 +2,7 @@ import { AppEntity } from './AppEntity'
 import { Column, Entity, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
 import { Member } from './Member'
 import { WalletTransaction } from './WalletTransaction'
+import { transformerDecimalToNumber } from 'src/utils/entity-transform'
 
 @Entity({ name: 'wallets' })
 export class Wallet extends AppEntity {
@@ -15,6 +16,7 @@ export class Wallet extends AppEntity {
     precision: 12,
     scale: 2,
     default: 0,
+    transformer: transformerDecimalToNumber,
   })
   balance: number
 

@@ -11,7 +11,7 @@ import {
 import { JwtService } from '@nestjs/jwt'
 import dayjs from 'dayjs'
 
-import { internalSeverError } from 'src/utils/response-error'
+import { internalSeverError, validateError } from 'src/utils/response-error'
 import {
   InternalSeverError,
   UnableRegisterEmailAlreayExist,
@@ -55,7 +55,7 @@ export class AuthService {
         await validateMember
       )(body)
       if (validateErrorCode != 0) {
-        return response(undefined, validateErrorCode, validateErrorMessage)
+        return validateError(validateErrorCode, validateErrorMessage)
       }
 
       this.logger.info(`Done validateRegisterHandler ${dayjs().diff(start)} ms`)

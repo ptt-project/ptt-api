@@ -13,4 +13,7 @@ export type InsertWalletToDbFuncType = (
   memberId: number,
 ) => Promise<[Wallet, string]>
 
-
+export type AdjustWalletFuncType = (
+  walletId: number,
+  adjustBalance: number,
+) => Promise<[Wallet, string]>

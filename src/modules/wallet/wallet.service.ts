@@ -7,6 +7,7 @@ import {
 } from 'src/utils/response-code'
 
 import {
+  AdjustWalletFuncType,
   InqueryWalletTransactionFuncType, InsertWalletToDbFuncType,
 } from './wallet.type'
 
@@ -108,6 +109,37 @@ export class WalletService {
 
       this.logger.info(`Done InqueryWalletTransactionFromDbFunc ${dayjs().diff(start)} ms`)
       return [walletTransactions, '']
+    }
+  }
+
+  async AdjustWalletInDbFunc(etm: EntityManager): Promise<AdjustWalletFuncType> {
+    return async (
+      walletId: number,
+      adjustBalance: number,
+    ): Promise<[Wallet, string]> => {
+      const start = dayjs()
+      let wallet: Wallet
+      try {
+        wallet = await etm.findOne(Wallet, walletId)
+        
+        if (!wallet) {
+          return [null, 'Unable to find wallet']
+        }
+
+        if (adjustBalance < 0 && wallet.balance + adjustBalance < 0) {
+          return [wallet, 'your wallet balance is not enough']
+        }
+
+        wallet.balance += adjustBalance
+
+        await etm.save(wallet)
+
+      } catch (error) {
+        return [wallet, error]
+      }
+
+      this.logger.info(`Done AdjustWalletInDbFunc ${dayjs().diff(start)} ms`)
+      return [wallet, '']
     }
   }
 }
