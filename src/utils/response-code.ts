@@ -37,6 +37,9 @@ export const UnableToSendEmail = _memberError + 4
 // password service
 export const UnableUpatePasswordToDb = _memberError + 5
 
+// relation service
+export const UnableToGetMemberRelations = _memberError + 6
+
 // mobile module
 const _mobileError = 104000
 export const UnableToAddMobile = _mobileError + 1
