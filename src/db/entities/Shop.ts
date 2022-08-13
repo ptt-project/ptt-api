@@ -1,5 +1,6 @@
 import { Column, Entity, OneToOne, JoinColumn, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
+import { Condition } from './Condition'
 import { Member } from './Member'
 import { Product } from './Product'
 import { ProductProfile } from './ProductProfile'
@@ -133,4 +134,11 @@ export class Shop extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'shop_id' })
   productProfiles: ProductProfile[]
+
+  @OneToOne(
+    () => Condition,
+    condition => condition.shop,
+  )
+  @JoinColumn({ name: 'shop_id', referencedColumnName: 'id' })
+  condition: Condition
 }

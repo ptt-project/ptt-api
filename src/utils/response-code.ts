@@ -84,3 +84,7 @@ export const UnableDeleteCategoryProductToDb = _categoryError + 11
 export const UnableinquiryProductProfileIdsByCategoryId = _categoryError + 12
 export const UnableinquiryProductProfileByCatgoryIdFunc = _categoryError + 13
 export const UnableInquiryCategoryByName = _categoryError + 14
+
+// condition module
+const _conditionError = 111000
+export const UnableToGetConditions = _conditionError + 1
