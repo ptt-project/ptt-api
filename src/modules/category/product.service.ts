@@ -206,9 +206,8 @@ export class ProductService {
       const start = dayjs()
       const {limit = 10, page = 1 } = params
 
-      console.log('query', params)
       const [
-        products,
+        productProfiles,
         errorInquiryProductByShopIdFunc,
       ] = await (await inquiryProductByShopId)(shop.id, params)
 
@@ -219,14 +218,18 @@ export class ProductService {
           errorInquiryProductByShopIdFunc,
         )
       }
-      this.logger.info(
-        `Done InquiryProductByShopIdFunc ${dayjs().diff(start)} ms`,
-      )
-
-      const result = await paginate<Product>(products, {
+      const result = await paginate<ProductProfile>(productProfiles, {
         limit,
         page,
       })
+
+      this.logger.info(
+        `Done paginate InquiryProductByShopIdFunc ${dayjs().diff(start)} ms`,
+      )
+
+      this.logger.info(
+        `Done InquiryProductByShopIdHandler ${dayjs().diff(start)} ms`,
+      )
       return response(result)
     }
   }
@@ -235,41 +238,32 @@ export class ProductService {
     etm: EntityManager,
   ): Promise<InquiryProductByShopIdType> {
     return async (shopId: number, params: GetProductByShopIdQueryDTO) => {
-      let products: SelectQueryBuilder<Product>
+      const start = dayjs()
+      let productProfile: SelectQueryBuilder<ProductProfile>
 
       try {
-        products = etm
-          .createQueryBuilder(Product, 'product')
-          .innerJoin(
-            'product.productProfile',
-            'productProfile',
-          )
-          .where('product.deletedAt IS NULL')
-          .andWhere('product.shopId = :shopId', {
+        productProfile = etm
+          .createQueryBuilder(ProductProfile, 'productProfile')
+          .where('productProfile.deletedAt IS NULL')
+          .andWhere('productProfile.shopId = :shopId', {
             shopId,
           })
 
           if (params != undefined){
             if (params.productName != undefined) {
               const queryProductName: string = '%'+params.productName+'%'
-              products.andWhere('productProfile.name ilike :queryProductName', { queryProductName })
-            }
-            
-            if (params.minPrice != undefined) {
-              const queryMinPrice: Double = params.minPrice
-              products.andWhere('product.price >= :queryMinPrice', { queryMinPrice })
-            }
-            
-            if (params.maxPrice != undefined) {
-              const queryMaxPrice: Double = params.maxPrice
-              products.andWhere('product.price <= :queryMaxPrice', { queryMaxPrice })
+              productProfile.andWhere('productProfile.name ilike :queryProductName', { queryProductName })
             }
           }
       } catch (error) {
-        return [products, error]
+        return [productProfile, error]
       }
 
-      return [products, '']
+      this.logger.info(
+        `Done InquiryProductByShopIdFunc ${dayjs().diff(start)} ms`,
+      )
+
+      return [productProfile, '']
     }
   }
 }

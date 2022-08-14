@@ -79,4 +79,4 @@ export type InquiryCategoryByNameType = (
 export type InquiryProductByShopIdType = (
   shopId: number,
   query: GetProductByShopIdQueryDTO,
-) => Promise<[SelectQueryBuilder<Product>, string]>
+) => Promise<[SelectQueryBuilder<ProductProfile>, string]>

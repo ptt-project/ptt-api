@@ -23,12 +23,4 @@ export class GetProductByShopIdQueryDTO {
   @IsOptional()
   @IsNotEmpty()
   productName?: string
-
-  @IsOptional()
-  @IsNotEmpty()
-  minPrice?: Double
-
-  @IsOptional()
-  @IsNotEmpty()
-  maxPrice?: Double
 }
