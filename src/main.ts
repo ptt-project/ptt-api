@@ -34,6 +34,17 @@ async function bootstrap() {
     origin: ['http://localhost:3000', 'http://happyshoppingexpress.com:3000'],
     methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     exposedHeaders: ['Content-Disposition'],
+    allowedHeaders: [
+      'Content-Type',
+      'Content-Length',
+      'Accept-Encoding',
+      'X-CSRF-Token',
+      'Authorization',
+      'accept',
+      'origin',
+      'Cache-Control',
+      'X-Requested-With',
+    ],
     credentials: true,
   })
   app.setGlobalPrefix('/api')
