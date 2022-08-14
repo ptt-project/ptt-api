@@ -31,7 +31,7 @@ async function bootstrap() {
 
   app.useLogger(app.get(Logger))
   app.enableCors({
-    origin: '*',
+    origin: ['http://localhost:3000', 'http://happyshoppingexpress.com:3000'],
     methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE'],
     exposedHeaders: ['Content-Disposition'],
     credentials: true,
