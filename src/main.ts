@@ -55,7 +55,7 @@ async function bootstrap() {
       }
     },
     methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    // exposedHeaders: ['Content-Disposition'],
+    exposedHeaders: ['Content-Disposition', 'Set-Cookie'],
     // allowedHeaders: [
     //   'Content-Type',
     //   'Content-Length',
