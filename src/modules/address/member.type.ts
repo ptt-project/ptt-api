@@ -1,5 +1,5 @@
 import { Address } from 'src/db/entities/Address'
-import { Member, MemberRoleType } from 'src/db/entities/Member'
+import { MemberRoleType } from 'src/db/entities/Member'
 
 export type InsertAddressToDbParams = {
   memberId: number
@@ -10,7 +10,7 @@ export type InsertAddressToDbParams = {
   district: string
   postcode: string
   address?: string
-  geoName?: string
+  geoName?: GeoNameType
   isMain?: boolean
   isHome?: boolean
   isWork?: boolean
@@ -25,10 +25,15 @@ export type UpdateAddressToDbParams = {
   district: string
   postcode: string
   address?: string
-  geoName?: string
+  geoName?: GeoNameType
   isMain?: boolean
   isHome?: boolean
   isWork?: boolean
+}
+
+export type GeoNameType = {
+  lat?: number
+  lng?: number
 }
 
 export type InsertAddressToDbType = (

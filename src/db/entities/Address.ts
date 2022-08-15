@@ -29,8 +29,13 @@ export class Address extends AppEntity {
   @Column({ name: 'address', nullable: true })
   address: string
 
-  @Column({ name: 'geo_name', nullable: true })
-  geoName: string
+  @Column({
+    name: 'geo_name',
+    type: 'simple-json',
+    default: {},
+    nullable: true,
+  })
+  geoName?: Record<string, any>
 
   @Column({ name: 'is_main', nullable: true, default: false })
   isMain: boolean
