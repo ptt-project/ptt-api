@@ -45,15 +45,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     } else {
       const accessToken = `${
         response.accessToken
-      }; HttpOnly; Path=/; Max-Age=${dayjs().add(10, 'second')}`
+      }; HttpOnly; Path=/; Max-Age=${dayjs().add(10, 'second')}; SameSite=None;`
 
       const refreshToken = `${
         response.refreshToken
-      }; HttpOnly; Path=/; Max-Age=${dayjs().add(20, 'second')}`
+      }; HttpOnly; Path=/; Max-Age=${dayjs().add(20, 'second')}; SameSite=None;`
 
-      // request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
-      request.res.setHeader('AccessToken', accessToken)
-      request.res.setHeader('RefreshToken', refreshToken)
+      request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
     }
 
     this.logger.info(`Done ValidateToken ${dayjs().diff(start)} ms`)
