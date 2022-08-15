@@ -13,6 +13,7 @@ import { ValidationError } from 'class-validator'
 import { InvalidJSONString } from './utils/response-code'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import cookieParser from 'cookie-parser'
+import cookieSession from 'cookie-session'
 import { Logger } from 'nestjs-pino'
 
 const loggerDebug: LogLevel[] = ['debug', 'warn', 'error', 'log']
@@ -30,6 +31,16 @@ async function bootstrap() {
   )
 
   app.useLogger(app.get(Logger))
+  app.use(
+    cookieSession({
+      name: '__session',
+      keys: ['key1'],
+      maxAge: 24 * 60 * 60 * 100,
+      secure: true,
+      httpOnly: true,
+      sameSite: 'none',
+    }),
+  )
   app.enableCors({
     origin: ['http://happyshoppingexpress.com:3000', 'http://localhost:3000'],
     methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
