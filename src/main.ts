@@ -54,20 +54,28 @@ async function bootstrap() {
         callback(new Error('Not allowed by CORS'))
       }
     },
+    // origin: whitelist,
     methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    exposedHeaders: ['Content-Disposition', 'Set-Cookie'],
-    // allowedHeaders: [
-    //   'Content-Type',
-    //   'Content-Length',
-    //   'Accept-Encoding',
-    //   'X-CSRF-Token',
-    //   'Authorization',
-    //   'accept',
-    //   'origin',
-    //   'Cache-Control',
-
-    //   'X-Requested-With',
-    // ],
+    exposedHeaders: [
+      'Content-Disposition',
+      'AccessToken',
+      'RefreshToken',
+      'Set-Cookie',
+    ],
+    allowedHeaders: [
+      'Content-Type',
+      'Content-Length',
+      'Accept-Encoding',
+      'X-CSRF-Token',
+      'Authorization',
+      'accept',
+      'origin',
+      'Cache-Control',
+      'X-Requested-With',
+      'AccessToken',
+      'RefreshToken',
+      'Set-Cookie',
+    ],
     credentials: true,
   })
   app.setGlobalPrefix('/api')

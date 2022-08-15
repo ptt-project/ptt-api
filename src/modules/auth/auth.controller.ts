@@ -68,6 +68,8 @@ export class AuthController {
     }; HttpOnly; Path=/; Max-Age=${dayjs().add(7, 'day')}`
 
     request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
+    request.res.setHeader('AccessToken', accessToken)
+    request.res.setHeader('RefreshToken', refreshToken)
     return longinResponse
   }
 }

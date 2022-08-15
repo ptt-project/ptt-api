@@ -7,11 +7,7 @@ import { TokenType } from './auth.type'
 import { Request } from 'express'
 import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
-import {
-  Connection,
-  EntityManager,
-  getConnection,
-} from 'typeorm'
+import { Connection, EntityManager, getConnection } from 'typeorm'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -54,7 +50,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       const refreshToken = `RefreshToken=${
         response.refreshToken
       }; HttpOnly; Path=/; Max-Age=${dayjs().add(20, 'second')}`
+
       request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
+      request.res.setHeader('AccessToken', accessToken)
+      request.res.setHeader('RefreshToken', refreshToken)
     }
 
     this.logger.info(`Done ValidateToken ${dayjs().diff(start)} ms`)
