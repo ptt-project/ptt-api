@@ -59,11 +59,11 @@ export class AuthController {
       this.authService.genRefreshTokenFunc(),
     )(body)
 
-    const accessToken = `AccessToken=${
+    const accessToken = `${
       longinResponse.data.accessToken
     }; HttpOnly; Path=/; Max-Age=${dayjs().add(1, 'day')}`
 
-    const refreshToken = `RefreshToken=${
+    const refreshToken = `${
       longinResponse.data.refreshToken
     }; HttpOnly; Path=/; Max-Age=${dayjs().add(7, 'day')}`
 

@@ -43,11 +43,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (isError) {
       return false
     } else {
-      const accessToken = `AccessToken=${
+      const accessToken = `${
         response.accessToken
       }; HttpOnly; Path=/; Max-Age=${dayjs().add(10, 'second')}`
 
-      const refreshToken = `RefreshToken=${
+      const refreshToken = `${
         response.refreshToken
       }; HttpOnly; Path=/; Max-Age=${dayjs().add(20, 'second')}`
 
