@@ -27,7 +27,6 @@ const logger =
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     ...logger,
-    cors: true,
   })
 
   app.useLogger(app.get(Logger))
@@ -41,8 +40,20 @@ async function bootstrap() {
       sameSite: 'none',
     }),
   )
+  const whitelist = [
+    'http://happyshoppingexpress.com:3000',
+    'http://localhost:3000',
+  ]
   app.enableCors({
-    origin: ['http://happyshoppingexpress.com:3000', 'http://localhost:3000'],
+    origin: function(origin, callback) {
+      if (whitelist.indexOf(origin) !== -1) {
+        console.log('allowed cors for:', origin)
+        callback(null, true)
+      } else {
+        console.log('blocked cors for:', origin)
+        callback(new Error('Not allowed by CORS'))
+      }
+    },
     methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     // exposedHeaders: ['Content-Disposition'],
     // allowedHeaders: [
