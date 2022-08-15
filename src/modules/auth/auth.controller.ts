@@ -59,17 +59,17 @@ export class AuthController {
       this.authService.genRefreshTokenFunc(),
     )(body)
 
-    const accessToken = `${
+    const accessToken = `AccessToken=${
       longinResponse.data.accessToken
-    }; HttpOnly; Path=/; Max-Age=${dayjs().add(1, 'day')}`
+    }; HttpOnly; Max-Age=${dayjs().add(1, 'day')}; SameSite=None;`
 
-    const refreshToken = `${
+    const refreshToken = `RefreshToken=${
       longinResponse.data.refreshToken
-    }; HttpOnly; Path=/; Max-Age=${dayjs().add(7, 'day')}`
+    }; HttpOnly; Max-Age=${dayjs().add(7, 'day')}; SameSite=None;`
 
-    // request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
-    request.res.setHeader('AccessToken', accessToken)
-    request.res.setHeader('RefreshToken', refreshToken)
+    request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
+    // request.res.setHeader('AccessToken', accessToken)
+    // request.res.setHeader('RefreshToken', refreshToken)
     return longinResponse
   }
 }
