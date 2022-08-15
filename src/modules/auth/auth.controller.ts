@@ -67,7 +67,7 @@ export class AuthController {
       longinResponse.data.refreshToken
     }; Max-Age=${dayjs().add(7, 'day')}; SameSite=None`
 
-    request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
+    request.res.setHeader('Set-Cookie', accessToken)
     // request.res.setHeader('AccessToken', accessToken)
     // request.res.setHeader('RefreshToken', refreshToken)
     return longinResponse
