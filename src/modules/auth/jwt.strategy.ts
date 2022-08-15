@@ -51,7 +51,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         response.refreshToken
       }; HttpOnly; Path=/; Max-Age=${dayjs().add(20, 'second')}`
 
-      request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
+      // request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
       request.res.setHeader('AccessToken', accessToken)
       request.res.setHeader('RefreshToken', refreshToken)
     }
