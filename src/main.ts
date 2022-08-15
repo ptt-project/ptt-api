@@ -75,6 +75,7 @@ async function bootstrap() {
       'AccessToken',
       'RefreshToken',
       'Set-Cookie',
+      'Cookie',
     ],
     credentials: true,
   })

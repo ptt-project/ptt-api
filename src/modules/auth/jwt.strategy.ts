@@ -45,7 +45,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     } else {
       const accessToken = `${
         response.accessToken
-      }; HttpOnly; Path=/; Max-Age=${dayjs().add(10, 'second')}; SameSite=None;`
+      }; HttpOnly; Path=/; Max-Age=${dayjs().add(
+        10,
+        'second',
+      )};  SameSite=None;`
 
       const refreshToken = `${
         response.refreshToken
