@@ -140,9 +140,9 @@ export class RegisterService {
         }
         if (
           params.type === 'Mall' &&
-          (!params.corperateId || !params.corperateName)
+          (!params.corperateId || !params.corperateName || !params.mallApplicantRole)
         ) {
-          return 'corperateId and corperateName is required for Mall shop'
+          return 'corperateId, corperateName and mallApplicantRole are required for Mall shop'
         }
       } catch (error) {
         return error
@@ -173,6 +173,9 @@ export class RegisterService {
           note: params.note,
           corperateId: params.corperateId,
           corperateName: params.corperateName,
+          mallApplicantRole: params.mallApplicantRole,
+          mallOfflineShopDetail: params.mallOfflineShopDetail,
+          mallShopDescription: params.mallShopDescription,
         })
         await etm.save(shop)
       } catch (error) {
@@ -214,6 +217,9 @@ export class RegisterService {
         shop.note = params.note
         shop.corperateId = params.corperateId
         shop.corperateName = params.corperateName
+        shop.mallApplicantRole = params.mallApplicantRole,
+        shop.mallOfflineShopDetail = params.mallOfflineShopDetail,
+        shop.mallShopDescription = params.mallShopDescription,
         shop.approvalStatus = 'requested'
 
         await etm.save(shop)
