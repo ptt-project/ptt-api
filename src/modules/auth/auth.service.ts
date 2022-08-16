@@ -167,10 +167,10 @@ export class AuthService {
           username,
           firstName,
           lastName,
-          password: await hashPassword(password),
           mobile,
           pdpaStatus,
           email,
+          password: await hashPassword(password),
         })
 
         await etm.save(member)
