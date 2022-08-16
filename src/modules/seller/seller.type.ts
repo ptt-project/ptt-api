@@ -1,5 +1,5 @@
 import { Address } from 'src/db/entities/Address'
-import { Shop, ShopType } from 'src/db/entities/Shop'
+import { MallApplicantRoleType, Shop, ShopType } from 'src/db/entities/Shop'
 import { RegisterSellerRequestDto, UpdateShopInfoRequestDto } from './dto/seller.dto'
 
 export type InsertShopToDbParams = {
@@ -17,6 +17,9 @@ export type InsertShopToDbParams = {
   note?: string
   corperateId?: string
   corperateName?: string
+  mallApplicantRole?: MallApplicantRoleType
+  mallOfflineShopDetail?: string
+  mallShopDescription?: string
 }
 
 export type UpdateShopToDbParams = {
@@ -33,6 +36,9 @@ export type UpdateShopToDbParams = {
   note?: string
   corperateId?: string
   corperateName?: string
+  mallApplicantRole?: MallApplicantRoleType
+  mallOfflineShopDetail?: string
+  mallShopDescription?: string
 }
 
 export type UpdateShopInfoToDbParams = {
