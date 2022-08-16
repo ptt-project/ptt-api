@@ -59,8 +59,8 @@ export class LoginService {
       return response({
         accessToken,
         refreshToken,
-        firstName: member.firstname,
-        lastName: member.lastname,
+        firstName: member.firstName,
+        lastName: member.lastName,
         mobile: member.mobile,
         email: member.email,
         username: member.username,

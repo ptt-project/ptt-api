@@ -165,8 +165,8 @@ export class AuthService {
       try {
         member = etm.create(Member, {
           username: username,
-          firstname: firstName,
-          lastname: lastName,
+          firstName: firstName,
+          lastName: lastName,
           password: await hashPassword(password),
           mobile: mobile,
           pdpaStatus: pdpaStatus,
