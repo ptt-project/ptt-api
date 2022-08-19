@@ -1,13 +1,5 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  ManyToMany,
-} from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { AppEntity } from './AppEntity'
-import { Category } from './Category'
 import { PlatformCategory } from './PlatformCategory'
 import { ProductProfile } from './ProductProfile'
 import { Shop } from './Shop'
