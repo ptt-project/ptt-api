@@ -25,6 +25,7 @@ import { ReviewModule } from './modules/review/review.modules'
 import { CategoryModule } from './modules/category/category.modules'
 import { AppConsoleModule } from './modules/app-console/app-console.moduel'
 import { ImageModule } from './modules/image/image.module'
+import { PromotionModule } from './modules/promotion/promotion.module'
 
 console.log('__dirname', __dirname)
 @Module({
@@ -77,6 +78,7 @@ console.log('__dirname', __dirname)
     ReviewModule,
     CategoryModule,
     ImageModule,
+    PromotionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
