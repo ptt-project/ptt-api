@@ -84,3 +84,6 @@ export const UnableDeleteCategoryProductToDb = _categoryError + 11
 export const UnableinquiryProductProfileIdsByCategoryId = _categoryError + 12
 export const UnableinquiryProductProfileByCatgoryIdFunc = _categoryError + 13
 export const UnableInquiryCategoryByName = _categoryError + 14
+
+const _image = 109000
+export const UnableResizeImage = _image + 1
