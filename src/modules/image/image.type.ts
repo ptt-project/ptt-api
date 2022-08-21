@@ -3,6 +3,8 @@ export type ImageSize = {
   height: number
 }
 
+export type SizeType = 'large' | 'medium' | 'small' | 'thumbnail' | 'original'
+
 export type ResizeImageHandlerType = (
   imageOriginal: Express.Multer.File,
   size: ImageSize,

@@ -1,5 +1,7 @@
 import {
   Controller,
+  Get,
+  Param,
   Post,
   Res,
   UploadedFile,
@@ -7,38 +9,33 @@ import {
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { Response } from 'express'
+import { Transaction, TransactionManager, EntityManager } from 'typeorm'
 import { ImageService } from './image.service'
+import { SizeType } from './image.type'
 
 @Controller('v1/images')
 export class ImageController {
   constructor(private readonly imageService: ImageService) {}
 
-  //   @Post('resize')
-  //   @UseInterceptors(FileInterceptor('file'))
-  //   async ResizeImage(
-  //     @UploadedFile() file: Express.Multer.File,
-  //     @Res() res: Response,
-  //   ) {
-  //     const image = await (await this.imageService.ResizeImageHandler())(file, {
-  //       width: 500,
-  //       height: 500,
-  //     })
-
-  //     res.send(image)
-  //   }
-
   @Post('upload-image')
   @UseInterceptors(FileInterceptor('image'))
+  @Transaction()
   async uploadImage(
     @UploadedFile() file: Express.Multer.File,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.imageService.UplaodImageHandler(
+      this.imageService.ResizeImage(),
+    )(file, etm)
+  }
+
+  @Get(':id/:size')
+  async getImage(
+    @Param('id') id: string,
+    @Param('size') size: SizeType,
     @Res() res: Response,
   ) {
-    const image = await (
-      await this.imageService.UplaodImageHandler(
-        this.imageService.ResizeImage(),
-      )
-    )(file)
-
+    const image = await this.imageService.GetImageHandler()(id, size)
     res.send(image)
   }
 }
