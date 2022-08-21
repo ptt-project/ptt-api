@@ -2,7 +2,7 @@ import { Column, Entity, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
 import { transformerDayjsToDate } from 'src/utils/entity-transform'
 import { Shop } from './Shop'
-import { ProductProfilePromotion } from './ProductPromotionPromotion'
+import { ProductProfilePromotion } from './ProductProfilePromotion'
 
 export type PromotionType = 'coming soon' | 'expired' | 'active'
 @Entity({ name: 'promotions' })

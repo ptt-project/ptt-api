@@ -87,3 +87,10 @@ export const UnableInquiryCategoryByName = _categoryError + 14
 
 const _image = 109000
 export const UnableResizeImage = _image + 1
+
+const _promotion = 112000
+export const UnableToGetPromotionError = _promotion + 1
+export const ValidatePromotionError = _promotion + 2
+export const UnableToCreatePromotionError = _promotion + 3
+export const UnableToUpdatePromotionError = _promotion + 4
+export const UnableToDeletePromotionError = _promotion + 5
