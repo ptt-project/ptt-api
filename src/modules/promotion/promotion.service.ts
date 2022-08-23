@@ -174,6 +174,18 @@ export class PromotionService {
         return [false, 'startDate must less than endDate']
       }
 
+      let discountError = ''
+      productProfiles.forEach((product) => {
+        if (product.discountType == 'percentage' && ( product.discount <= 0 || product.discount >= 100) ) {
+          discountError = 'discount in percentage must be more than 0 and less than 100'
+        } else if (product.discountType == 'value' && product.discount <= 0) {
+          discountError = 'discount in value must be more than 0'
+        }
+      })
+      if  (discountError) {
+        return [false, discountError]
+      }
+
       const productProfileIds = productProfiles.map(productProfile => productProfile.productProfileId).sort()
       try {
         const productProfileData = await etm.find(ProductProfile, {

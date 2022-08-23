@@ -4,7 +4,6 @@ import { transformerDayjsToDate } from 'src/utils/entity-transform'
 import { Shop } from './Shop'
 import { ProductProfilePromotion } from './ProductProfilePromotion'
 
-export type PromotionType = 'coming soon' | 'expired' | 'active'
 @Entity({ name: 'promotions' })
 export class Promotion extends AppEntity {
   @Column({ name: 'shopId', nullable: false })
@@ -12,15 +11,6 @@ export class Promotion extends AppEntity {
 
   @Column({ name: 'name', nullable: false })
   name: string
-
-  @Column({
-    name: 'status',
-    type: 'enum',
-    enum: ['coming soon', 'expired', 'active'],
-    default: 'coming soon',
-    nullable: false,
-  })
-  status: PromotionType
 
   @Column({
     name: 'start_date',
