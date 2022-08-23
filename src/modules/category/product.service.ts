@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
-import { Double, EntityManager, In, SelectQueryBuilder } from 'typeorm'
+import { EntityManager, In, SelectQueryBuilder } from 'typeorm'
 
 import { UnableInquiryProductByShopIdFunc, UnableinquiryProductProfileByCatgoryIdFunc } from 'src/utils/response-code'
 
@@ -21,7 +21,6 @@ import dayjs from 'dayjs'
 import { CategoryProductProfile } from 'src/db/entities/CategoryProductProfile'
 import { ProductProfile } from 'src/db/entities/ProductProfile'
 import { Shop } from 'src/db/entities/Shop'
-import { Product } from 'src/db/entities/Product'
 
 @Injectable()
 export class ProductService {
@@ -241,19 +240,43 @@ export class ProductService {
       const start = dayjs()
       let productProfile: SelectQueryBuilder<ProductProfile>
 
+      
       try {
         productProfile = etm
-          .createQueryBuilder(ProductProfile, 'productProfile')
-          .where('productProfile.deletedAt IS NULL')
-          .andWhere('productProfile.shopId = :shopId', {
+          .createQueryBuilder(ProductProfile, 'productProfiles')
+          .innerJoin(
+            'productProfiles.products',
+            'products',
+          )
+          .innerJoin(
+            'productProfiles.categoryProductProfiles',
+            'categoryProductProfiles',
+          )
+          .where('productProfiles.deletedAt IS NULL')
+          .andWhere('productProfiles.shopId = :shopId', {
             shopId,
           })
 
           if (params != undefined){
             if (params.productName != undefined) {
-              const queryProductName: string = '%'+params.productName+'%'
-              productProfile.andWhere('productProfile.name ilike :queryProductName', { queryProductName })
+              productProfile.andWhere('productProfiles.name ILIKE :queryProductName', { queryProductName: '%'+params.productName+'%' })
             }
+
+            if (params.minPrice != undefined || params.maxPrice != undefined) {
+              if(params.minPrice != undefined && params.maxPrice != undefined){
+                productProfile.andWhere('productProfiles.id IN (SELECT products.productProfileId FROM products WHERE products.price >= :queryMinPrice AND products.price <= :queryMaxPrice)', { queryMinPrice: params.minPrice, queryMaxPrice: params.maxPrice })
+              } else if (params.minPrice != undefined && params.maxPrice == undefined){
+                productProfile.andWhere('productProfiles.id IN (SELECT products.productProfileId FROM products WHERE products.price >= :queryMinPrice)', { queryMinPrice: params.minPrice })
+              } else {
+                productProfile.andWhere('productProfiles.id IN (SELECT products.productProfileId FROM products WHERE products.price <= :queryMaxPrice)', { queryMaxPrice: params.maxPrice })
+              }
+            }
+
+            if (params.categories != undefined) {
+              const queryCategories:object = JSON.parse(params.categories)
+              productProfile.andWhere('productProfiles.id IN (SELECT categoryProductProfiles.productProfileId FROM category_product_profiles WHERE categoryProductProfiles.id IN (:...queryCategories))', { queryCategories: JSON.parse(params.categories) })
+            }
+            
           }
       } catch (error) {
         return [productProfile, error]

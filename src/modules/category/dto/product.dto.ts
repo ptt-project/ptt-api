@@ -1,5 +1,4 @@
-import { IsNotEmpty, IsOptional } from 'class-validator'
-import { Double } from 'typeorm'
+import { IsJSON, IsNotEmpty, IsOptional } from 'class-validator'
 
 export class getProductQueryDTO {
   @IsOptional()
@@ -23,4 +22,17 @@ export class GetProductByShopIdQueryDTO {
   @IsOptional()
   @IsNotEmpty()
   productName?: string
+
+  @IsOptional()
+  @IsNotEmpty()
+  minPrice?: number
+
+  @IsOptional()
+  @IsNotEmpty()
+  maxPrice?: number
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsJSON()
+  categories?: string
 }
