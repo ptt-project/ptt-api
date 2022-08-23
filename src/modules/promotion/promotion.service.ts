@@ -6,7 +6,7 @@ import { response } from 'src/utils/response'
 import { CreatePromotionRequestDTO, GetPromotionQueryDTO } from './dto/promotion'
 import { DeletePromotionFuncType, FilterPromotionParams, InqueryPromotionFuncType, InsertPromotionFuncType, InsertPromotionParams, UpdatePromotionFuncType, ValidatePromotionFuncType } from './promotion.type'
 import { UnableToCreatePromotionError, UnableToDeletePromotionError, UnableToGetPromotionError, UnableToUpdatePromotionError, ValidatePromotionError } from 'src/utils/response-code'
-import { Between, EntityManager, In, Like, Not, SelectQueryBuilder } from 'typeorm'
+import { Between, EntityManager, In, LessThan, Like, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm'
 import { Promotion } from 'src/db/entities/Promotion'
 import { ProductProfile } from 'src/db/entities/ProductProfile'
 import { ProductProfilePromotion } from 'src/db/entities/ProductProfilePromotion'
@@ -34,7 +34,6 @@ export class PromotionService {
       }
 
       const result = await paginate<Promotion>(promotionQuery, { limit, page })
-
       this.logger.info(`Done GetShopPromotionHandler ${dayjs().diff(start)} ms`)
       return response(result)
     }
@@ -128,7 +127,7 @@ export class PromotionService {
     return async (shopId: number, params: FilterPromotionParams): Promise<[SelectQueryBuilder<Promotion>, string]> => {
       const start = dayjs()
       
-      const { name, startDate, endDate } = params
+      const { name, startDate, endDate, status } = params
       let promotionQuery: SelectQueryBuilder<Promotion>
 
       try {
@@ -139,10 +138,15 @@ export class PromotionService {
         if (name) {
           condition.name = Like(`%${name}%`)
         }
+        if (status == 'active') {
+          condition.endDate = MoreThanOrEqual(new Date())
+        } else if (status == 'expired') {
+          condition.endDate = LessThan(new Date())
+        }
         if (startDate && endDate) {
           condition = [
-            { ...condition, startDate: Between(startDate, endDate) },
-            { ...condition, endDate: Between(startDate, endDate) },
+            { startDate: Between(startDate, endDate), ...condition },
+            { endDate: Between(startDate, endDate), ...condition },
           ]
         }
         promotionQuery.where(condition)

@@ -13,6 +13,7 @@ export type FilterPromotionParams = {
   name?: string,
   startDate?: Date,
   endDate?: Date,
+  status?: string,
 }
 
 export type InsertPromotionParams = {

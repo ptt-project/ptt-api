@@ -78,4 +78,9 @@ export class GetPromotionQueryDTO {
     return date
   })
   endDate?: Date
+
+  @IsString()
+  @IsOptional()
+  @IsIn(['active', 'expired'])
+  status?: string
 }
