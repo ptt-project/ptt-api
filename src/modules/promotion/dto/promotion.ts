@@ -18,14 +18,6 @@ export class CreateProductProfilePromotionDTO {
 
   @IsBoolean()
   @IsNotEmpty()
-  isLimitToStock: boolean
-
-  @IsBoolean()
-  @IsNotEmpty()
-  isLimitToBuy: boolean
-
-  @IsBoolean()
-  @IsNotEmpty()
   isActive: boolean
 }
 

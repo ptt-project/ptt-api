@@ -166,6 +166,10 @@ export class PromotionService {
       
       const { productProfiles, startDate, endDate } = params
 
+      if (endDate <= startDate) {
+        return [false, 'startDate must less than endDate']
+      }
+
       const productProfileIds = productProfiles.map(productProfile => productProfile.productProfileId).sort()
       try {
         const productProfileData = await etm.find(ProductProfile, {
@@ -241,8 +245,6 @@ export class PromotionService {
             productProfileId: productProfilePromo.productProfileId,
             discountType: productProfilePromo.discountType,
             discount: productProfilePromo.discount,
-            limitToStock: productProfilePromo.isLimitToStock ? 1 : undefined,
-            limitToBuy: productProfilePromo.isLimitToBuy ? 1 : undefined,
             isActive: productProfilePromo.isActive,
             promotionId: promotion.id
           })
@@ -291,8 +293,6 @@ export class PromotionService {
             productProfileId: productProfilePromo.productProfileId,
             discountType: productProfilePromo.discountType,
             discount: productProfilePromo.discount,
-            limitToStock: productProfilePromo.isLimitToStock ? 1 : undefined,
-            limitToBuy: productProfilePromo.isLimitToBuy ? 1 : undefined,
             isActive: productProfilePromo.isActive,
             promotionId: promotion.id
           })

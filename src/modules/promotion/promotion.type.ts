@@ -6,8 +6,6 @@ export type InsertProductProfilePromotionParams = {
   productProfileId: number,
   discountType: DiscountType,
   discount: number,
-  isLimitToStock: boolean,
-  isLimitToBuy: boolean,
   isActive: boolean,
 }
 

@@ -29,12 +29,6 @@ export class ProductProfilePromotion extends AppEntity {
   })
   discount: number
 
-  @Column({ name: 'limit_to_stock', nullable: true })
-  limitToStock: number
-
-  @Column({ name: 'limit_to_buy', nullable: true })
-  limitToBuy: number
-
   @Column({ name: 'isActive', nullable: false, default: true })
   isActive: boolean
 
