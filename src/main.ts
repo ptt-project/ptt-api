@@ -43,18 +43,19 @@ async function bootstrap() {
   const whitelist = [
     'http://happyshoppingexpress.com:3000',
     'http://localhost:3000',
+    'http://localhost:3008',
   ]
   app.enableCors({
-    origin: function(origin, callback) {
-      if (whitelist.indexOf(origin) !== -1) {
-        console.log('allowed cors for:', origin)
-        callback(null, true)
-      } else {
-        console.log('blocked cors for:', origin)
-        callback(new Error('Not allowed by CORS'))
-      }
-    },
-    // origin: whitelist,
+    // origin: function(origin, callback) {
+    //   if (whitelist.indexOf(origin) !== -1) {
+    //     console.log('allowed cors for:', origin)
+    //     callback(null, true)
+    //   } else {
+    //     console.log('blocked cors for:', origin)
+    //     callback(new Error('Not allowed by CORS'))
+    //   }
+    // },
+    origin: whitelist,
     methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     exposedHeaders: [
       'Content-Disposition',
