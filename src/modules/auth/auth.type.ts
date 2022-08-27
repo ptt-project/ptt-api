@@ -13,11 +13,11 @@ export type InquiryMemberExistType = (
 
 export type ValidateInviteTokenFuncType = (
   inviteToken: string,
-) => Promise<[number, number, string]>
+) => Promise<[Member, number, string]>
 
 export type InsertMemberToDbTye = (
   params: RegisterRequestDto,
-  inviterId?: number,
+  inviter?: Member,
 ) => Promise<[Member, string]>
 
 export type GenAccessTokenType = (member: Member) => Promise<string>

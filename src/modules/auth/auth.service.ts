@@ -94,14 +94,14 @@ export class AuthService {
         return response(undefined, validateErrorCode, validateErrorMessage)
       }
 
-      let inviterId;
+      let inviter: Member;
       if (cookies.InvitationToken) {
-        const [spCodeId, validateInviteTokenErrorCode, validateInviteTokenErrorMessage] = await (
+        const [spCode, validateInviteTokenErrorCode, validateInviteTokenErrorMessage] = await (
           await validateInviteToken
         )(cookies.InvitationToken)
 
-        if (spCodeId) {
-          inviterId = spCodeId
+        if (spCode) {
+          inviter = spCode
         }
   
         if (validateInviteTokenErrorCode != 0) {
@@ -109,7 +109,7 @@ export class AuthService {
         }
       }
 
-      const [member, insertMemberError] = await (await insertMemberToDb)(body, inviterId)
+      const [member, insertMemberError] = await (await insertMemberToDb)(body, inviter)
       if (insertMemberError != '') {
         return internalSeverError(
           UnableInsertMemberToDbError,
@@ -172,9 +172,9 @@ export class AuthService {
   ): Promise<ValidateInviteTokenFuncType> {
     return async (
       inviteToken: string
-    ): Promise<[number, number, string]> => {
+    ): Promise<[Member, number, string]> => {
       const start = dayjs()
-      let member;
+      let member: Member;
       const memberCode = this.jwtService.decode(inviteToken)
       try {
         member = await etm.findOne(Member, {
@@ -188,12 +188,12 @@ export class AuthService {
       }
 
       this.logger.info(`Done ValidateInviteTokenFunc ${dayjs().diff(start)} ms`)
-      return [member.id, 0, '']
+      return [member, 0, '']
     }
   }
 
   async insertMemberToDbFunc(etm: EntityManager): Promise<InsertMemberToDbTye> {
-    return async (params: RegisterRequestDto, inviterId: number): Promise<[Member, string]> => {
+    return async (params: RegisterRequestDto, inviter?: Member): Promise<[Member, string]> => {
       const start = dayjs()
       const {
         username,
@@ -216,12 +216,17 @@ export class AuthService {
           email,
           password: await hashPassword(password),
           memberCode: "*******",
-          spCodeId: inviterId,
+          spCodeId: inviter?.id,
         })
 
         member = await etm.save(member)
         member.memberCode = `${member.id}`.padStart(7, '0')
         member = await etm.save(member)
+
+        if (inviter) {
+          inviter.relationIds.push(member.id)
+          await etm.save(inviter)
+        }
       } catch (error) {
         return [member, error]
       }
