@@ -16,7 +16,7 @@ export const UnableLoginUsernameDoNotAlreayExist = _authError + 4
 export const PasswordIsInvalid = _authError + 5
 
 // register with relation
-export const InvalideInviteToken = _authError + 7
+export const InvalideInviteToken = _authError + 6
 
 // otp module
 const _otpError = 102000
