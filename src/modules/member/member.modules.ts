@@ -6,6 +6,7 @@ import { EmailService } from './email.service'
 import { MemberController } from './member.controller'
 import { MemberService } from './member.service'
 import { PasswordService } from './password.service'
+import { RelationService } from './relation.service'
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PasswordService } from './password.service'
     PasswordService,
     MemberService,
     EmailService,
+    RelationService,
   ],
   exports: [],
 })

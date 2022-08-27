@@ -64,6 +64,9 @@ export class Member extends AppEntity {
   })
   role: MemberRoleType
 
+  @Column({ name: 'relationIds', type: 'simple-json', default: [] })
+  relationIds: number[]
+
   @OneToMany(
     () => Mobile,
     mobile => mobile.member,
