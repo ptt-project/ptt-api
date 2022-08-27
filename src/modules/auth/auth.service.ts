@@ -18,6 +18,7 @@ import {
   UnableRegisterUsernameAlreayExist,
   UnableInsertMemberToDbError,
   UnableToAddMobile,
+  InvalideInviteToken,
 } from 'src/utils/response-code'
 
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
@@ -34,8 +35,10 @@ import {
   ExiredTokenType,
   TokenType,
   ValidateTokenResponse,
+  ValidateInviteTokenFuncType,
 } from './auth.type'
 import { PinoLogger } from 'nestjs-pino'
+import { CookieOptions } from 'express'
 
 @Injectable()
 export class AuthService {
@@ -64,10 +67,11 @@ export class AuthService {
   registerHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     inquiryMemberEixst: Promise<InquiryMemberExistType>,
+    validateInviteToken: Promise<ValidateInviteTokenFuncType>,
     insertMemberToDb: Promise<InsertMemberToDbTye>,
     addMobileFunc: Promise<InquiryAddMobileType>,
   ) {
-    return async (body: RegisterRequestDto) => {
+    return async (body: RegisterRequestDto, cookies) => {
       const start = dayjs()
       const verifyOtpData: verifyOtpRequestDto = {
         reference: body.mobile,
@@ -90,7 +94,22 @@ export class AuthService {
         return response(undefined, validateErrorCode, validateErrorMessage)
       }
 
-      const [member, insertMemberError] = await (await insertMemberToDb)(body)
+      let inviterId;
+      if (cookies.InvitationToken) {
+        const [spCodeId, validateInviteTokenErrorCode, validateInviteTokenErrorMessage] = await (
+          await validateInviteToken
+        )(cookies.InvitationToken)
+
+        if (spCodeId) {
+          inviterId = spCodeId
+        }
+  
+        if (validateInviteTokenErrorCode != 0) {
+          return response(undefined, validateInviteTokenErrorCode, validateInviteTokenErrorMessage)
+        }
+      }
+
+      const [member, insertMemberError] = await (await insertMemberToDb)(body, inviterId)
       if (insertMemberError != '') {
         return internalSeverError(
           UnableInsertMemberToDbError,
@@ -148,8 +167,33 @@ export class AuthService {
     }
   }
 
+  async ValidateInviteTokenFunc(
+    etm: EntityManager,
+  ): Promise<ValidateInviteTokenFuncType> {
+    return async (
+      inviteToken: string
+    ): Promise<[number, number, string]> => {
+      const start = dayjs()
+      let member;
+      const memberCode = this.jwtService.decode(inviteToken)
+      try {
+        member = await etm.findOne(Member, {
+          where: { memberCode }
+        })
+        if (!member) {
+          return [undefined, InvalideInviteToken, 'Invalide invite token']
+        }
+      } catch (error) {
+        return [undefined, InternalSeverError, error]
+      }
+
+      this.logger.info(`Done ValidateInviteTokenFunc ${dayjs().diff(start)} ms`)
+      return [member.id, 0, '']
+    }
+  }
+
   async insertMemberToDbFunc(etm: EntityManager): Promise<InsertMemberToDbTye> {
-    return async (params: RegisterRequestDto): Promise<[Member, string]> => {
+    return async (params: RegisterRequestDto, inviterId: number): Promise<[Member, string]> => {
       const start = dayjs()
       const {
         username,
@@ -171,9 +215,13 @@ export class AuthService {
           pdpaStatus,
           email,
           password: await hashPassword(password),
+          memberCode: "*******",
+          spCodeId: inviterId,
         })
 
-        await etm.save(member)
+        member = await etm.save(member)
+        member.memberCode = `${member.id}`.padStart(7, '0')
+        member = await etm.save(member)
       } catch (error) {
         return [member, error]
       }

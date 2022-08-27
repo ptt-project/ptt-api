@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
 import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
 import { Member } from 'src/db/entities/Member'
@@ -14,7 +15,10 @@ import {
 
 @Injectable()
 export class MemberService {
-  constructor(private readonly logger: PinoLogger) {
+  constructor(
+    private readonly logger: PinoLogger,
+    private readonly jwtService: JwtService,
+  ) {
     this.logger.setContext(MemberService.name)
   }
 
@@ -38,6 +42,7 @@ export class MemberService {
         birthday: member.birthday,
         gender: member.gender,
         email: member.email,
+        invitationToken: this.jwtService.sign(member.memberCode)
       }
     }
   }

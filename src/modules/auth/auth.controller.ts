@@ -10,6 +10,7 @@ import { OtpService } from '../otp/otp.service'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { MobileService } from '../mobile/mobile.service'
 import dayjs from 'dayjs'
+import { Request } from 'express'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -23,15 +24,17 @@ export class AuthController {
   @Post('register')
   @Transaction()
   async register(
+    @Req() request: Request,
     @Body() body: RegisterRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.authService.registerHandler(
       this.otpService.inquiryVerifyOtpFunc(etm),
       this.authService.inquiryMemberExistFunc(etm),
+      this.authService.ValidateInviteTokenFunc(etm),
       this.authService.insertMemberToDbFunc(etm),
       this.mobileService.addMobileFunc(etm),
-    )(body)
+    )(body, request.cookies)
   }
 
   @Post('register/validate')
