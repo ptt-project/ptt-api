@@ -8,10 +8,9 @@ import { ImageService } from './image.service'
     WebDAVModule.forRoot(
       {
         config: {
-          endpoint:
-            'http://img.happyshoppingexpress.com/remote.php/dav/files/admin/',
-          username: 'admin',
-          password: 'LgVZ2738H',
+          endpoint: process.env.UPLOAD_IMAGE_HOST,
+          username: process.env.UPLOAD_IMAGE_USERNAME,
+          password: process.env.UPLOAD_IMAGE_PASSWORD,
         },
       },
       'nextCloud',
