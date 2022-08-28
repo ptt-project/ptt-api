@@ -13,6 +13,8 @@ import { LoggerModule } from 'nestjs-pino'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { ConsoleModule } from 'nestjs-console'
+import { MailerModule } from '@nestjs-modules/mailer'
+import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter'
 
 import { VersionMiddleware } from './utils/middlewares/version.middleware'
 import './initialize'
@@ -24,13 +26,21 @@ import { SellerModule } from './modules/seller/seller.modules'
 import { ReviewModule } from './modules/review/review.modules'
 import { CategoryModule } from './modules/category/category.modules'
 import { AppConsoleModule } from './modules/app-console/app-console.moduel'
-
-console.log('__dirname', __dirname)
+import { EmailModule } from './modules/email/email.module'
 @Module({
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot(), //setting from ormconfig.ts
     ScheduleModule.forRoot(),
+    MailerModule.forRoot({
+      transport: `smtps://${process.env.SMTP_FROM_EMAIL}:${process.env.STMP_PASSWORD}@${process.env.STMP_HOST}`,
+      template: {
+        adapter: new PugAdapter(),
+        options: {
+          strict: true,
+        },
+      },
+    }),
     LoggerModule.forRoot({
       pinoHttp: {
         level:
@@ -61,6 +71,7 @@ console.log('__dirname', __dirname)
           },
         },
       },
+
       exclude: [{ method: RequestMethod.GET, path: '/api/v1/health' }],
     }),
     ServeStaticModule.forRoot({
@@ -75,6 +86,7 @@ console.log('__dirname', __dirname)
     SellerModule,
     ReviewModule,
     CategoryModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
