@@ -83,13 +83,13 @@ export class MockDataConsoleService {
       return console.log('create shop error =>', insertShopToDbError)
     }
 
-    const platformCategory = PlatformCategory.create({
+    const platformCategory = etm.create(PlatformCategory, {
       name: 'platform-category01',
       status: 'active',
     })
     await etm.save(platformCategory)
 
-    const brand = Brand.create({
+    const brand = etm.create(Brand, {
       name: 'brand01',
     })
     await etm.save(brand)

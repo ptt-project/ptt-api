@@ -263,7 +263,14 @@ export class MemberService {
       params: UpdateAddressToDbParams,
     ): Promise<string> => {
       try {
-        await etm.update(Address, addressId, { ...params })
+        const geoName: Record<string, any> = {
+          lat: params.geoName?.lat || undefined,
+          lng: params.geoName?.lng || undefined,
+        }
+        await etm.update(Address, addressId, {
+          ...params,
+          geoName,
+        })
       } catch (error) {
         return error
       }

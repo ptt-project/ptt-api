@@ -6,6 +6,8 @@ import { ProductProfile } from './ProductProfile'
 
 export type ShopType = 'Normal' | 'Mall'
 export type ApprovalType = 'requested' | 'rejected' | 'approved'
+export type MallApplicantRoleType = 'Brand Owner' | 'Exclusive Distributor' | 'Non-Exclusive Distributor' | 'Retailer' | 'Other'
+
 @Entity({ name: 'shops' })
 export class Shop extends AppEntity {
   @Column({
@@ -103,6 +105,20 @@ export class Shop extends AppEntity {
     default: 0,
   })
   cancelRate: number
+
+  @Column({
+    name: 'mall_applicant_role',
+    type: 'enum',
+    enum: ['Brand Owner', 'Exclusive Distributor', 'Non-Exclusive Distributor', 'Retailer', 'Other'],
+    nullable: true,
+  })
+  mallApplicantRole: MallApplicantRoleType
+
+  @Column({ name: 'mall_offline_shop_detail', nullable: true })
+  mallOfflineShopDetail: string
+  
+  @Column({ name: 'mall_shop_description', nullable: true })
+  mallShopDescription: string
 
   @Column({ name: 'profile_image_path', nullable: true })
   profileImagePath: string

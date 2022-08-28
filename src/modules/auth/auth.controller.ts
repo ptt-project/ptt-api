@@ -35,6 +35,7 @@ export class AuthController {
   }
 
   @Post('register/validate')
+  @Transaction()
   async validate(
     @Body() body: ValidateRegisterRequestDto,
     @TransactionManager() etm: EntityManager,
@@ -45,6 +46,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Transaction()
   async login(
     @Req() request,
     @Body() body: LoginRequestDto,
@@ -59,13 +61,14 @@ export class AuthController {
 
     const accessToken = `AccessToken=${
       longinResponse.data.accessToken
-    }; HttpOnly; Path=/; Max-Age=${dayjs().add(1, 'day')}`
+    }; Path=/; Max-Age=${dayjs().add(1, 'day')};`
 
     const refreshToken = `RefreshToken=${
       longinResponse.data.refreshToken
-    }; HttpOnly; Path=/; Max-Age=${dayjs().add(7, 'day')}`
+    }; Path=/; Max-Age=${dayjs().add(7, 'day')};`
 
     request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
+
     return longinResponse
   }
 }
