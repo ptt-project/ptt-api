@@ -32,14 +32,16 @@ import { EmailModule } from './modules/email/email.module'
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot(), //setting from ormconfig.ts
     ScheduleModule.forRoot(),
-    MailerModule.forRoot({
-      transport: `smtps://${process.env.SMTP_FROM_EMAIL}:${process.env.STMP_PASSWORD}@${process.env.STMP_HOST}`,
-      template: {
-        adapter: new PugAdapter(),
-        options: {
-          strict: true,
+    MailerModule.forRootAsync({
+      useFactory: () => ({
+        transport: `smtps://${process.env.SMTP_FROM_EMAIL}:${process.env.STMP_PASSWORD}@${process.env.STMP_HOST}`,
+        template: {
+          adapter: new PugAdapter(),
+          options: {
+            strict: true,
+          },
         },
-      },
+      }),
     }),
     LoggerModule.forRoot({
       pinoHttp: {

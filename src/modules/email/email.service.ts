@@ -18,7 +18,7 @@ export class EmailService {
     this.logger.setContext(EmailService.name)
   }
 
-  async sendEmail(params: SendEmailType) {
+  sendEmail(params: SendEmailType) {
     const { to, subject, templateName, context } = params
     this.mailerService
       .sendMail({

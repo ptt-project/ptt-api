@@ -14,7 +14,7 @@ export class EmailContoller {
 
   @Post('')
   async sendEmail(@Body() body: SendEmailExampleDto) {
-    return await this.emailService.sendEmail({
+    return this.emailService.sendEmail({
       to: body.email,
       subject: 'Example Send Email',
       templateName: 'example',
