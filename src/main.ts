@@ -43,6 +43,7 @@ async function bootstrap() {
   const whitelist = [
     'http://happyshoppingexpress.com:3000',
     'http://localhost:3000',
+    'http://localhost:3008',
   ]
   app.enableCors({
     // origin: function(origin, callback) {
