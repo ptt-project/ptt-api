@@ -16,6 +16,7 @@ import {
   UnableDeleteCategoryProductToDb,
   UnableinquiryProductProfileIdsByCategoryId,
   UnableInquiryCategoryByName,
+  UnableToGetPlatformCategories,
 } from 'src/utils/response-code'
 
 import {
@@ -34,6 +35,7 @@ import {
   DeleteCategoryProductToDbType,
   inquiryProductProfileIdsByCategoryIdType,
   InquiryCategoryByNameType,
+  InquiryPlatformCategoryToDbType,
 } from './category.type'
 
 import { PinoLogger } from 'nestjs-pino'
@@ -47,11 +49,27 @@ import {
 } from './dto/category.dto'
 import { Shop } from 'src/db/entities/Shop'
 import { internalSeverError } from 'src/utils/response-error'
+import { PlatformCategory } from 'src/db/entities/PlatformCategory'
 
 @Injectable()
 export class CategoryService {
   constructor(private readonly logger: PinoLogger) {
     this.logger.setContext(CategoryService.name)
+  }
+
+  getPlatformCategoriesHandler(getPlatfoemCategories: Promise<InquiryPlatformCategoryToDbType>) {
+    return async () => {
+      const start = dayjs()
+
+      const [categories, getCategoriesError] = await (await getPlatfoemCategories)()
+
+      if (getCategoriesError != '') {
+        return response(undefined, UnableToGetPlatformCategories, getCategoriesError)
+      }
+
+      this.logger.info(`Done getPlatformCategoriesHandler ${dayjs().diff(start)} ms`)
+      return response(categories)
+    }
   }
 
   getCategoriesHandler(getCategories: Promise<InquiryCategoryToDbType>) {
@@ -103,6 +121,28 @@ export class CategoryService {
 
       this.logger.info(`Done createCategoryHandler ${dayjs().diff(start)} ms`)
       return response(category)
+    }
+  }
+
+  async InquiryPlatformCategoriesFunc(
+    etm: EntityManager,
+  ): Promise<InquiryPlatformCategoryToDbType> {
+    return async (): Promise<[PlatformCategory[], string]> => {
+      const start = dayjs()
+      let categories: PlatformCategory[]
+      try {
+        categories = await etm.find(PlatformCategory, {
+          where: { status: 'active', deletedAt: null },
+        })
+        if (!categories) {
+          return [categories, 'Unable to get platform categories']
+        }
+      } catch (error) {
+        return [categories, error]
+      }
+
+      this.logger.info(`Done InquiryPlatformCategoriesFunc ${dayjs().diff(start)} ms`)
+      return [categories, '']
     }
   }
 

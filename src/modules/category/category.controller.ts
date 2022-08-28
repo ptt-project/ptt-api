@@ -43,6 +43,16 @@ export class CategoryController {
     )(shop)
   }
 
+  @Get('/platform-categories')
+  @Transaction()
+  async getPlatformCategories(
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.categoryService.getPlatformCategoriesHandler(
+      this.categoryService.InquiryPlatformCategoriesFunc(etm),
+    )()
+  }
+
   @Post('/')
   @Transaction()
   async createCategory(

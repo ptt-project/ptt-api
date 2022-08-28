@@ -1,4 +1,5 @@
 import { Category, CreatedByType, StatusType } from 'src/db/entities/Category'
+import { PlatformCategory } from 'src/db/entities/PlatformCategory'
 import { ProductProfile } from 'src/db/entities/ProductProfile'
 import { SelectQueryBuilder } from 'typeorm'
 
@@ -16,6 +17,9 @@ export type UpdateStatusCategoryToDbParams = {
 export type InquiryCategoryToDbType = (
   shopId: number,
 ) => Promise<[Category[], string]>
+
+export type InquiryPlatformCategoryToDbType = (
+) => Promise<[PlatformCategory[], string]>
 
 export type InsertCategoryToDbType = (
   params: InsertCategoryToDbParams,
