@@ -67,13 +67,13 @@ export class ProductService {
     validateParams: Promise<
       ValidateProductParamsFuncType
     >,
-    createProductProfile: Promise<
+    insertProductProfile: Promise<
       InsertProductProfileToDbFuncType
     >,
-    createProductOptions: Promise<
+    insertProductOptions: Promise<
       InsertProductOptionsToDbFuncType
     >,
-    createProducts: Promise<
+    insertProducts: Promise<
       InsertProductsToDbFuncType
     >,
     getProductProfile: Promise<
@@ -98,15 +98,15 @@ export class ProductService {
         shopId: shop.id,
         status: 'hidden',
       }
-      const [productProfile, createProductProfileError] = await (await createProductProfile)(
+      const [productProfile, insertProductProfileError] = await (await insertProductProfile)(
         newProductProfile
       )
 
-      if (createProductProfileError != '') {
+      if (insertProductProfileError != '') {
         return response(
           undefined,
           UnableToCreateProductProfile,
-          createProductProfileError,
+          insertProductProfileError,
         )
       }
 
@@ -115,15 +115,15 @@ export class ProductService {
           pdo => ({...pdo, shopId: shop.id, productProfileId: productProfile.id})
           )
 
-        const [productOptions, createProductOptionsError] = await (await createProductOptions)(
+        const [productOptions, insertProductOptionsError] = await (await insertProductOptions)(
           newProductOptions,
         )
 
-        if (createProductOptionsError != '') {
+        if (insertProductOptionsError != '') {
           return response(
             undefined,
             UnableToCreateProductOptions,
-            createProductOptionsError,
+            insertProductOptionsError,
           )
         }
 
@@ -136,15 +136,15 @@ export class ProductService {
             }
           )
 
-        const [products, createProductsError] = await (await createProducts)(
+        const [products, insertProductsError] = await (await insertProducts)(
           newProducts,
         )
 
-        if (createProductsError != '') {
+        if (insertProductsError != '') {
           return response(
             undefined,
             UnableToCreateProducts,
-            createProductsError,
+            insertProductsError,
           )
         }
       } else {
@@ -157,15 +157,15 @@ export class ProductService {
           }
         ]
 
-        const [products, createProductsError] = await (await createProducts)(
+        const [products, insertProductsError] = await (await insertProducts)(
           newProducts,
         )
 
-        if (createProductsError != '') {
+        if (insertProductsError != '') {
           return response(
             undefined,
             UnableToCreateProducts,
-            createProductsError,
+            insertProductsError,
           )
         }
       }
@@ -360,7 +360,7 @@ export class ProductService {
 
   GetProductByProductIdHandler(
     inquiryProductProfileByProductProfileId: Promise<InquiryProductProfileByProductProfileIdType>,
-    iquiryProductOptionsByProductProfileId: Promise<InquiryProductOptionsByProductProfileIdType>,
+    inquiryProductOptionsByProductProfileId: Promise<InquiryProductOptionsByProductProfileIdType>,
     inquiryProductsByProductProfileId: Promise<InquiryProductsByProductProfileIdType>,
     ) {
     return async (productProfileId: number) => {
@@ -378,7 +378,7 @@ export class ProductService {
       }
 
       const [productOptions, inquiryProductOptionsByProductProfileIdError] = await (
-        await iquiryProductOptionsByProductProfileId
+        await inquiryProductOptionsByProductProfileId
       )(productProfileId)
 
       if (inquiryProductOptionsByProductProfileIdError != '') {
