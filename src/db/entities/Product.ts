@@ -20,15 +20,6 @@ export class Product extends AppEntity {
   @Column({ name: 'product_profile_id' })
   productProfileId: number
 
-  @Column({ name: 'shop_id' })
-  shopId: number
-
-  @Column({ name: 'platform_category_id' })
-  platformCategoryId: number
-
-  @Column({ name: 'brand_id' })
-  brandId: number
-
   @Column({ name: 'option1', nullable: true })
   option1: string
 
@@ -38,7 +29,7 @@ export class Product extends AppEntity {
   @Column({
     name: 'price',
     type: 'decimal',
-    precision: 5,
+    precision: 12,
     scale: 2,
     nullable: true,
   })

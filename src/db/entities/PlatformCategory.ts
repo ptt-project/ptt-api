@@ -18,9 +18,6 @@ export class PlatformCategory extends AppEntity {
   })
   status: StatusType
 
-  @Column({ name: 'product_count', nullable: false, default: 0 })
-  productCount: number
-
   @OneToMany(
     () => Product,
     product => product.platformCategory,
