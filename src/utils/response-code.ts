@@ -85,5 +85,24 @@ export const UnableinquiryProductProfileIdsByCategoryId = _categoryError + 12
 export const UnableinquiryProductProfileByCatgoryIdFunc = _categoryError + 13
 export const UnableInquiryCategoryByName = _categoryError + 14
 
-const _image = 109000
+const _productError = 109000
+export const CreateProductValidationFailed = _productError + 1
+export const UnableToCreateProductProfile = _productError + 2
+export const UnableToCreateProductOptions = _productError + 3
+export const UnableToCreateProducts = _productError + 4
+export const UnableToGetProducts = _productError + 5
+export const UnableInquiryProductProfileByProductProfileId = _productError + 6
+export const UnableInquiryProductOptionsByProductProfileId = _productError + 7
+export const UnableInquiryProductsByProductProfileId = _productError + 8
+export const UnableDeleteProductProfileByProductProfileId = _productError + 9
+export const UnableDeleteProductOptionsByProductProfileId = _productError + 10
+export const UnableDeleteProductsByProductProfileId = _productError + 11
+export const UnableUpdateStatusProductByProductProfileId = _productError + 12
+export const UnableUpdateProductProfileByProductProfileId = _productError + 13
+export const UnableRemoveProductOptionByProductOptionId = _productError + 14
+export const UnableUpdateProductOption = _productError + 15
+export const UnableRemoveProductsById = _productError + 16
+export const UnableUpdateProduct = _productError + 17
+
+const _image = 110000
 export const UnableResizeImage = _image + 1

@@ -22,7 +22,7 @@ export class ProductProfile extends AppEntity {
   @Column({ name: 'platform_category_id' })
   platformCategoryId: number
 
-  @Column({ name: 'brand_id' })
+  @Column({ name: 'brand_id', nullable: true })
   brandId: number
 
   @Column({ name: 'status' })
@@ -33,6 +33,15 @@ export class ProductProfile extends AppEntity {
 
   @Column({ name: 'weight', type: 'decimal', precision: 5, scale: 2 })
   weight: number
+
+  @Column({ name: 'width', nullable: false })
+  width: number
+
+  @Column({ name: 'length', nullable: false })
+  length: number
+  
+  @Column({ name: 'height', nullable: false })
+  height: number
 
   @Column({ name: 'exp', nullable: true })
   exp: number

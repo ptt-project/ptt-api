@@ -26,6 +26,7 @@ import { SellerModule } from './modules/seller/seller.modules'
 import { ReviewModule } from './modules/review/review.modules'
 import { CategoryModule } from './modules/category/category.modules'
 import { AppConsoleModule } from './modules/app-console/app-console.moduel'
+import { ProductModule } from './modules/product/product.modules'
 import { EmailModule } from './modules/email/email.module'
 import { ImageModule } from './modules/image/image.module'
 @Module({
@@ -89,6 +90,7 @@ import { ImageModule } from './modules/image/image.module'
     SellerModule,
     ReviewModule,
     CategoryModule,
+    ProductModule,
     ImageModule,
     EmailModule,
   ],

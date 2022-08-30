@@ -61,6 +61,9 @@ export class Member extends AppEntity {
   })
   role: MemberRoleType
 
+  @Column({ name: 'image_id', nullable: true })
+  imageId: string
+
   @OneToMany(
     () => Mobile,
     mobile => mobile.member,
