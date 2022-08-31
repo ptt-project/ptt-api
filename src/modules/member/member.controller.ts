@@ -53,6 +53,7 @@ export class MemberController {
     )(member, body, manager)
   }
 
+  @Auth()
   @Put('profile')
   @Transaction()
   async updateProfile(
