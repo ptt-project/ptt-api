@@ -21,7 +21,7 @@ export type InsertTransactionToDbFuncType = (
 ) => Promise<[WalletTransaction, string]>
 
 export type InsertDepositReferenceToDbFuncType = (
-  walletTransactionId: number,
+  walletTransaction: WalletTransaction,
 ) => Promise<[string, string]>
 
 export type RequestDepositQrCodeFuncType = (

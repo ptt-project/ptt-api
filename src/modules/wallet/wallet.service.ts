@@ -89,7 +89,7 @@ export class WalletService {
         return response(undefined, UnableToInsertTransaction, insertTransactionError)
       }
 
-      const [referenceNo, insertDepositReferenceError] = await (await insertDepositReference)(walletTransaction.id)
+      const [referenceNo, insertDepositReferenceError] = await (await insertDepositReference)(walletTransaction)
 
       if (insertDepositReferenceError != '') {
         return response(undefined, UnableToInsertDepositReference, insertDepositReferenceError)
@@ -233,7 +233,7 @@ export class WalletService {
 
   async InsertDepositReferenceToDbFunc(etm: EntityManager): Promise<InsertDepositReferenceToDbFuncType> {
     return async (
-      walletTransactionId: number,
+      walletTransaction: WalletTransaction,
     ): Promise<[string, string]> => {
       const start = dayjs()
       let walletTransactionReference: WalletTransactionReference
@@ -246,8 +246,10 @@ export class WalletService {
           alreadyUsedRef = await etm.findOne(WalletTransactionReference, { where: { referenceNo } })
         } while (alreadyUsedRef)
 
-        walletTransactionReference = etm.create(WalletTransactionReference, { transactionId: walletTransactionId, referenceNo})
+        walletTransactionReference = etm.create(WalletTransactionReference, { transactionId: walletTransaction.id, referenceNo})
         walletTransactionReference = await etm.save(walletTransactionReference)
+        walletTransaction.referenceId = walletTransactionReference.id
+        await etm.save(walletTransaction)
         
       } catch (error) {
         return [referenceNo, error]
