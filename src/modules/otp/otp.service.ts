@@ -24,6 +24,7 @@ import {
 } from './otp.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
+import e from 'express'
 
 @Injectable()
 export class OtpService {
@@ -44,10 +45,17 @@ export class OtpService {
       })
 
       if (verSendOtpError != 0) {
-        return validateBadRequest(
-          UnableToSendOtp,
-          'Unable to send Otp with in 90 sec',
-        )
+        if (verSendOtpError == UnableToSendOtp)
+          return validateBadRequest(
+            UnableToSendOtp,
+            'Unable to send Otp with in 90 sec',
+          )
+        else {
+          return validateBadRequest(
+            UnableToSendOtp,
+            'Unable to send Otp',
+          )
+        }
       }
 
       const [otpData, sendOtpError] = await (await sendOtp)({ reference, type })
@@ -62,8 +70,13 @@ export class OtpService {
         return validateBadRequest(saveOtpError, 'Fail to Save Otp')
       }
 
+      const responseObj: any = { refCode: otpData.refCode, reference }
+      
+      if (process.env.NODE_ENV !== 'PROD' && process.env.NODE_ENV !== 'UAT') {
+        responseObj.otpCode = otpData.otpCode
+      }
       this.logger.info(`Done RequestOtpHandler ${dayjs().diff(start)} ms`)
-      return response({ refCode: otpData.refCode, reference })
+      return response(responseObj)
     }
   }
 
@@ -87,6 +100,7 @@ export class OtpService {
           return [otp, UnableToSendOtp]
         }
       } catch (error) {
+        console.log('error', error)
         return [otp, error]
       }
 

@@ -1,5 +1,13 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
+export class GeoNameRequest {
+  @IsOptional()
+  lat: number
+
+  @IsOptional()
+  lng: number
+}
+
 export class CreateAddressRequestDto {
   @IsString()
   @IsNotEmpty()
@@ -29,7 +37,7 @@ export class CreateAddressRequestDto {
   address?: string
 
   @IsOptional()
-  geoName?: string
+  geoName?: GeoNameRequest
 
   @IsOptional()
   isMain?: boolean
@@ -76,7 +84,7 @@ export class MemberUpdateAddressRequestDto {
   address?: string
 
   @IsOptional()
-  geoName?: string
+  geoName?: GeoNameRequest
 
   @IsOptional()
   isMain?: boolean

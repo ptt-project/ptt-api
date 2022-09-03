@@ -11,6 +11,7 @@ import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { MobileService } from '../mobile/mobile.service'
 import dayjs from 'dayjs'
 import { WalletService } from '../wallet/wallet.service'
+import { ShopService } from '../seller/shop.service'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -20,6 +21,7 @@ export class AuthController {
     private readonly loginService: LoginService,
     private readonly mobileService: MobileService,
     private readonly walletService: WalletService,
+    private readonly shopService: ShopService,
   ) {}
 
   @Post('register')
@@ -38,6 +40,7 @@ export class AuthController {
   }
 
   @Post('register/validate')
+  @Transaction()
   async validate(
     @Body() body: ValidateRegisterRequestDto,
     @TransactionManager() etm: EntityManager,
@@ -48,6 +51,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Transaction()
   async login(
     @Req() request,
     @Body() body: LoginRequestDto,
@@ -55,6 +59,7 @@ export class AuthController {
   ) {
     const longinResponse = await this.loginService.loginHandler(
       this.loginService.inquiryUserExistByUsernameFunc(etm),
+      this.shopService.InquiryShopByMemberIdFunc(etm),
       this.loginService.validatePasswordFunc(),
       this.authService.genAccessTokenFunc(),
       this.authService.genRefreshTokenFunc(),
@@ -62,13 +67,14 @@ export class AuthController {
 
     const accessToken = `AccessToken=${
       longinResponse.data.accessToken
-    }; HttpOnly; Path=/; Max-Age=${dayjs().add(1, 'day')}`
+    }; Path=/; Max-Age=${dayjs().add(1, 'day')};`
 
     const refreshToken = `RefreshToken=${
       longinResponse.data.refreshToken
-    }; HttpOnly; Path=/; Max-Age=${dayjs().add(7, 'day')}`
+    }; Path=/; Max-Age=${dayjs().add(7, 'day')};`
 
     request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
+
     return longinResponse
   }
 }

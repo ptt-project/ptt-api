@@ -174,13 +174,13 @@ export class AuthService {
       let member: Member
       try {
         member = etm.create(Member, {
-          username: username,
-          firstname: firstName,
-          lastname: lastName,
+          username,
+          firstName,
+          lastName,
+          mobile,
+          pdpaStatus,
+          email,
           password: await hashPassword(password),
-          mobile: mobile,
-          pdpaStatus: pdpaStatus,
-          email: email,
         })
 
         await etm.save(member)

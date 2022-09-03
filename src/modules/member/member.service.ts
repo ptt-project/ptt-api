@@ -32,8 +32,8 @@ export class MemberService {
     return async (member: Member): Promise<any> => {
       return {
         username: member.username,
-        firstname: member.firstname,
-        lastname: member.lastname,
+        firstName: member.firstName,
+        lastName: member.lastName,
         mobile: member.mobile,
         birthday: member.birthday,
         gender: member.gender,

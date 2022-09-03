@@ -13,6 +13,7 @@ import { ValidationError } from 'class-validator'
 import { InvalidJSONString } from './utils/response-code'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import cookieParser from 'cookie-parser'
+import cookieSession from 'cookie-session'
 import { Logger } from 'nestjs-pino'
 
 const loggerDebug: LogLevel[] = ['debug', 'warn', 'error', 'log']
@@ -24,16 +25,59 @@ const logger =
     ? { logger: loggerProduction }
     : {}
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(
-    AppModule,
-    logger,
-  )
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    ...logger,
+  })
 
   app.useLogger(app.get(Logger))
+  app.use(
+    cookieSession({
+      name: '__session',
+      keys: ['key1'],
+      maxAge: 24 * 60 * 60 * 100,
+      secure: true,
+      httpOnly: true,
+      sameSite: 'none',
+    }),
+  )
+  const whitelist = [
+    'http://happyshoppingexpress.com:3000',
+    'http://localhost:3000',
+    'http://localhost:3008',
+  ]
   app.enableCors({
-    origin: '*',
-    methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE'],
-    exposedHeaders: ['Content-Disposition'],
+    // origin: function(origin, callback) {
+    //   if (whitelist.indexOf(origin) !== -1) {
+    //     console.log('allowed cors for:', origin)
+    //     callback(null, true)
+    //   } else {
+    //     console.log('blocked cors for:', origin)
+    //     callback(new Error('Not allowed by CORS'))
+    //   }
+    // },
+    origin: whitelist,
+    methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    exposedHeaders: [
+      'Content-Disposition',
+      'AccessToken',
+      'RefreshToken',
+      'Set-Cookie',
+    ],
+    allowedHeaders: [
+      'Content-Type',
+      'Content-Length',
+      'Accept-Encoding',
+      'X-CSRF-Token',
+      'Authorization',
+      'accept',
+      'origin',
+      'Cache-Control',
+      'X-Requested-With',
+      'AccessToken',
+      'RefreshToken',
+      'Set-Cookie',
+      'Cookie',
+    ],
     credentials: true,
   })
   app.setGlobalPrefix('/api')

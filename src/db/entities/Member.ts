@@ -13,11 +13,11 @@ export class Member extends AppEntity {
   @Column({ name: 'username', nullable: false, length: 50 })
   username: string
 
-  @Column({ name: 'firstname', nullable: false, length: 50 })
-  firstname: string
+  @Column({ name: 'first_name', nullable: false, length: 50 })
+  firstName: string
 
-  @Column({ name: 'lastname', nullable: false, length: 50 })
-  lastname: string
+  @Column({ name: 'last_name', nullable: false, length: 50 })
+  lastName: string
 
   @Column({ name: 'password', nullable: false })
   password: string
@@ -61,6 +61,9 @@ export class Member extends AppEntity {
     nullable: false,
   })
   role: MemberRoleType
+
+  @Column({ name: 'image_id', nullable: true })
+  imageId: string
 
   @OneToMany(
     () => Mobile,
