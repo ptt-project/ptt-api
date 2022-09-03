@@ -38,3 +38,12 @@ export const genUuid = () => {
     return (c == 'x' ? r : (r & 0x3) | 0x8).toString(16)
   })
 }
+
+export class ColumnNumericTransformer {
+  to(data: number): number {
+    return data
+  }
+  from(data: string): number {
+    return parseFloat(data)
+  }
+}

@@ -29,6 +29,8 @@ import { AppConsoleModule } from './modules/app-console/app-console.moduel'
 import { ProductModule } from './modules/product/product.modules'
 import { EmailModule } from './modules/email/email.module'
 import { ImageModule } from './modules/image/image.module'
+import { HappyPointModule } from './modules/happy-point/happy-point.module'
+import { ExchangeRateModule } from './modules/exchange-rate/exchange-rate.module'
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -93,6 +95,8 @@ import { ImageModule } from './modules/image/image.module'
     ProductModule,
     ImageModule,
     EmailModule,
+    ExchangeRateModule,
+    HappyPointModule,
   ],
   controllers: [AppController],
   providers: [AppService],

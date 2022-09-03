@@ -1,4 +1,5 @@
 import { transformerDayjsToDate } from 'src/utils/entity-transform'
+import { ColumnNumericTransformer } from 'src/utils/helpers'
 import { Column, Entity, OneToOne, OneToMany, JoinColumn } from 'typeorm'
 import { Address } from './Address'
 import { AppEntity } from './AppEntity'
@@ -72,6 +73,7 @@ export class Member extends AppEntity {
     scale: 4,
     default: 0,
     nullable: false,
+    transformer: new ColumnNumericTransformer(),
   })
   balance: number
 

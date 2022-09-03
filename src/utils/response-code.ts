@@ -106,3 +106,10 @@ export const UnableUpdateProduct = _productError + 17
 
 const _image = 110000
 export const UnableResizeImage = _image + 1
+
+const _happyPoint = 120000
+export const UnableInsertLookupToDb = _happyPoint + 1
+export const UnableLookupExchangeRate = _happyPoint + 2
+export const WrongCalculatePoint = _happyPoint + 3
+export const UnableInserttHappyPointTypeBuyToDb = _happyPoint + 4
+export const UnableUpdateCreditBalanceMemberToDb = _happyPoint + 5
