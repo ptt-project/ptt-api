@@ -26,6 +26,9 @@ import { SellerModule } from './modules/seller/seller.modules'
 import { ReviewModule } from './modules/review/review.modules'
 import { CategoryModule } from './modules/category/category.modules'
 import { AppConsoleModule } from './modules/app-console/app-console.moduel'
+import { WalletModule } from './modules/wallet/wallet.modules'
+
+console.log('__dirname', __dirname)
 import { ProductModule } from './modules/product/product.modules'
 import { EmailModule } from './modules/email/email.module'
 import { ImageModule } from './modules/image/image.module'
@@ -92,6 +95,7 @@ import { ExchangeRateModule } from './modules/exchange-rate/exchange-rate.module
     SellerModule,
     ReviewModule,
     CategoryModule,
+    WalletModule,
     ProductModule,
     ImageModule,
     EmailModule,

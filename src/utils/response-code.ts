@@ -107,6 +107,14 @@ export const UnableUpdateProduct = _productError + 17
 const _image = 110000
 export const UnableResizeImage = _image + 1
 
+const _walletError = 114000
+export const UnableToInsertWallet = _walletError + 1
+export const UnableToGetWalletTransaction = _walletError + 2
+export const UnableToInsertTransaction = _walletError + 3
+export const UnableToInsertDepositReference = _walletError + 4
+export const UnableToRequestDepositQrCode = _walletError + 5
+export const UnableToAdjustWallet = _walletError + 6
+
 const _happyPoint = 120000
 export const UnableInsertLookupToDb = _happyPoint + 1
 export const UnableLookupExchangeRate = _happyPoint + 2

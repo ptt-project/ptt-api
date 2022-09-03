@@ -8,6 +8,7 @@ import { AuthService } from './auth.service'
 import { LoginService } from './login.service'
 import { JwtStrategy } from './jwt.strategy'
 import { MobileService } from '../mobile/mobile.service'
+import { WalletService } from '../wallet/wallet.service'
 import { ShopService } from '../seller/shop.service'
 
 @Module({
@@ -24,6 +25,7 @@ import { ShopService } from '../seller/shop.service'
     OtpService,
     JwtStrategy,
     MobileService,
+    WalletService,
     ShopService,
   ],
   exports: [AuthService],

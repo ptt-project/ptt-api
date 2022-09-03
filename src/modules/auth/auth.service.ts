@@ -11,13 +11,14 @@ import {
 import { JwtService } from '@nestjs/jwt'
 import dayjs from 'dayjs'
 
-import { internalSeverError } from 'src/utils/response-error'
+import { internalSeverError, validateError } from 'src/utils/response-error'
 import {
   InternalSeverError,
   UnableRegisterEmailAlreayExist,
   UnableRegisterUsernameAlreayExist,
   UnableInsertMemberToDbError,
   UnableToAddMobile,
+  UnableToInsertWallet,
 } from 'src/utils/response-code'
 
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
@@ -36,6 +37,7 @@ import {
   ValidateTokenResponse,
 } from './auth.type'
 import { PinoLogger } from 'nestjs-pino'
+import { InsertWalletToDbFuncType } from '../wallet/wallet.type'
 
 @Injectable()
 export class AuthService {
@@ -53,7 +55,7 @@ export class AuthService {
         await validateMember
       )(body)
       if (validateErrorCode != 0) {
-        return response(undefined, validateErrorCode, validateErrorMessage)
+        return validateError(validateErrorCode, validateErrorMessage)
       }
 
       this.logger.info(`Done validateRegisterHandler ${dayjs().diff(start)} ms`)
@@ -66,6 +68,7 @@ export class AuthService {
     inquiryMemberEixst: Promise<InquiryMemberExistType>,
     insertMemberToDb: Promise<InsertMemberToDbTye>,
     addMobileFunc: Promise<InquiryAddMobileType>,
+    insertWalletToDb: Promise<InsertWalletToDbFuncType>
   ) {
     return async (body: RegisterRequestDto) => {
       const start = dayjs()
@@ -104,6 +107,13 @@ export class AuthService {
       )
       if (addMobileErrorMessege != '') {
         return response(undefined, UnableToAddMobile, addMobileErrorMessege)
+      }
+
+      const [_, insertWalletToDbError] = await (await insertWalletToDb)(
+        member.id,
+      )
+      if (insertWalletToDbError != '') {
+        return response(undefined, UnableToInsertWallet, insertWalletToDbError)
       }
 
       this.logger.info(`Done RegisterHandler ${dayjs().diff(start)} ms`)
@@ -245,6 +255,7 @@ export class AuthService {
         member = await etm
           .createQueryBuilder(Member, 'members')
           .leftJoinAndSelect('members.shop', 'shops')
+          .leftJoinAndSelect('members.wallets', 'wallets')
           .where('members.deletedAt IS NULL')
           .andWhere('members.id = :id', { id })
           .getOne()
