@@ -5,7 +5,7 @@ import { Auth, ReqUser } from '../auth/auth.decorator'
 import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
 import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
-import { EmailService } from './email.service'
+import { MemberEmailService } from './email.service'
 import { MemberService } from './member.service'
 import { PasswordService } from './password.service'
 
@@ -14,7 +14,7 @@ export class MemberController {
   constructor(
     private readonly passwordService: PasswordService,
     private readonly memberService: MemberService,
-    private readonly emailService: EmailService,
+    private readonly emailService: MemberEmailService,
   ) {}
 
   @Auth()
