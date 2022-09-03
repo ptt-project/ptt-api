@@ -88,3 +88,7 @@ export const UnableInquiryCategoryByName = _categoryError + 14
 const _walletError = 110000
 export const UnableToInsertWallet = _walletError + 1
 export const UnableToGetWalletTransaction = _walletError + 2
+export const UnableToInsertTransaction = _walletError + 3
+export const UnableToInsertDepositReference = _walletError + 4
+export const UnableToRequestDepositQrCode = _walletError + 5
+export const UnableToAdjustWallet = _walletError + 6

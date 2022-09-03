@@ -1,6 +1,7 @@
 import { AppEntity } from './AppEntity'
-import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm'
+import { Column, Entity, ManyToOne, JoinColumn, OneToOne } from 'typeorm'
 import { Wallet } from './Wallet'
+import { WalletTransactionReference } from './WalletTransactionReference'
 
 export type TransactionType = 'deposit' | 'withdraw' | 'buy' | 'sell'
 export type TransactionStatus = 'success' | 'fail' | 'cancel' | 'pending'
@@ -39,10 +40,20 @@ export class WalletTransaction extends AppEntity {
   })
   status: TransactionStatus
 
+  @Column({ name: 'reference_id', nullable: true })
+  referenceId: number
+
   @ManyToOne(
     () => Wallet,
     wallet => wallet.transactions,
   )
   @JoinColumn({ name: 'wallet_id', referencedColumnName: 'id' })
   wallet: Wallet
+
+  @OneToOne(
+    () => WalletTransactionReference,
+    reference => reference.transaction,
+  )
+  @JoinColumn({ name: 'reference_id', referencedColumnName: 'id' })
+  reference: WalletTransactionReference
 }

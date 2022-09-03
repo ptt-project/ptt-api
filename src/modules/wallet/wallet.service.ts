@@ -3,21 +3,25 @@ import { response } from 'src/utils/response'
 import { Between, EntityManager, SelectQueryBuilder } from 'typeorm'
 
 import {
-  UnableToGetWalletTransaction,
+  UnableToAdjustWallet,
+  UnableToGetWalletTransaction, UnableToInsertDepositReference, UnableToInsertTransaction, UnableToRequestDepositQrCode,
 } from 'src/utils/response-code'
 
 import {
   AdjustWalletFuncType,
-  InqueryWalletTransactionFuncType, InsertWalletToDbFuncType,
+  InqueryWalletTransactionFuncType, InsertDepositReferenceToDbFuncType, InsertTransactionToDbFuncType, InsertWalletToDbFuncType, RequestDepositQrCodeFuncType,
 } from './wallet.type'
 
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 import { Wallet } from 'src/db/entities/Wallet'
 import { TransactionType, WalletTransaction } from 'src/db/entities/WalletTransaction'
-import { getWalletTransactionQueryDTO } from './dto/wallet.dto'
+import { getWalletTransactionQueryDTO, RequestDepositQrCodeRequestDTO } from './dto/wallet.dto'
 
 import { paginate } from 'nestjs-typeorm-paginate'
+import { WalletTransactionReference } from 'src/db/entities/WalletTransactionReference'
+import { randomUUID } from 'crypto'
+import { type } from 'os'
 
 @Injectable()
 export class WalletService {
@@ -59,6 +63,61 @@ export class WalletService {
         `Done getWalletTransactionHandler ${dayjs().diff(start)} ms`,
       )
       return response(result)
+    }
+  }
+
+  RequestDepositQrCodeHandler(
+    insertTransaction: Promise<InsertTransactionToDbFuncType>,
+    insertDepositReference: Promise<InsertDepositReferenceToDbFuncType>,
+    requestDepositQrCode: Promise<RequestDepositQrCodeFuncType>,
+    adjustWallet: Promise<AdjustWalletFuncType>,
+  ) {
+    return async (wallet: Wallet, body: RequestDepositQrCodeRequestDTO) => {
+      const start = dayjs()
+      const { id: walletId } = wallet
+      const { amount } = body
+      const detail = `QrCode deposit ${amount} baht`
+
+      const [walletTransaction, insertTransactionError] = await (await insertTransaction)(
+        walletId, 
+        amount,
+        detail,
+        'deposit',
+      )
+
+      if (insertTransactionError != '') {
+        return response(undefined, UnableToInsertTransaction, insertTransactionError)
+      }
+
+      const [referenceNo, insertDepositReferenceError] = await (await insertDepositReference)(walletTransaction.id)
+
+      if (insertDepositReferenceError != '') {
+        return response(undefined, UnableToInsertDepositReference, insertDepositReferenceError)
+      }
+
+      const [qrCode, requestDepositQrCodeError] = await (await requestDepositQrCode)(
+        amount,
+        referenceNo,
+        detail,
+      )
+
+      if (requestDepositQrCodeError != '') {
+        return response(undefined, UnableToRequestDepositQrCode, requestDepositQrCodeError)
+      }
+
+      const [adjestedWallet, adjustWalletError] = await (await adjustWallet)(
+        walletId,
+        amount,
+      ) // Todo: mockup before connect to payment api
+
+      if (adjustWalletError != '') {
+        return response(undefined, UnableToAdjustWallet, adjustWalletError)
+      }
+
+      this.logger.info(
+        `Done RequestDepositQrCodeHandler ${dayjs().diff(start)} ms`,
+      )
+      return response(qrCode)
     }
   }
 
@@ -140,6 +199,78 @@ export class WalletService {
 
       this.logger.info(`Done AdjustWalletInDbFunc ${dayjs().diff(start)} ms`)
       return [wallet, '']
+    }
+  }
+
+  async InsertTransactionToDbFunc(etm: EntityManager): Promise<InsertTransactionToDbFuncType> {
+    return async (
+      walletId: number,
+      amount: number,
+      detail: string,
+      type: TransactionType,
+    ): Promise<[WalletTransaction, string]> => {
+      const start = dayjs()
+      let walletTransaction: WalletTransaction
+
+      try {
+        walletTransaction = etm.create(WalletTransaction, {
+          walletId,
+          type,
+          amount,
+          detail,
+          status: 'success', // Todo: mockup before connect to payment api
+        })
+        walletTransaction = await etm.save(walletTransaction)
+        
+      } catch (error) {
+        return [walletTransaction, error]
+      }
+
+      this.logger.info(`Done InsertTransactionToDbFunc ${dayjs().diff(start)} ms`)
+      return [walletTransaction, '']
+    }
+  }
+
+  async InsertDepositReferenceToDbFunc(etm: EntityManager): Promise<InsertDepositReferenceToDbFuncType> {
+    return async (
+      walletTransactionId: number,
+    ): Promise<[string, string]> => {
+      const start = dayjs()
+      let walletTransactionReference: WalletTransactionReference
+      let referenceNo: string
+
+      try {
+        let alreadyUsedRef: WalletTransactionReference
+        do {
+          referenceNo = randomUUID()
+          alreadyUsedRef = await etm.findOne(WalletTransactionReference, { where: { referenceNo } })
+        } while (alreadyUsedRef)
+
+        walletTransactionReference = etm.create(WalletTransactionReference, { transactionId: walletTransactionId, referenceNo})
+        walletTransactionReference = await etm.save(walletTransactionReference)
+        
+      } catch (error) {
+        return [referenceNo, error]
+      }
+
+      this.logger.info(`Done InsertDepositReferenceToDbFunc ${dayjs().diff(start)} ms`)
+      return [referenceNo, '']
+    }
+  }
+
+  async RequestDepositQrCodeFunc(etm: EntityManager): Promise<RequestDepositQrCodeFuncType> {
+    return async (
+      amount: number,
+      referenceNo: string,
+      detail: string,
+    ): Promise<[string, string]> => {
+      const start = dayjs()
+
+      // Todo: Request qr code form payment api provider.
+      const qrCode = randomUUID()
+
+      this.logger.info(`Done RequestDepositQrCodeFunc ${dayjs().diff(start)} ms`)
+      return [qrCode, '']
     }
   }
 }

@@ -1,4 +1,4 @@
-import {  IsDate, IsDateString, IsOptional, IsString } from 'class-validator'
+import {  IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
 import { TransactionType } from 'src/db/entities/WalletTransaction'
 import { Transform } from 'class-transformer'
 
@@ -38,4 +38,10 @@ export class getWalletTransactionQueryDTO {
   @IsOptional()
   @IsString()
   type?: TransactionType
+}
+
+export class RequestDepositQrCodeRequestDTO {
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number
 }

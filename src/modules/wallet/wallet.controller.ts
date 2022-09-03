@@ -1,13 +1,15 @@
 import {
+  Body,
   Controller,
   Get,
+  Post,
   Query,
 } from '@nestjs/common'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqWallet } from '../auth/auth.decorator'
 
 import { WalletService } from './wallet.service'
-import { getWalletTransactionQueryDTO } from './dto/wallet.dto'
+import { getWalletTransactionQueryDTO, RequestDepositQrCodeRequestDTO } from './dto/wallet.dto'
 import { Wallet } from 'src/db/entities/Wallet'
 
 @Auth()
@@ -34,5 +36,20 @@ export class WalletController {
     return await this.walletService.GetWalletTransactionHandler(
       this.walletService.InqueryWalletTransactionFromDbFunc(etm)
     )(wallet, query)
+  }
+
+  @Post('/deposit/qrcode')
+  @Transaction()
+  async requestDepositQrCode(
+    @ReqWallet() wallet: Wallet,
+    @Body() body: RequestDepositQrCodeRequestDTO,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.walletService.RequestDepositQrCodeHandler(
+      this.walletService.InsertTransactionToDbFunc(etm),
+      this.walletService.InsertDepositReferenceToDbFunc(etm),
+      this.walletService.RequestDepositQrCodeFunc(etm),
+      this.walletService.AdjustWalletInDbFunc(etm),
+    )(wallet, body)
   }
 }
