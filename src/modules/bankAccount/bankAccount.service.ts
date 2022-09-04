@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
 import {
-  UnableToGetBankAccount,
+  UnableToGetBankAccount, UnableToInsertBankAccount,
 } from 'src/utils/response-code'
 
 import {
@@ -77,7 +77,7 @@ export class BankAccountService {
         return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
       }
 
-      const [bankAccount, getBankAccountError] = await (await insertBankAccount)(
+      const [bankAccount, insertBankAccountError] = await (await insertBankAccount)(
         member.id,
         body.fullName,
         body.thaiId,
@@ -86,8 +86,8 @@ export class BankAccountService {
         body.accountHolder,
       )
 
-      if (getBankAccountError != '') {
-        return response(undefined, UnableToGetBankAccount, getBankAccountError)
+      if (insertBankAccountError != '') {
+        return response(undefined, UnableToInsertBankAccount, insertBankAccountError)
       }
 
       this.logger.info(`Done CreateBankAccountsHandler ${dayjs().diff(start)} ms`)
