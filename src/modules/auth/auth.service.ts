@@ -125,6 +125,8 @@ export class AuthService {
         return response(undefined, UnableToAddMobile, addMobileErrorMessege)
       }
 
+      delete member.spCodeId
+
       this.logger.info(`Done RegisterHandler ${dayjs().diff(start)} ms`)
       return response(member)
     }
