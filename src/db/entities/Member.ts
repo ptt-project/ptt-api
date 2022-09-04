@@ -2,6 +2,7 @@ import { transformerDayjsToDate } from 'src/utils/entity-transform'
 import { Column, Entity, OneToOne, OneToMany, JoinColumn } from 'typeorm'
 import { Address } from './Address'
 import { AppEntity } from './AppEntity'
+import { BankAccount } from './BankAccount'
 import { Mobile } from './Mobile'
 import { Shop } from './Shop'
 import { Wallet } from './Wallet'
@@ -89,4 +90,10 @@ export class Member extends AppEntity {
     wallet => wallet.member,
   )
   wallets: Wallet[]
+
+  @OneToMany(
+    () => BankAccount,
+    bankAccount => bankAccount.member,
+  )
+  bankAccounts: BankAccount[]
 }

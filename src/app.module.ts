@@ -32,6 +32,7 @@ console.log('__dirname', __dirname)
 import { ProductModule } from './modules/product/product.modules'
 import { EmailModule } from './modules/email/email.module'
 import { ImageModule } from './modules/image/image.module'
+import { BankAccountModule } from './modules/bankAccount/bankAccount.modules'
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -97,6 +98,7 @@ import { ImageModule } from './modules/image/image.module'
     ProductModule,
     ImageModule,
     EmailModule,
+    BankAccountModule,
   ],
   controllers: [AppController],
   providers: [AppService],
