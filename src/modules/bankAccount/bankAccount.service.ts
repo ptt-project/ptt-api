@@ -5,7 +5,8 @@ import {
 } from 'src/utils/response-code'
 
 import {
-  InqueryBankAccountFormDbFuncType, InsertBankAccountFormDbFuncType,
+  InqueryBankAccountFormDbFuncType,
+  InqueryBankAccountsFormDbFuncType, InsertBankAccountFormDbFuncType,
   } from './bankAccount.type'
 
 import { PinoLogger } from 'nestjs-pino'
@@ -25,7 +26,7 @@ export class BankAccountService {
 
   GetBankAccountsHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
-    inqueryBankAccount: Promise<InqueryBankAccountFormDbFuncType>
+    inqueryBankAccount: Promise<InqueryBankAccountsFormDbFuncType>
   ) {
     return async (member: Member, body: GetBankAccoutRequestDTO) => {
       const start = dayjs()
@@ -94,7 +95,7 @@ export class BankAccountService {
     }
   }
 
-  async InqueryBankAccountsFormDbFunc(etm: EntityManager): Promise<InqueryBankAccountFormDbFuncType> {
+  async InqueryBankAccountsFormDbFunc(etm: EntityManager): Promise<InqueryBankAccountsFormDbFuncType> {
     return async (
       memberId: number,
     ): Promise<[BankAccount[], string]> => {
@@ -110,6 +111,36 @@ export class BankAccountService {
 
       this.logger.info(`Done InqueryBankAccountsFromDbFunc ${dayjs().diff(start)} ms`)
       return [bankAccounts, '']
+    }
+  }
+
+  async InqueryBankAccountFormDbFunc(etm: EntityManager): Promise<InqueryBankAccountFormDbFuncType> {
+    return async (
+      memberId: number,
+      bankAccountId: number,
+    ): Promise<[BankAccount, string]> => {
+      const start = dayjs()
+      let bankAccount: BankAccount
+
+      try {
+        bankAccount = await etm.findOne(BankAccount, {
+          where: {
+            memberId,
+            id: bankAccountId,
+            deletedAt: null,
+          }
+        })
+
+        if (!bankAccount) {
+          return [bankAccount, 'Bank account not found for this member']
+        }
+        
+      } catch (error) {
+        return [bankAccount, error]
+      }
+
+      this.logger.info(`Done InqueryBankAccountFormDbFunc ${dayjs().diff(start)} ms`)
+      return [bankAccount, '']
     }
   }
 

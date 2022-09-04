@@ -45,3 +45,21 @@ export class RequestDepositQrCodeRequestDTO {
   @IsNotEmpty()
   amount: number
 }
+
+export class WithdrawRequestDTO {
+  @IsString()
+  @IsNotEmpty()
+  otpCode: string
+
+  @IsString()
+  @IsNotEmpty()
+  refCode: string
+  
+  @IsNumber()
+  @IsNotEmpty()
+  bankAccountId: number
+
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number
+}

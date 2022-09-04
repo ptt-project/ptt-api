@@ -18,13 +18,30 @@ export type InsertTransactionToDbFuncType = (
   amount: number,
   detail: string,
   type: TransactionType,
+  bankAccountId?: number,
 ) => Promise<[WalletTransaction, string]>
 
-export type InsertDepositReferenceToDbFuncType = (
+export type InsertReferenceToDbFuncType = (
+  walletTransaction: WalletTransaction,
+) => Promise<[string, string]>
+
+export type InsertWithdrawReferenceToDbFuncType = (
   walletTransaction: WalletTransaction,
 ) => Promise<[string, string]>
 
 export type RequestDepositQrCodeFuncType = (
+  amount: number,
+  referenceNo: string,
+  detail: string,
+) => Promise<[string, string]>
+
+export type RequesWithdrawFuncType = (
+  amount: number,
+  referenceNo: string,
+  detail: string,
+) => Promise<[string, string]>
+
+export type RequestWithdrawFuncType = (
   amount: number,
   referenceNo: string,
   detail: string,

@@ -1,6 +1,7 @@
 import { AppEntity } from './AppEntity'
-import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm'
+import { Column, Entity, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
 import { Member } from './Member'
+import { WalletTransaction } from './WalletTransaction'
 
 @Entity({ name: 'bank_accounts' })
 export class BankAccount extends AppEntity {
@@ -31,4 +32,10 @@ export class BankAccount extends AppEntity {
   )
   @JoinColumn({ name: 'member_id', referencedColumnName: 'id' })
   member: Member
+
+  @OneToMany(
+    () => WalletTransaction,
+    walletTransaction => walletTransaction.bankAccount
+  )
+  transactions: WalletTransaction[]
 }

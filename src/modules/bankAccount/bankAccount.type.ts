@@ -1,6 +1,6 @@
 import { BankAccount } from 'src/db/entities/BankAccount'
 
-export type InqueryBankAccountFormDbFuncType = (
+export type InqueryBankAccountsFormDbFuncType = (
   memberId: number,
 ) => Promise<[BankAccount[], string]>
 
@@ -12,3 +12,9 @@ export type InsertBankAccountFormDbFuncType = (
   accountNumber: string,
   accountHolder: string,
 ) => Promise<[BankAccount, string]>
+
+export type InqueryBankAccountFormDbFuncType = (
+  memberId: number,
+  bankAccountId: number,
+) => Promise<[BankAccount, string]>
+
