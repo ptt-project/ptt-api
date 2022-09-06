@@ -8,6 +8,7 @@ import {
   UnableToAddMobile,
   UnableToSetMainMobile,
   UnableToDeleteMobile,
+  UnableToGetMobiles,
 } from 'src/utils/response-code'
 import { EntityManager } from 'typeorm'
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
@@ -24,12 +25,31 @@ import {
   InquirySetMainMobileType,
   InquiryDeleteMobileType,
   InquiryGetMobileType,
+  InquiryMobilesFuncType,
 } from './mobile.type'
 
 @Injectable()
 export class MobileService {
   constructor(private readonly logger: PinoLogger) {
     this.logger.setContext(MobileService.name)
+  }
+
+  GetMobilesHandler(
+    inquiryMobiles: Promise<InquiryMobilesFuncType>,
+  ) {
+    return async (member: Member) => {
+      const start = dayjs()
+      const [mobiles, inqueryMobilesErrorMessege] = await (await inquiryMobiles)(
+        member,
+      )
+
+      if (inqueryMobilesErrorMessege != '') {
+        return response(undefined, UnableToGetMobiles, inqueryMobilesErrorMessege)
+      }
+
+      this.logger.info(`Done GetMobilesHandler ${dayjs().diff(start)} ms`)
+      return response(mobiles)
+    }
   }
 
   addMobileHandler(
@@ -157,6 +177,26 @@ export class MobileService {
 
       this.logger.info(`Done DeleteMobileHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
+    }
+  }
+
+  async InqueryMobilesFunc(etm: EntityManager): Promise<InquiryMobilesFuncType> {
+    return async (member: Member) => {
+      const start = dayjs()
+      let mobiles: Mobile[]
+      try {
+        mobiles = await etm.find(Mobile, {
+          where: {
+            memberId: member.id,
+            deletedAt: null,
+          },
+        })
+      } catch (error) {
+        return [mobiles, error]
+      }
+
+      this.logger.info(`Done InqueryMobilesFunc ${dayjs().diff(start)} ms`)
+      return [mobiles, '']
     }
   }
 

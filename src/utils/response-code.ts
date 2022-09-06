@@ -42,6 +42,7 @@ const _mobileError = 104000
 export const UnableToAddMobile = _mobileError + 1
 export const UnableToSetMainMobile = _mobileError + 2
 export const UnableToDeleteMobile = _mobileError + 3
+export const UnableToGetMobiles = _mobileError + 4
 
 // address module
 const _addressError = 105000
