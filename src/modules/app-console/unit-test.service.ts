@@ -5,6 +5,7 @@ import { RegisterRequestDto } from '../auth/dto/register.dto'
 import { WalletService } from '../wallet/wallet.service'
 import { Member } from 'src/db/entities/Member'
 import { Wallet } from 'src/db/entities/Wallet'
+import { randomUUID } from 'crypto'
 
 @Console()
 export class UnitTestConsoleService {
@@ -63,7 +64,7 @@ export class UnitTestConsoleService {
 
       const [adjustedWallet, adjustWalletError] = await (
         await this.walletService.AdjustWalletInDbFunc(etm)
-      )(wallet.id, adjustBalance)
+      )(wallet.id, adjustBalance, 'deposit')
 
       if (adjustWalletError != '') {
         console.log('adjust wallet error =>', adjustWalletError)
@@ -77,12 +78,12 @@ export class UnitTestConsoleService {
       }
 
       wallet = adjustedWallet
-      const adjustBalanceNegative = -wallet.balance + 1
-      const expectedBalanceNegative = wallet.balance + adjustBalanceNegative
+      const adjustBalanceNegative = wallet.balance - 1
+      const expectedBalanceNegative = wallet.balance - adjustBalanceNegative
 
       const [adjustedWalletNegative, adjustWalletNagativeError] = await (
         await this.walletService.AdjustWalletInDbFunc(etm)
-      )(wallet.id, adjustBalanceNegative)
+      )(wallet.id, adjustBalanceNegative, 'withdraw')
 
       if (adjustWalletNagativeError != '') {
         console.log('adjust negative wallet balance error =>', adjustWalletNagativeError)
@@ -96,11 +97,11 @@ export class UnitTestConsoleService {
       }
 
       wallet = adjustedWalletNegative
-      const adjustBalanceNegativeFailCase = -wallet.balance - 1
+      const adjustBalanceNegativeFailCase = wallet.balance + 1
 
       const [adjustedWalletNegativeFailCase, adjustWalletNagativeFailCaseError] = await (
         await this.walletService.AdjustWalletInDbFunc(etm)
-      )(wallet.id, adjustBalanceNegativeFailCase)
+      )(wallet.id, adjustBalanceNegativeFailCase, 'withdraw')
 
       if (adjustWalletNagativeFailCaseError === 'your wallet balance is not enough') {
         console.log('adjust negative wallet balance error correctly =>', adjustWalletNagativeFailCaseError)
@@ -110,7 +111,7 @@ export class UnitTestConsoleService {
 
       const [restoredWallet, restoreWalletError] = await (
         await this.walletService.AdjustWalletInDbFunc(etm)
-      )(wallet.id, backupBalance - wallet.balance)
+      )(wallet.id, backupBalance - wallet.balance, 'deposit')
 
       if (restoreWalletError != '') {
         return console.log('restore wallet error =>', restoreWalletError)
@@ -122,6 +123,36 @@ export class UnitTestConsoleService {
     }
 
     console.log('restore wallet successfuly => ', wallet)
+
+
+    const [adjusedWalletSellHappy, requestSellHappyPointError] =
+      await this.walletService.RequestInteranlWalletTransactionService(
+        this.walletService.InsertTransactionToDbFunc(etm),
+        this.walletService.InsertReferenceToDbFunc(etm),
+        this.walletService.UpdateReferenceToDbFunc(etm),
+        this.walletService.AdjustWalletInDbFunc(etm),
+      )(wallet.id, 1000, 'Sell Happy point', 'sell_happy_point', randomUUID())
+    
+
+    if (requestSellHappyPointError != '') {
+      return console.log('adjust wallet error =>', requestSellHappyPointError)
+    }
+
+    console.log('adjust wallet successfuly => ', adjusedWalletSellHappy)
+    const [adjusedWalletBuyHappy, requestBuyHappyPointError] =
+      await this.walletService.RequestInteranlWalletTransactionService(
+        this.walletService.InsertTransactionToDbFunc(etm),
+        this.walletService.InsertReferenceToDbFunc(etm),
+        this.walletService.UpdateReferenceToDbFunc(etm),
+        this.walletService.AdjustWalletInDbFunc(etm),
+      )(wallet.id, 200, 'Buy Happy point', 'buy_happy_point', randomUUID())
+    
+
+    if (requestBuyHappyPointError != '') {
+      return console.log('adjust wallet error =>', requestBuyHappyPointError)
+    }
+
+    console.log('adjust wallet successfuly => ', adjusedWalletBuyHappy)
 
   }
 }

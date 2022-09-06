@@ -111,12 +111,12 @@ const _walletError = 114000
 export const UnableToInsertWallet = _walletError + 1
 export const UnableToGetWalletTransaction = _walletError + 2
 export const UnableToInsertTransaction = _walletError + 3
-export const UnableToInsertDepositReference = _walletError + 4
+export const UnableToInsertReference = _walletError + 4
 export const UnableToRequestDepositQrCode = _walletError + 5
 export const UnableToAdjustWallet = _walletError + 6
 export const UnableToInsertWithdrawReference = _walletError + 7
 export const UnableToRequestWithdraw = _walletError + 8
-
+export const UnableToUpdateReference = _walletError + 9
 
 const _bankAccountError = 115000
 export const UnableToGetBankAccount = _bankAccountError + 1
