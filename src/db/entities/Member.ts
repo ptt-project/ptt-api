@@ -1,9 +1,8 @@
 import { transformerDayjsToDate } from 'src/utils/entity-transform'
-import { ColumnNumericTransformer } from 'src/utils/helpers'
 import { Column, Entity, OneToOne, OneToMany, JoinColumn } from 'typeorm'
 import { Address } from './Address'
 import { AppEntity } from './AppEntity'
-import { HappyPointTransaction } from './HappyPointTransaction'
+import { HappyPoint } from './HappyPoint'
 import { Mobile } from './Mobile'
 import { Shop } from './Shop'
 import { Wallet } from './Wallet'
@@ -67,17 +66,6 @@ export class Member extends AppEntity {
   @Column({ name: 'image_id', nullable: true })
   imageId: string
 
-  @Column({
-    name: 'balance',
-    type: 'decimal',
-    precision: 12,
-    scale: 4,
-    default: 0,
-    nullable: false,
-    transformer: new ColumnNumericTransformer(),
-  })
-  balance: number
-
   @OneToMany(
     () => Mobile,
     mobile => mobile.member,
@@ -104,16 +92,8 @@ export class Member extends AppEntity {
   wallets: Wallet[]
 
   @OneToMany(
-    () => HappyPointTransaction,
-    happyPointTransaction => happyPointTransaction.fromMember,
+    () => HappyPoint,
+    happyPoint => happyPoint.member,
   )
-  @JoinColumn({ referencedColumnName: 'from_member_id' })
-  fromMemberHappyPointTransactions: HappyPointTransaction[]
-
-  @OneToMany(
-    () => HappyPointTransaction,
-    happyPointTransaction => happyPointTransaction.toMember,
-  )
-  @JoinColumn({ referencedColumnName: 'to_member_id' })
-  toMemberHappyPointTransactions: HappyPointTransaction[]
+  happyPoints: HappyPoint[]
 }

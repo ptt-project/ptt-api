@@ -19,6 +19,7 @@ import {
   UnableInsertMemberToDbError,
   UnableToAddMobile,
   UnableToInsertWallet,
+  UnableToInsertHappyPoint,
 } from 'src/utils/response-code'
 
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
@@ -38,6 +39,7 @@ import {
 } from './auth.type'
 import { PinoLogger } from 'nestjs-pino'
 import { InsertWalletToDbFuncType } from '../wallet/wallet.type'
+import { InsertHappyPointToDbType } from '../happy-point/happy-point.type'
 
 @Injectable()
 export class AuthService {
@@ -68,7 +70,8 @@ export class AuthService {
     inquiryMemberEixst: Promise<InquiryMemberExistType>,
     insertMemberToDb: Promise<InsertMemberToDbTye>,
     addMobileFunc: Promise<InquiryAddMobileType>,
-    insertWalletToDb: Promise<InsertWalletToDbFuncType>
+    insertWalletToDb: Promise<InsertWalletToDbFuncType>,
+    insertHappyPointToDb: Promise<InsertHappyPointToDbType>,
   ) {
     return async (body: RegisterRequestDto) => {
       const start = dayjs()
@@ -109,11 +112,22 @@ export class AuthService {
         return response(undefined, UnableToAddMobile, addMobileErrorMessege)
       }
 
-      const [_, insertWalletToDbError] = await (await insertWalletToDb)(
+      const [, insertWalletToDbError] = await (await insertWalletToDb)(
         member.id,
       )
       if (insertWalletToDbError != '') {
         return response(undefined, UnableToInsertWallet, insertWalletToDbError)
+      }
+
+      const [, insertHappyPointToDbError] = await (await insertHappyPointToDb)(
+        member.id,
+      )
+      if (insertHappyPointToDbError != '') {
+        return response(
+          undefined,
+          UnableToInsertHappyPoint,
+          insertHappyPointToDbError,
+        )
       }
 
       this.logger.info(`Done RegisterHandler ${dayjs().diff(start)} ms`)
@@ -256,6 +270,7 @@ export class AuthService {
           .createQueryBuilder(Member, 'members')
           .leftJoinAndSelect('members.shop', 'shops')
           .leftJoinAndSelect('members.wallets', 'wallets')
+          .leftJoinAndSelect('members.happyPoints', 'happyPoints')
           .where('members.deletedAt IS NULL')
           .andWhere('members.id = :id', { id })
           .getOne()

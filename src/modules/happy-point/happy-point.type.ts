@@ -1,3 +1,4 @@
+import { HappyPoint } from 'src/db/entities/HappyPoint'
 import { HappyPointLookup } from 'src/db/entities/HappyPointLookup'
 import {
   HappyPointTransaction,
@@ -5,7 +6,6 @@ import {
   HappyPointTransactionStatusType,
   HappyPointTransactionType,
 } from 'src/db/entities/HappyPointTransaction'
-import { Member } from 'src/db/entities/Member'
 
 export type InsertHappyPointTypeBuyToDbType = (
   params: InsertHappyPointToDbParams,
@@ -13,29 +13,35 @@ export type InsertHappyPointTypeBuyToDbType = (
 
 export type InsertHappyPointToDbParams = {
   refId: string
-  amount: number
-  point: number
   exchangeRate: number
-  fromMemberId: number
-  toMemberId?: number
-  totalAmount: number
+  fromHappyPointId: number
+  toHappyPointId?: number
+  amount?: number
   fee?: number
+  totalAmount?: number
+  point: number
+  feePoint?: number
+  totalPoint?: number
   type: HappyPointTransactionType
   note: HappyPointTransactionNote
   status: HappyPointTransactionStatusType
 }
 
-export type UpdateCreditBalanceMemberToDbType = (
-  params: UpdateCreditBalanceMemberToDbParams,
-) => Promise<[Member, string]>
-
-export type UpdateCreditBalanceMemberToDbParams = {
-  member: Member
+export type UpdateBalanceToDbParams = {
+  happyPoint: HappyPoint
   point: number
 }
 
+export type UpdateCreditBalanceToDbType = (
+  params: UpdateBalanceToDbParams,
+) => Promise<[HappyPoint, string]>
+
+export type UpdateDebitBalanceToDbType = (
+  params: UpdateBalanceToDbParams,
+) => Promise<[HappyPoint, string]>
+
 export type InsertLookupToDbParams = {
-  memberId: number
+  happyPointId: number
   exchangeRate: number
 }
 
@@ -52,3 +58,11 @@ export type ValidatePointType = (
   exchangeRate: number,
   point: number,
 ) => Promise<string>
+
+export type InsertHappyPointToDbType = (
+  memberId: number,
+) => Promise<[HappyPoint, string]>
+
+export type InquiryHappyPointFromUsernameType = (
+  username: string,
+) => Promise<[HappyPoint, string]>

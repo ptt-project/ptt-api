@@ -10,6 +10,7 @@ import { JwtStrategy } from './jwt.strategy'
 import { MobileService } from '../mobile/mobile.service'
 import { WalletService } from '../wallet/wallet.service'
 import { ShopService } from '../seller/shop.service'
+import { HappyPointService } from '../happy-point/happy-point.service'
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ShopService } from '../seller/shop.service'
     MobileService,
     WalletService,
     ShopService,
+    HappyPointService,
   ],
   exports: [AuthService],
 })

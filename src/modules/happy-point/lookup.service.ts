@@ -12,6 +12,7 @@ import {
 import { InquiryCurrentExchangeRateFromDbType } from '../exchange-rate/exchange-rate.type'
 import { UnableInsertLookupToDb } from 'src/utils/response-code'
 import { response } from 'src/utils/response'
+import { HappyPoint } from 'src/db/entities/HappyPoint'
 
 @Injectable()
 export class LookupService {
@@ -25,11 +26,11 @@ export class LookupService {
     >,
     insertLookup: Promise<InsertLookupToDbType>,
   ) {
-    return async (member: Member) => {
+    return async (happyPoint: HappyPoint) => {
       const exchangeRate = await (await inquiryCurrentExchangeRateFromDb)()
       const paramsInsertLookup: InsertLookupToDbParams = {
         exchangeRate,
-        memberId: member.id,
+        happyPointId: happyPoint.id,
       }
       const [happyPointLookup, isErrorInsertLookup] = await (
         await insertLookup
@@ -48,12 +49,12 @@ export class LookupService {
     etm: EntityManager,
   ): Promise<InsertLookupToDbType> {
     return async (params: InsertLookupToDbParams) => {
-      const { memberId, exchangeRate } = params
+      const { happyPointId, exchangeRate } = params
       let happyPointLookup: HappyPointLookup
 
       try {
         happyPointLookup = etm.create(HappyPointLookup, {
-          memberId,
+          happyPointId,
           exchangeRate,
           refId: genUuid(),
         })

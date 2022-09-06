@@ -16,6 +16,6 @@ import { LookupService } from './lookup.service'
     LookupService,
     OtpService,
   ],
-  exports: [],
+  exports: [HappyPointService],
 })
 export class HappyPointModule {}

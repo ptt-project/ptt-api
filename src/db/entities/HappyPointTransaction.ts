@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, Index } from 'typeorm'
 import { AppEntity } from './AppEntity'
-import { Member } from './Member'
+import { HappyPoint } from './HappyPoint'
+import { transformerDecimalToNumber } from 'src/utils/entity-transform'
 
 export type HappyPointTransactionType = 'BUY' | 'SELL' | 'TRANSFER'
 export type HappyPointTransactionNote = 'CREDIT' | 'DEBIT'
@@ -10,7 +11,7 @@ export type HappyPointTransactionStatusType =
   | 'FAIL'
   | 'PENDING'
 
-@Index(['fromMemberId', 'refId'], {
+@Index(['fromHappyPointId', 'refId'], {
   unique: true,
 })
 @Entity({ name: 'happy_point_transactions' })
@@ -26,8 +27,8 @@ export class HappyPointTransaction extends AppEntity {
   })
   type: HappyPointTransactionType
 
-  @Column({ name: 'from_member_id', nullable: false })
-  fromMemberId: number
+  @Column({ name: 'from_happy_point_id', nullable: false })
+  fromHappyPointId: number
 
   @Column({
     name: 'note',
@@ -43,11 +44,12 @@ export class HappyPointTransaction extends AppEntity {
     precision: 12,
     scale: 4,
     nullable: false,
+    transformer: transformerDecimalToNumber,
   })
   point: number
 
-  @Column({ name: 'to_member_id', nullable: true })
-  toMemberId?: number
+  @Column({ name: 'to_happy_point_id', nullable: true })
+  toHappyPointId?: number
 
   @Column({
     name: 'status',
@@ -63,8 +65,9 @@ export class HappyPointTransaction extends AppEntity {
     precision: 12,
     scale: 4,
     nullable: true,
+    transformer: transformerDecimalToNumber,
   })
-  totalAmount: number
+  totalAmount?: number
 
   @Column({
     name: 'exchange_rate',
@@ -72,6 +75,7 @@ export class HappyPointTransaction extends AppEntity {
     precision: 12,
     scale: 4,
     nullable: false,
+    transformer: transformerDecimalToNumber,
   })
   exchangeRate: number
 
@@ -82,6 +86,7 @@ export class HappyPointTransaction extends AppEntity {
     scale: 4,
     default: 0,
     nullable: true,
+    transformer: transformerDecimalToNumber,
   })
   fee?: number
 
@@ -92,20 +97,35 @@ export class HappyPointTransaction extends AppEntity {
     scale: 4,
     default: 0,
     nullable: true,
+    transformer: transformerDecimalToNumber,
   })
-  amount: number
+  amount?: number
+
+  @Column({
+    name: 'total_point',
+    type: 'decimal',
+    precision: 12,
+    scale: 4,
+    nullable: true,
+    transformer: transformerDecimalToNumber,
+  })
+  totalPoint?: number
+
+  @Column({
+    name: 'fee_point',
+    type: 'decimal',
+    precision: 12,
+    scale: 4,
+    default: 0,
+    nullable: true,
+    transformer: transformerDecimalToNumber,
+  })
+  feePoint?: number
 
   @ManyToOne(
-    () => Member,
-    member => member.fromMemberHappyPointTransactions,
+    () => HappyPoint,
+    HappyPoint => HappyPoint.transactions,
   )
-  @JoinColumn({ name: 'from_member_id', referencedColumnName: 'id' })
-  fromMember: Member
-
-  @ManyToOne(
-    () => Member,
-    member => member.toMemberHappyPointTransactions,
-  )
-  @JoinColumn({ name: 'to_member_id', referencedColumnName: 'id' })
-  toMember: Member
+  @JoinColumn({ name: 'from_happy_point_id', referencedColumnName: 'id' })
+  fromHappyPoint: HappyPoint
 }

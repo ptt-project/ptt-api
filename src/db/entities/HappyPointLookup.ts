@@ -17,6 +17,6 @@ export class HappyPointLookup extends AppEntity {
   })
   exchangeRate: number
 
-  @Column({ name: 'member_id', nullable: false })
-  memberId: number
+  @Column({ name: 'happy_point_id', nullable: false })
+  happyPointId: number
 }
