@@ -2,15 +2,17 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  Patch,
   Post,
-  Query,
+  Put,
 } from '@nestjs/common'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
 
 import { BankAccountService } from './bankAccount.service'
 import { Member } from 'src/db/entities/Member'
-import { CreateBankAccoutRequestDTO, GetBankAccoutRequestDTO } from './dto/BankAccount.dto'
+import { CreateBankAccoutRequestDTO, DeleteBankAccoutRequestDTO, EditBankAccoutRequestDTO, GetBankAccoutRequestDTO } from './dto/BankAccount.dto'
 import { OtpService } from '../otp/otp.service'
 
 @Auth()
@@ -43,7 +45,39 @@ export class BankAccountController {
   ) {
     return await this.bankAccountService.CreateBankAccountsHandler(
       this.otpService.inquiryVerifyOtpFunc(etm),
-      this.bankAccountService.InsertBankAccountsFormDbFunc(etm)
+      this.bankAccountService.ValidateBankAccountFunc(etm),
+      this.bankAccountService.InsertBankAccountsFormDbFunc(etm),
     )(member, body)
+  }
+
+  @Put('/:bankAccountId')
+  @Transaction()
+  async editBankAccount(
+    @ReqUser() member: Member,
+    @Param('bankAccountId') productProfileId: number,
+    @Body() body: EditBankAccoutRequestDTO,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.bankAccountService.EditBankAccountsHandler(
+      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.bankAccountService.InqueryBankAccountFormDbFunc(etm),
+      this.bankAccountService.ValidateBankAccountFunc(etm),
+      this.bankAccountService.UpdateBankAccountFunc(etm),
+    )(member, productProfileId, body)
+  }
+
+  @Patch('/:bankAccountId/delete')
+  @Transaction()
+  async deleteBankAccount(
+    @ReqUser() member: Member,
+    @Param('bankAccountId') productProfileId: number,
+    @Body() body: DeleteBankAccoutRequestDTO,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.bankAccountService.DeleteBankAccountsHandler(
+      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.bankAccountService.InqueryBankAccountFormDbFunc(etm),
+      this.bankAccountService.DeleteBankAccountFormDbFunc(etm),
+    )(member, productProfileId, body)
   }
 }
