@@ -6,6 +6,7 @@ import {
   HappyPointTransactionStatusType,
   HappyPointTransactionType,
 } from 'src/db/entities/HappyPointTransaction'
+import { SelectQueryBuilder } from 'typeorm'
 
 export type InsertHappyPointTypeBuyToDbType = (
   params: InsertHappyPointToDbParams,
@@ -66,3 +67,13 @@ export type InsertHappyPointToDbType = (
 export type InquiryHappyPointFromUsernameType = (
   username: string,
 ) => Promise<[HappyPoint, string]>
+
+export type InquiryHappyPointFrommemberIdType = (
+  memberId: number,
+) => Promise<[HappyPoint, string]>
+
+export type  InquiryHappyPointTransactionsByMemberIdType = (
+  memberId: number,
+  type: string,
+) => Promise<[SelectQueryBuilder<HappyPointTransaction>, string]>
+

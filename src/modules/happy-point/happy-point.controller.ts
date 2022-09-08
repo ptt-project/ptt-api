@@ -1,13 +1,15 @@
-import { Controller, Post, Body } from '@nestjs/common'
+import { Controller, Post, Body, Get, Query } from '@nestjs/common'
 import { HappyPointService } from './happy-point.service'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
-import { Auth, ReqHappyPoint } from '../auth/auth.decorator'
+import { Auth, ReqHappyPoint, ReqUser } from '../auth/auth.decorator'
 import { BuyHappyPointRequestDto } from './dto/buy.dto'
 import { ExchangeRateService } from '../exchange-rate/exchange-rate.service'
 import { LookupService } from './lookup.service'
 import { OtpService } from '../otp/otp.service'
 import { HappyPoint } from 'src/db/entities/HappyPoint'
 import { TransferHappyPointDto } from './dto/transfer.dto'
+import { Member } from 'src/db/entities/Member'
+import { getHappyPointTransactionQueryDTO } from './dto/happy-point.dto'
 
 @Auth()
 @Controller('v1/happy-points')
@@ -63,4 +65,18 @@ export class HappyPointContoller {
       this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
     )(happyPoint, body)
   }
+
+  @Get('')
+  @Transaction()
+  async getHappyPointTransactionsByMemberId(
+    @ReqUser() member: Member,
+    @Query() query: getHappyPointTransactionQueryDTO,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.happyService.getHappyPointTransactionsByMemberIdandler(
+      this.happyService.inquiryWalletIdFromMemberIdFunc(etm),
+      this.happyService.InquiryHappyPointTransactionsByMemberIdFunc(etm),
+    )(member, query)
+  }
+
 }

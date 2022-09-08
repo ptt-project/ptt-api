@@ -128,3 +128,4 @@ export const UnableToHappyPointInserttHappyPointTypeBuyToDb = _happyPoint + 9
 export const UnableUpdatHappyPointCreditTransferToDb = _happyPoint + 10
 export const UnableUpdatHappyPointDebitTransferToDb = _happyPoint + 11
 export const UnableTransferToMySelf = _happyPoint + 12
+export const UnableInquiryHappyPointTransactionsByMemberId = _happyPoint + 13

@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
+import { paginate } from 'nestjs-typeorm-paginate'
 import { HappyPoint } from 'src/db/entities/HappyPoint'
 import { HappyPointTransaction } from 'src/db/entities/HappyPointTransaction'
+import { Member } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
 import {
   UnableLookupExchangeRate,
@@ -15,11 +17,13 @@ import {
   UnableUpdatHappyPointDebitTransferToDb,
   UnableUpdateCreditBalanceMemberToDb,
   UnableTransferToMySelf,
+  UnableInquiryHappyPointTransactionsByMemberId,
 } from 'src/utils/response-code'
-import { EntityManager } from 'typeorm'
+import { EntityManager, SelectQueryBuilder } from 'typeorm'
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
 import { InquiryVerifyOtpType } from '../otp/otp.type'
 import { BuyHappyPointRequestDto } from './dto/buy.dto'
+import { getHappyPointTransactionQueryDTO } from './dto/happy-point.dto'
 import { TransferHappyPointDto } from './dto/transfer.dto'
 import {
   InsertHappyPointTypeBuyToDbType,
@@ -31,6 +35,8 @@ import {
   ValidatePointType,
   InsertHappyPointToDbType,
   InquiryHappyPointFromUsernameType,
+  InquiryHappyPointTransactionsByMemberIdType,
+  InquiryHappyPointFrommemberIdType,
 } from './happy-point.type'
 
 @Injectable()
@@ -286,7 +292,7 @@ export class HappyPointService {
   async InsertHappyPointTransactionToDbFunc(
     etm: EntityManager,
   ): Promise<InsertHappyPointTypeBuyToDbType> {
-    return async (params: InsertHappyPointToDbParams) => {
+  return async (params: InsertHappyPointToDbParams) => {
       const start = dayjs()
       let happyPointTransaction: HappyPointTransaction
 
@@ -402,6 +408,110 @@ export class HappyPointService {
         `Done InsertHappyPointToDbFunc ${dayjs().diff(start)} ms`,
       )
       return [happyPoint, '']
+    }
+  }
+
+  getHappyPointTransactionsByMemberIdandler(
+    inquiryWalletIdFromMemberId: Promise<InquiryHappyPointFrommemberIdType>,
+    InquiryHappyPointTransactionsByMemberId: Promise<InquiryHappyPointTransactionsByMemberIdType>,
+  ) {
+    return async (member: Member, query?: getHappyPointTransactionQueryDTO) => {
+      const start = dayjs()
+      const { id: memberId } = member
+      const { type, limit = 10, page = 1 } = query
+
+      const [happyPoint, isErrorToHappyPoint] = await (
+        await inquiryWalletIdFromMemberId
+      )(memberId)
+      if (isErrorToHappyPoint != '') {
+        return response(
+          undefined,
+          UnableInquiryWalletIdFromUsername,
+          isErrorToHappyPoint,
+        )
+      }
+
+      const [reviews, inquiryHappyPointTransactionsError] = await (
+        await InquiryHappyPointTransactionsByMemberId
+      )(happyPoint.id, type)
+
+      if (inquiryHappyPointTransactionsError != '') {
+        response(
+          undefined,
+          UnableInquiryHappyPointTransactionsByMemberId,
+          inquiryHappyPointTransactionsError,
+        )
+      }
+
+      const result = await paginate<HappyPointTransaction>(reviews, { limit, page })
+      this.logger.info(
+        `Done paginate InquiryHappyPointTransactionsByMemberIdFunc ${dayjs().diff(start)} ms`,
+      )
+
+      this.logger.info(
+        `Done getHappyPointTransactionsByMemberIdandler ${dayjs().diff(start)} ms`,
+      )
+      return response(result)
+    }
+  }
+
+  async inquiryWalletIdFromMemberIdFunc(
+    etm: EntityManager,
+  ): Promise<InquiryHappyPointFrommemberIdType> {
+    return async (memberId: number) => {
+      let happyPoint: HappyPoint
+      try {
+        happyPoint = await etm
+          .createQueryBuilder(HappyPoint, 'happyPoints')
+          .innerJoin('happyPoints.member', 'members')
+          .where('members.Id = :memberId', { memberId })
+          .getOne()
+
+        if (!happyPoint) {
+          return [null, 'HappyPoint not found by username']
+        }
+      } catch (error) {
+        return [happyPoint, error]
+      }
+
+      return [happyPoint, '']
+    }
+  }
+
+  async InquiryHappyPointTransactionsByMemberIdFunc(
+    etm: EntityManager,
+  ): Promise<InquiryHappyPointTransactionsByMemberIdType> {
+    return async (
+      happyPointId: number,
+      type?: string,
+    ): Promise<[SelectQueryBuilder<HappyPointTransaction>, string]> => {
+      const start = dayjs()
+      let happyPointTransactions: SelectQueryBuilder<HappyPointTransaction>
+      try {
+        happyPointTransactions = etm
+          .createQueryBuilder(HappyPointTransaction, 'happyPointTransactions')
+          .where('happyPointTransactions.deletedAt IS NULL')
+          
+
+        if (type != undefined) {
+          happyPointTransactions.andWhere('happyPointTransactions.type = :type', { type })
+          happyPointTransactions.andWhere('happyPointTransactions.fromHappyPointId = :happyPointId', { happyPointId })
+          if(type == 'TRANSFER') {
+            happyPointTransactions.orWhere('happyPointTransactions.toHappyPointId = :happyPointId', { happyPointId }) 
+          }
+        } else{
+          happyPointTransactions.andWhere('happyPointTransactions.fromHappyPointId = :happyPointId', { happyPointId }) 
+          happyPointTransactions.orWhere('happyPointTransactions.toHappyPointId = :happyPointId', { happyPointId }) 
+        }
+      } catch (error) {
+        return [happyPointTransactions, error]
+      }
+
+      this.logger.info(
+        `Done InquiryHappyPointTransactionsByMemberIdFunc ${dayjs().diff(start)} ms`,
+      )
+
+      return [happyPointTransactions, '']
     }
   }
 }
