@@ -3,6 +3,7 @@ import { Column, Entity, OneToOne, OneToMany, JoinColumn } from 'typeorm'
 import { Address } from './Address'
 import { AppEntity } from './AppEntity'
 import { HappyPoint } from './HappyPoint'
+import { BankAccount } from './BankAccount'
 import { Mobile } from './Mobile'
 import { Shop } from './Shop'
 import { Wallet } from './Wallet'
@@ -96,4 +97,10 @@ export class Member extends AppEntity {
     happyPoint => happyPoint.member,
   )
   happyPoints: HappyPoint[]
+
+  @OneToMany(
+    () => BankAccount,
+    bankAccount => bankAccount.member,
+  )
+  bankAccounts: BankAccount[]
 }

@@ -13,8 +13,8 @@ export class WalletTransactionReference extends AppEntity {
   @Column({ name: 'reference_no', nullable: false})
   referenceNo: string
 
-  @Column({ name: 'gbp_reference_no', nullable: true})
-  gbpReferenceNo: string
+  @Column({ name: 'third_pt_reference_no', nullable: true})
+  thirdPtReferenceNo: string
 
   @Column({
     name: 'amount',

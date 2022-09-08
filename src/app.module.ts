@@ -32,8 +32,15 @@ console.log('__dirname', __dirname)
 import { ProductModule } from './modules/product/product.modules'
 import { EmailModule } from './modules/email/email.module'
 import { ImageModule } from './modules/image/image.module'
+import { BankAccountModule } from './modules/bankAccount/bankAccount.modules'
 import { HappyPointModule } from './modules/happy-point/happy-point.module'
 import { ExchangeRateModule } from './modules/exchange-rate/exchange-rate.module'
+<<<<<<< HEAD
+import { HappyPointModule } from './modules/happy-point/happy-point.module'
+import { ExchangeRateModule } from './modules/exchange-rate/exchange-rate.module'
+=======
+import { BankAccountModule } from './modules/bankAccount/bankAccount.modules'
+>>>>>>> 37bb107138a6d64522217006b109046827be5ddb
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -99,9 +106,17 @@ import { ExchangeRateModule } from './modules/exchange-rate/exchange-rate.module
     ProductModule,
     ImageModule,
     EmailModule,
+    BankAccountModule,
     ExchangeRateModule,
     HappyPointModule,
-  ],
+<<<<<<< HEAD
+    ExchangeRateModule,
+    HappyPointModule,
+=======
+    BankAccountModule,
+>>>>>>> 37bb107138a6d64522217006b109046827be5ddb
+
+],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -6,17 +6,22 @@ import {
   Query,
 } from '@nestjs/common'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
-import { Auth, ReqWallet } from '../auth/auth.decorator'
+import { Auth, ReqUser, ReqWallet } from '../auth/auth.decorator'
 
 import { WalletService } from './wallet.service'
-import { getWalletTransactionQueryDTO, RequestDepositQrCodeRequestDTO } from './dto/wallet.dto'
+import { getWalletTransactionQueryDTO, RequestDepositQrCodeRequestDTO, WithdrawRequestDTO } from './dto/wallet.dto'
 import { Wallet } from 'src/db/entities/Wallet'
+import { OtpService } from '../otp/otp.service'
+import { Member } from 'src/db/entities/Member'
+import { BankAccountService } from '../bankAccount/bankAccount.service'
 
 @Auth()
 @Controller('v1/wallets')
 export class WalletController {
   constructor(
     private readonly walletService: WalletService,
+    private readonly otpService: OtpService,
+    private readonly bankAccountService: BankAccountService,
   ) {}
 
   @Get('/')
@@ -47,9 +52,27 @@ export class WalletController {
   ) {
     return await this.walletService.RequestDepositQrCodeHandler(
       this.walletService.InsertTransactionToDbFunc(etm),
-      this.walletService.InsertDepositReferenceToDbFunc(etm),
+      this.walletService.InsertReferenceToDbFunc(etm),
       this.walletService.RequestDepositQrCodeFunc(etm),
       this.walletService.AdjustWalletInDbFunc(etm),
     )(wallet, body)
+  }
+
+  @Post('/withdraw')
+  @Transaction()
+  async withdraw(
+    @ReqWallet() wallet: Wallet,
+    @ReqUser() member: Member,
+    @Body() body: WithdrawRequestDTO,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.walletService.WithdrawHandler(
+      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.bankAccountService.InqueryBankAccountFormDbFunc(etm),
+      this.walletService.InsertTransactionToDbFunc(etm),
+      this.walletService.InsertWithdrawReferenceToDbFunc(etm),
+      this.walletService.RequestWithdrawFunc(etm),
+      this.walletService.AdjustWalletInDbFunc(etm),
+    )(member, wallet, body)
   }
 }

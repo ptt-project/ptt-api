@@ -70,79 +70,93 @@ export class MockDataConsoleService {
       return console.log('create wallet error =>', errorCreateWallet)
     }
 
-    const walletTransactions = etm.create(WalletTransaction, [
+    let walletTransactions = etm.create(WalletTransaction, [
       {
         walletId: wallet.id,
         status: 'success',
         amount: 100000.00,
         type: 'deposit',
-        detail: 'ฝากเงินผ่านเบอร์มือถือ'
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+        note: 'credit',
       }, {
         walletId: wallet.id,
         status: 'fail',
         amount: 1000.00,
         type: 'deposit',
-        detail: 'ฝากเงินผ่านเบอร์มือถือ'
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+        note: 'credit',
       }, {
         walletId: wallet.id,
         status: 'pending',
         amount: 1000.00,
         type: 'deposit',
-        detail: 'ฝากเงินผ่านธนาคาร'
+        detail: 'ฝากเงินผ่านธนาคาร',
+        note: 'credit',
       }, {
         walletId: wallet.id,
         status: 'success',
-        amount: -1000.00,
+        amount: 1000.00,
         type: 'withdraw',
-        detail: 'ถอนเงิน'
+        detail: 'ถอนเงิน',
+        note: 'debit',
       }, {
         walletId: wallet.id,
         status: 'success',
-        amount: -1000.00,
+        amount: 1000.00,
         type: 'buy',
-        detail: 'ซื้อสินค้า'
+        detail: 'ซื้อสินค้า',
+        note: 'debit',
       }, {
         walletId: wallet.id,
         status: 'success',
-        amount: -1000.00,
+        amount: 1000.00,
         type: 'buy',
-        detail: 'ซื้อสินค้า'
+        detail: 'ซื้อสินค้า',
+        note: 'debit',
       }, {
         walletId: wallet.id,
         status: 'success',
         amount: 1000.00,
         type: 'sell',
-        detail: 'ขายสินค้า'
+        detail: 'ขายสินค้า',
+        note: 'credit',
       }, {
         walletId: wallet.id,
         status: 'success',
-        amount: -1000.00,
+        amount: 1000.00,
         type: 'buy',
-        detail: 'ซื้อสินค้า'
+        detail: 'ซื้อสินค้า',
+        note: 'debit',
       }, {
         walletId: wallet.id,
         status: 'cancel',
         amount: 1000.00,
         type: 'deposit',
-        detail: 'ฝากเงินผ่านเบอร์มือถือ'
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+        note: 'credit',
       }, {
         walletId: wallet.id,
         status: 'success',
         amount: 2000.00,
         type: 'deposit',
-        detail: 'ฝากเงินผ่านเบอร์มือถือ'
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+        note: 'credit',
       },, {
         walletId: wallet.id,
         status: 'success',
         amount: 5000.00,
         type: 'deposit',
-        detail: 'ฝากเงินผ่านเบอร์มือถือ'
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+        note: 'credit',
       },
     ])
-    await etm.save(walletTransactions)
+    walletTransactions = await etm.save(walletTransactions)
 
     wallet.balance = walletTransactions.reduce((balance, transaction) => {
-      if (transaction.status === 'success') return balance + +transaction.amount
+      if (transaction.status === 'success')
+        return (transaction.note === 'credit'
+          ? balance + +transaction.amount
+          : balance - +transaction.amount)
       return balance
     }, 0.0)
     etm.save(wallet)

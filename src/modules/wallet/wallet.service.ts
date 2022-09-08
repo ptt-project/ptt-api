@@ -5,41 +5,111 @@ import { Between, EntityManager, SelectQueryBuilder } from 'typeorm'
 import {
   UnableToAdjustWallet,
   UnableToGetWalletTransaction,
-  UnableToInsertDepositReference,
+  unableToInqueryBankAccount,
+  UnableToInsertReference,
   UnableToInsertTransaction,
+  UnableToInsertWithdrawReference,
   UnableToRequestDepositQrCode,
+  UnableToRequestWithdraw,
+  UnableToUpdateReference,
 } from 'src/utils/response-code'
 
 import {
   AdjustWalletFuncType,
   InqueryWalletTransactionFuncType,
-  InsertDepositReferenceToDbFuncType,
+  InsertReferenceToDbFuncType,
   InsertTransactionToDbFuncType,
   InsertWalletToDbFuncType,
   RequestDepositQrCodeFuncType,
+  RequestInteranlWalletTransactionServiceFuncType,
+  RequestWithdrawFuncType,
+  UpdateReferenceToDbFuncType,
 } from './wallet.type'
 
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 import { Wallet } from 'src/db/entities/Wallet'
 import {
+  TransactionNote,
   TransactionType,
   WalletTransaction,
 } from 'src/db/entities/WalletTransaction'
 import {
   getWalletTransactionQueryDTO,
   RequestDepositQrCodeRequestDTO,
+  WithdrawRequestDTO,
 } from './dto/wallet.dto'
 
 import { paginate } from 'nestjs-typeorm-paginate'
 import { WalletTransactionReference } from 'src/db/entities/WalletTransactionReference'
 import { randomUUID } from 'crypto'
-import { type } from 'os'
+import { InquiryVerifyOtpType } from '../otp/otp.type'
+import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
+import { Member } from 'src/db/entities/Member'
+import { InqueryBankAccountFormDbFuncType } from '../bankAccount/bankAccount.type'
 
 @Injectable()
 export class WalletService {
   constructor(private readonly logger: PinoLogger) {
     this.logger.setContext(WalletService.name)
+  }
+
+  RequestInteranlWalletTransactionService(
+    insertTransaction: Promise<InsertTransactionToDbFuncType>,
+    insertTransactionReference: Promise<InsertReferenceToDbFuncType>,
+    update3rdPartyTransactionReference: Promise<UpdateReferenceToDbFuncType>,
+    adjustWallet: Promise<AdjustWalletFuncType>,
+  ): RequestInteranlWalletTransactionServiceFuncType {
+    return async (
+      walletId: number,
+      amount: number,
+      detail: string,
+      type: TransactionType,
+      thirdPtReferenceNo: string,
+    ) => {
+      const start = dayjs()
+
+      const [walletTransaction, insertTransactionError] = await (
+        await insertTransaction
+      )(walletId, amount, detail, type)
+
+      if (insertTransactionError != '') {
+        return [undefined, insertTransactionError]
+      }
+
+      const [referenceNo, insertReferenceError] = await (
+        await insertTransactionReference
+      )(walletTransaction)
+
+      if (insertReferenceError != '') {
+        return [undefined, insertReferenceError]
+      }
+
+      const [reference, insertDepositReferenceError] = await (
+        await update3rdPartyTransactionReference
+      )(referenceNo, thirdPtReferenceNo, amount, detail)
+
+      if (insertDepositReferenceError != '') {
+        return [undefined, insertDepositReferenceError]
+      }
+
+      const [adjustedWallet, adjustWalletError] = await (await adjustWallet)(
+        walletId,
+        amount,
+        type,
+      )
+
+      if (adjustWalletError != '') {
+        return [undefined, adjustWalletError]
+      }
+
+      this.logger.info(
+        `Done RequestInteranlWalletTransactionService ${dayjs().diff(
+          start,
+        )} ms`,
+      )
+      return [adjustedWallet, '']
+    }
   }
 
   GetWalletHandler() {
@@ -85,7 +155,7 @@ export class WalletService {
 
   RequestDepositQrCodeHandler(
     insertTransaction: Promise<InsertTransactionToDbFuncType>,
-    insertDepositReference: Promise<InsertDepositReferenceToDbFuncType>,
+    insertDepositReference: Promise<InsertReferenceToDbFuncType>,
     requestDepositQrCode: Promise<RequestDepositQrCodeFuncType>,
     adjustWallet: Promise<AdjustWalletFuncType>,
   ) {
@@ -114,7 +184,7 @@ export class WalletService {
       if (insertDepositReferenceError != '') {
         return response(
           undefined,
-          UnableToInsertDepositReference,
+          UnableToInsertReference,
           insertDepositReferenceError,
         )
       }
@@ -134,6 +204,7 @@ export class WalletService {
       const [adjestedWallet, adjustWalletError] = await (await adjustWallet)(
         walletId,
         amount,
+        'deposit',
       ) // Todo: mockup before connect to payment api
 
       if (adjustWalletError != '') {
@@ -144,6 +215,102 @@ export class WalletService {
         `Done RequestDepositQrCodeHandler ${dayjs().diff(start)} ms`,
       )
       return response(qrCode)
+    }
+  }
+
+  WithdrawHandler(
+    verifyOtp: Promise<InquiryVerifyOtpType>,
+    inqueryBankAccount: Promise<InqueryBankAccountFormDbFuncType>,
+    insertTransaction: Promise<InsertTransactionToDbFuncType>,
+    insertWithdrawReference: Promise<InsertReferenceToDbFuncType>,
+    requestWithdraw: Promise<RequestWithdrawFuncType>,
+    adjustWallet: Promise<AdjustWalletFuncType>,
+  ) {
+    return async (member: Member, wallet: Wallet, body: WithdrawRequestDTO) => {
+      const start = dayjs()
+      const { id: walletId } = wallet
+      const { amount, bankAccountId } = body
+
+      const verifyOtpData: verifyOtpRequestDto = {
+        reference: member.mobile,
+        refCode: body.refCode,
+        otpCode: body.otpCode,
+      }
+      const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
+        await verifyOtp
+      )(verifyOtpData)
+
+      if (verifyOtpErrorCode != 0) {
+        return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
+      }
+
+      const [bankAccount, inqueryBankAccountError] = await (
+        await inqueryBankAccount
+      )(member.id, bankAccountId)
+
+      if (inqueryBankAccountError != '') {
+        return response(
+          undefined,
+          unableToInqueryBankAccount,
+          inqueryBankAccountError,
+        )
+      }
+
+      const detail = `Withdraw ${amount} baht with ${
+        bankAccount.bankCode
+      } **${bankAccount.accountNumber.slice(
+        bankAccount.accountNumber.length - 4,
+        bankAccount.accountNumber.length,
+      )}`
+
+      const [walletTransaction, insertTransactionError] = await (
+        await insertTransaction
+      )(walletId, -amount, detail, 'withdraw', bankAccountId)
+
+      if (insertTransactionError != '') {
+        return response(
+          undefined,
+          UnableToInsertTransaction,
+          insertTransactionError,
+        )
+      }
+
+      const [referenceNo, insertWithdrawReferenceError] = await (
+        await insertWithdrawReference
+      )(walletTransaction)
+
+      if (insertWithdrawReferenceError != '') {
+        return response(
+          undefined,
+          UnableToInsertWithdrawReference,
+          insertWithdrawReferenceError,
+        )
+      }
+
+      const [qrCode, requestWithdrawQrCodeError] = await (
+        await requestWithdraw
+      )(amount, referenceNo, detail)
+
+      if (requestWithdrawQrCodeError != '') {
+        return response(
+          undefined,
+          UnableToRequestWithdraw,
+          requestWithdrawQrCodeError,
+        )
+      }
+
+      const [adjestedWallet, adjustWalletError] = await (await adjustWallet)(
+        walletId,
+        amount,
+        'withdraw',
+      ) // Todo: mockup before connect to payment api
+
+      if (adjustWalletError != '') {
+        return response(undefined, UnableToAdjustWallet, adjustWalletError)
+      }
+
+      this.logger.info(`Done WithdrawHandler ${dayjs().diff(start)} ms`)
+      return response(undefined)
     }
   }
 
@@ -208,21 +375,31 @@ export class WalletService {
     return async (
       walletId: number,
       adjustBalance: number,
+      transactionType: TransactionType,
     ): Promise<[Wallet, string]> => {
       const start = dayjs()
       let wallet: Wallet
       try {
         wallet = await etm.findOne(Wallet, walletId)
+        const note: TransactionNote =
+          transactionType == 'buy' ||
+          transactionType == 'buy_happy_point' ||
+          transactionType == 'withdraw'
+            ? 'debit'
+            : 'credit'
 
         if (!wallet) {
           return [null, 'Unable to find wallet']
         }
 
-        if (adjustBalance < 0 && wallet.balance + adjustBalance < 0) {
+        if (note == 'debit' && wallet.balance - adjustBalance < 0) {
           return [wallet, 'your wallet balance is not enough']
         }
-
-        wallet.balance += adjustBalance
+        if (note == 'debit') {
+          wallet.balance -= adjustBalance
+        } else {
+          wallet.balance += adjustBalance
+        }
 
         await etm.save(wallet)
       } catch (error) {
@@ -242,6 +419,7 @@ export class WalletService {
       amount: number,
       detail: string,
       type: TransactionType,
+      bankAccountId?: number,
     ): Promise<[WalletTransaction, string]> => {
       const start = dayjs()
       let walletTransaction: WalletTransaction
@@ -252,7 +430,12 @@ export class WalletService {
           type,
           amount,
           detail,
-          status: 'success', // Todo: mockup before connect to payment api
+          bankAccountId,
+          note:
+            type == 'buy' || type == 'buy_happy_point' || type == 'withdraw'
+              ? 'debit'
+              : 'credit',
+          status: type == 'deposit' ? 'success' : 'pending', // Todo: mockup before connect to payment api
         })
         walletTransaction = await etm.save(walletTransaction)
       } catch (error) {
@@ -266,9 +449,9 @@ export class WalletService {
     }
   }
 
-  async InsertDepositReferenceToDbFunc(
+  async InsertReferenceToDbFunc(
     etm: EntityManager,
-  ): Promise<InsertDepositReferenceToDbFuncType> {
+  ): Promise<InsertReferenceToDbFuncType> {
     return async (
       walletTransaction: WalletTransaction,
     ): Promise<[string, string]> => {
@@ -303,6 +486,43 @@ export class WalletService {
     }
   }
 
+  async InsertWithdrawReferenceToDbFunc(
+    etm: EntityManager,
+  ): Promise<InsertReferenceToDbFuncType> {
+    return async (
+      walletTransaction: WalletTransaction,
+    ): Promise<[string, string]> => {
+      const start = dayjs()
+      let walletTransactionReference: WalletTransactionReference
+      let referenceNo: string
+
+      try {
+        let alreadyUsedRef: WalletTransactionReference
+        do {
+          referenceNo = randomUUID()
+          alreadyUsedRef = await etm.findOne(WalletTransactionReference, {
+            where: { referenceNo },
+          })
+        } while (alreadyUsedRef)
+
+        walletTransactionReference = etm.create(WalletTransactionReference, {
+          transactionId: walletTransaction.id,
+          referenceNo,
+        })
+        walletTransactionReference = await etm.save(walletTransactionReference)
+        walletTransaction.referenceId = walletTransactionReference.id
+        await etm.save(walletTransaction)
+      } catch (error) {
+        return [referenceNo, error]
+      }
+
+      this.logger.info(
+        `Done InsertWithdrawReferenceToDbFunc ${dayjs().diff(start)} ms`,
+      )
+      return [referenceNo, '']
+    }
+  }
+
   async RequestDepositQrCodeFunc(
     etm: EntityManager,
   ): Promise<RequestDepositQrCodeFuncType> {
@@ -320,6 +540,66 @@ export class WalletService {
         `Done RequestDepositQrCodeFunc ${dayjs().diff(start)} ms`,
       )
       return [qrCode, '']
+    }
+  }
+
+  async RequestWithdrawFunc(
+    etm: EntityManager,
+  ): Promise<RequestDepositQrCodeFuncType> {
+    return async (
+      amount: number,
+      referenceNo: string,
+      detail: string,
+    ): Promise<[string, string]> => {
+      const start = dayjs()
+
+      // Todo: Request waithdraw form payment api provider.
+      const ref = randomUUID()
+
+      this.logger.info(`Done RequestWithdrawFunc ${dayjs().diff(start)} ms`)
+      return [ref, '']
+    }
+  }
+
+  async UpdateReferenceToDbFunc(
+    etm: EntityManager,
+  ): Promise<UpdateReferenceToDbFuncType> {
+    return async (
+      referenceNo: string,
+      thirdPtReferenceNo: string,
+      amount: number,
+      detail: string,
+    ): Promise<[WalletTransactionReference, string]> => {
+      const start = dayjs()
+
+      let walletTransactionReference: WalletTransactionReference
+
+      try {
+        walletTransactionReference = await etm.findOne(
+          WalletTransactionReference,
+          {
+            where: { referenceNo, deletedAt: null },
+            relations: ['transaction'],
+          },
+        )
+
+        if (!walletTransactionReference) {
+          return [walletTransactionReference, 'Transaction reference not found']
+        }
+
+        walletTransactionReference.thirdPtReferenceNo = thirdPtReferenceNo
+        walletTransactionReference.amount = amount
+        walletTransactionReference.detail = detail
+        walletTransactionReference.transaction.status = 'success'
+
+        walletTransactionReference = await etm.save(walletTransactionReference)
+        await etm.save(walletTransactionReference.transaction)
+      } catch (error) {
+        return [walletTransactionReference, error]
+      }
+
+      this.logger.info(`Done UpdateReferenceToDbFunc ${dayjs().diff(start)} ms`)
+      return [walletTransactionReference, '']
     }
   }
 }
