@@ -265,7 +265,7 @@ export class WalletService {
 
       const [walletTransaction, insertTransactionError] = await (
         await insertTransaction
-      )(walletId, -amount, detail, 'withdraw', bankAccountId)
+      )(walletId, amount, detail, 'withdraw', bankAccountId)
 
       if (insertTransactionError != '') {
         return response(
