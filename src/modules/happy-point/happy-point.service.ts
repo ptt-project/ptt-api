@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
+import { async } from 'rxjs'
 import { HappyPoint } from 'src/db/entities/HappyPoint'
 import { HappyPointTransaction } from 'src/db/entities/HappyPointTransaction'
+import { Wallet } from 'src/db/entities/Wallet'
+import { TransactionType } from 'src/db/entities/WalletTransaction'
 import { response } from 'src/utils/response'
 import {
   UnableLookupExchangeRate,
@@ -15,10 +18,17 @@ import {
   UnableUpdatHappyPointDebitTransferToDb,
   UnableUpdateCreditBalanceMemberToDb,
   UnableTransferToMySelf,
+  UnableToAdjustWallet,
+  UnableToInsertTransaction,
 } from 'src/utils/response-code'
 import { EntityManager } from 'typeorm'
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
 import { InquiryVerifyOtpType } from '../otp/otp.type'
+import {
+  AdjustWalletFuncType,
+  InsertReferenceToDbFuncType,
+  InsertTransactionToDbFuncType,
+} from '../wallet/wallet.type'
 import { BuyHappyPointRequestDto } from './dto/buy.dto'
 import { TransferHappyPointDto } from './dto/transfer.dto'
 import {
@@ -28,9 +38,10 @@ import {
   UpdateBalanceToDbParams,
   UpdateDebitBalanceToDbType,
   LookupExchangeRageType,
-  ValidatePointType,
+  ValidateCalculatePointByExchangeAndAmountType,
   InsertHappyPointToDbType,
   InquiryHappyPointFromUsernameType,
+  ValidateCalculatePointByTotalPointAndFeeType,
 } from './happy-point.type'
 
 @Injectable()
@@ -42,11 +53,15 @@ export class HappyPointService {
   BuyHappyPointHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     lookupExchangeRate: Promise<LookupExchangeRageType>,
-    validatePoint: Promise<ValidatePointType>,
+    validatePoint: Promise<ValidateCalculatePointByExchangeAndAmountType>,
     insertHappyPointTypeBuyToDb: Promise<InsertHappyPointTypeBuyToDbType>,
     updateCreditBalanceMemberToDb: Promise<UpdateCreditBalanceToDbType>,
   ) {
-    return async (happyPoint: HappyPoint, body: BuyHappyPointRequestDto) => {
+    return async (
+      wallet: Wallet,
+      happyPoint: HappyPoint,
+      body: BuyHappyPointRequestDto,
+    ) => {
       const start = dayjs()
       const { id: happyPointId } = happyPoint
       const { amount, point, refId } = body
@@ -125,6 +140,15 @@ export class HappyPointService {
         )
       }
 
+      //   const [, isErrorAdjustWallet] = await (await adjustWallet)(
+      //     wallet.id,
+      //     amount,
+      //     'buy_happy_point',
+      //   )
+      //   if (isErrorAdjustWallet != '') {
+      //     return response(undefined, UnableToAdjustWallet, isErrorAdjustWallet)
+      //   }
+
       this.logger.info(`Done BuyHappyPointHandler ${dayjs().diff(start)} ms`)
       return response(updateBalaceMember)
     }
@@ -133,6 +157,7 @@ export class HappyPointService {
   TransferHappyPointHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     lookupExchangeRate: Promise<LookupExchangeRageType>,
+    validatePoint: Promise<ValidateCalculatePointByTotalPointAndFeeType>,
     inquiryWalletIdFromUsername: Promise<InquiryHappyPointFromUsernameType>,
     insertHappyPointTypeBuyToDb: Promise<InsertHappyPointTypeBuyToDbType>,
     updateCreditBalanceMemberToDb: Promise<UpdateCreditBalanceToDbType>,
@@ -165,6 +190,15 @@ export class HappyPointService {
           UnableLookupExchangeRate,
           isErrorLookupExchangeRate,
         )
+      }
+
+      const iseErrorValidatePoint = await (await validatePoint)(
+        totalPoint,
+        point,
+      )
+
+      if (iseErrorValidatePoint != '') {
+        return response(undefined, WrongCalculatePoint, iseErrorValidatePoint)
       }
 
       const [toHappyPoint, isErrorToHappyPoint] = await (
@@ -273,13 +307,28 @@ export class HappyPointService {
     }
   }
 
-  async ValidatePointFunc(): Promise<ValidatePointType> {
+  async ValidateCalculatePointByExchangeAndAmountFunc(): Promise<
+    ValidateCalculatePointByExchangeAndAmountType
+  > {
     return async (amount: number, exchangeRage: number, point: number) => {
-      if (amount / exchangeRage === point) {
-        return ''
-      } else {
-        return 'Calculate wrong poin'
+      if (amount / exchangeRage !== point) {
+        return 'Calculate wrong point'
       }
+
+      return ''
+    }
+  }
+
+  async ValidateCalculatePointByTotalPointAndFeeFunc(): Promise<
+    ValidateCalculatePointByTotalPointAndFeeType
+  > {
+    return async (totalPoint: number, point: number) => {
+      const fee = 1
+      if (totalPoint - fee !== point) {
+        return 'Calculate wrong point'
+      }
+
+      return ''
     }
   }
 
@@ -402,6 +451,30 @@ export class HappyPointService {
         `Done InsertHappyPointToDbFunc ${dayjs().diff(start)} ms`,
       )
       return [happyPoint, '']
+    }
+  }
+
+  async UpdateWalletFunc(
+    insertTransaction: Promise<InsertTransactionToDbFuncType>,
+    insertWithdrawReference: Promise<InsertReferenceToDbFuncType>,
+    adjustWallet: Promise<AdjustWalletFuncType>,
+  ) {
+    return async (walletId: number, amount: number, type: TransactionType) => {
+      const [walletTransaction, insertTransactionError] = await (
+        await insertTransaction
+      )(walletId, -amount, type)
+
+      if (insertTransactionError != '') {
+        return response(
+          undefined,
+          UnableToInsertTransaction,
+          insertTransactionError,
+        )
+      }
+
+      const [referenceNo, insertWithdrawReferenceError] = await (
+        await insertWithdrawReference
+      )(walletTransaction)
     }
   }
 }

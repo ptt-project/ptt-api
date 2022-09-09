@@ -1,5 +1,8 @@
 import { Wallet } from 'src/db/entities/Wallet'
-import { TransactionType, WalletTransaction } from 'src/db/entities/WalletTransaction'
+import {
+  TransactionType,
+  WalletTransaction,
+} from 'src/db/entities/WalletTransaction'
 import { WalletTransactionReference } from 'src/db/entities/WalletTransactionReference'
 import { SelectQueryBuilder } from 'typeorm'
 

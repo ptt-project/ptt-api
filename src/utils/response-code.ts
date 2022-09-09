@@ -136,28 +136,3 @@ export const UnableToHappyPointInserttHappyPointTypeBuyToDb = _happyPoint + 9
 export const UnableUpdatHappyPointCreditTransferToDb = _happyPoint + 10
 export const UnableUpdatHappyPointDebitTransferToDb = _happyPoint + 11
 export const UnableTransferToMySelf = _happyPoint + 12
-<<<<<<< HEAD
-
-const _happyPoint = 120000
-export const UnableInsertLookupToDb = _happyPoint + 1
-export const UnableLookupExchangeRate = _happyPoint + 2
-export const WrongCalculatePoint = _happyPoint + 3
-export const UnableInserttHappyPointTypeBuyToDb = _happyPoint + 4
-export const UnableUpdateCreditBalanceMemberToDb = _happyPoint + 5
-export const UnableToInsertHappyPoint = _happyPoint + 6
-export const UnableInquiryWalletIdFromUsername = _happyPoint + 7
-export const UnableFromHappyPointInserttHappyPointTypeBuyToDb = _happyPoint + 8
-export const UnableToHappyPointInserttHappyPointTypeBuyToDb = _happyPoint + 9
-export const UnableUpdatHappyPointCreditTransferToDb = _happyPoint + 10
-export const UnableUpdatHappyPointDebitTransferToDb = _happyPoint + 11
-export const UnableTransferToMySelf = _happyPoint + 12
-=======
-export const UnableToInsertWithdrawReference = _walletError + 7
-export const UnableToRequestWithdraw = _walletError + 8
-export const UnableToUpdateReference = _walletError + 9
-
-const _bankAccountError = 115000
-export const UnableToGetBankAccount = _bankAccountError + 1
-export const unableToInqueryBankAccount = _bankAccountError + 2
-export const UnableToInsertBankAccount = _bankAccountError + 3
->>>>>>> 37bb107138a6d64522217006b109046827be5ddb

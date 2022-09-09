@@ -53,7 +53,7 @@ export type LookupExchangeRageType = (
   refId: string,
 ) => Promise<[number, string]>
 
-export type ValidatePointType = (
+export type ValidateCalculatePointByExchangeAndAmountType = (
   amount: number,
   exchangeRate: number,
   point: number,
@@ -66,3 +66,8 @@ export type InsertHappyPointToDbType = (
 export type InquiryHappyPointFromUsernameType = (
   username: string,
 ) => Promise<[HappyPoint, string]>
+
+export type ValidateCalculatePointByTotalPointAndFeeType = (
+  totalPoint: number,
+  point: number,
+) => Promise<string>
