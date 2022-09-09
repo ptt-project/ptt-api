@@ -219,7 +219,7 @@ export class WalletService {
 
       const [walletTransaction, insertTransactionError] = await (await insertTransaction)(
         walletId, 
-        -amount,
+        amount,
         detail,
         'withdraw',
         bankAccountId,
@@ -501,7 +501,7 @@ export class WalletService {
 
         walletTransactionReference = await etm.save(walletTransactionReference)
         await etm.save(walletTransactionReference.transaction)
-        
+
       } catch (error) {
         return [walletTransactionReference, error]
       }
