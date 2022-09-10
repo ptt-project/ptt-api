@@ -124,5 +124,7 @@ export const unableToInqueryBankAccount = _bankAccountError + 2
 export const UnableToInsertBankAccount = _bankAccountError + 3
 export const UnableToUpdateBankAccount = _bankAccountError + 4
 export const ValidateBankAccount = _bankAccountError + 5
+export const UnableToDeleteBankAccount = _bankAccountError + 6
+export const UnableToSetMainBankAccount = _bankAccountError + 7
 
 

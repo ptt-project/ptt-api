@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
 } from '@nestjs/common'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
@@ -27,13 +28,24 @@ export class BankAccountController {
   @Transaction()
   async getBankAccount(
     @ReqUser() member: Member,
-    @Body() body: GetBankAccoutRequestDTO,
+    @Query() query: GetBankAccoutRequestDTO,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.bankAccountService.GetBankAccountsHandler(
       this.otpService.inquiryVerifyOtpFunc(etm),
       this.bankAccountService.InqueryBankAccountsFormDbFunc(etm)
-    )(member, body)
+    )(member, query)
+  }
+
+  @Get('/options')
+  @Transaction()
+  async getBankAccountOptions(
+    @ReqUser() member: Member,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.bankAccountService.GetBankAccountOptionsHandler(
+      this.bankAccountService.InqueryBankAccountsFormDbFunc(etm),
+    )(member)
   }
 
   @Post('/')
@@ -54,7 +66,7 @@ export class BankAccountController {
   @Transaction()
   async editBankAccount(
     @ReqUser() member: Member,
-    @Param('bankAccountId') productProfileId: number,
+    @Param('bankAccountId') bankAccountId: number,
     @Body() body: EditBankAccoutRequestDTO,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -63,14 +75,14 @@ export class BankAccountController {
       this.bankAccountService.InqueryBankAccountFormDbFunc(etm),
       this.bankAccountService.ValidateBankAccountFunc(etm),
       this.bankAccountService.UpdateBankAccountFunc(etm),
-    )(member, productProfileId, body)
+    )(member, bankAccountId, body)
   }
 
   @Patch('/:bankAccountId/delete')
   @Transaction()
   async deleteBankAccount(
     @ReqUser() member: Member,
-    @Param('bankAccountId') productProfileId: number,
+    @Param('bankAccountId') bankAccountId: number,
     @Body() body: DeleteBankAccoutRequestDTO,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -78,6 +90,19 @@ export class BankAccountController {
       this.otpService.inquiryVerifyOtpFunc(etm),
       this.bankAccountService.InqueryBankAccountFormDbFunc(etm),
       this.bankAccountService.DeleteBankAccountFormDbFunc(etm),
-    )(member, productProfileId, body)
+    )(member, bankAccountId, body)
+  }
+
+  @Put('/:bankAccountId/set-main')
+  @Transaction()
+  async setMainBankAccount(
+    @ReqUser() member: Member,
+    @Param('bankAccountId') bankAccountId: number,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.bankAccountService.SetMainBankAccountsHandler(
+      this.bankAccountService.InqueryBankAccountFormDbFunc(etm),
+      this.bankAccountService.SetMainBankAccountFunc(etm),
+    )(member, bankAccountId)
   }
 }

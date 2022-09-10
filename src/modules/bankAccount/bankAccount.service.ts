@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
 import {
-  UnableToGetBankAccount, unableToInqueryBankAccount, UnableToInsertBankAccount, UnableToUpdateBankAccount, ValidateBankAccount,
+  UnableToDeleteBankAccount,
+  UnableToGetBankAccount, unableToInqueryBankAccount, UnableToInsertBankAccount, UnableToSetMainBankAccount, UnableToUpdateBankAccount, ValidateBankAccount,
 } from 'src/utils/response-code'
 
 import {
   DeleteBankAccountFormDbFuncType,
   InqueryBankAccountFormDbFuncType,
-  InqueryBankAccountsFormDbFuncType, InsertBankAccountFormDbFuncType, UpdateBankAccountFuncType, ValidateBankAccountFuncType,
+  InqueryBankAccountsFormDbFuncType, InsertBankAccountFormDbFuncType, SetMainBankAccountFuncType, UpdateBankAccountFuncType, ValidateBankAccountFuncType,
   } from './bankAccount.type'
 
 import { PinoLogger } from 'nestjs-pino'
@@ -29,13 +30,13 @@ export class BankAccountService {
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     inqueryBankAccount: Promise<InqueryBankAccountsFormDbFuncType>
   ) {
-    return async (member: Member, body: GetBankAccoutRequestDTO) => {
+    return async (member: Member, query: GetBankAccoutRequestDTO) => {
       const start = dayjs()
 
       const verifyOtpData: verifyOtpRequestDto = {
         reference: member.mobile,
-        refCode: body.refCode,
-        otpCode: body.otpCode,
+        refCode: query.refCode,
+        otpCode: query.otpCode,
       }
       const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
         await inquiryVerifyOtp
@@ -57,6 +58,36 @@ export class BankAccountService {
       return response(bankAccounts)
     }
   }
+
+  GetBankAccountOptionsHandler(
+    inqueryBankAccount: Promise<InqueryBankAccountsFormDbFuncType>
+  ) {
+    return async (member: Member) => {
+      const start = dayjs()
+
+      const [bankAccounts, getBankAccountError] = await (await inqueryBankAccount)(
+        member.id,
+      )
+
+      if (getBankAccountError != '') {
+        return response(undefined, UnableToGetBankAccount, getBankAccountError)
+      }
+
+      const maskedBankAccounts = bankAccounts.map((bankAccount) => ({
+        value: bankAccount.id,
+        label: `${bankAccount.bankCode} **${
+          bankAccount.accountNumber.slice(
+            bankAccount.accountNumber.length - 4,
+            bankAccount.accountNumber.length,
+          )
+        }${bankAccount.isMain ? ' [บัญชีหลัก]' : ''}`
+      }))
+
+      this.logger.info(`Done GetBankAccountOptionsHandler ${dayjs().diff(start)} ms`)
+      return response(maskedBankAccounts)
+    }
+  }
+
 
   CreateBankAccountsHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
@@ -199,15 +230,43 @@ export class BankAccountService {
         return response(undefined, unableToInqueryBankAccount, inqueryBankAccountError)
       }
 
-      const [updateBankAccountError] = await (await deleteBankAccount)(
+      const [deleteBankAccountError] = await (await deleteBankAccount)(
         bankAccount,
       )
 
-      if (updateBankAccountError != '') {
-        return response(undefined, UnableToUpdateBankAccount, updateBankAccountError)
+      if (deleteBankAccountError != '') {
+        return response(undefined, UnableToDeleteBankAccount, deleteBankAccountError)
       }
 
       this.logger.info(`Done EditBankAccountsHandler ${dayjs().diff(start)} ms`)
+      return response(undefined)
+    }
+  }
+
+  SetMainBankAccountsHandler(
+    inqueryBankAccount: Promise<InqueryBankAccountFormDbFuncType>,
+    setMainBankAccount: Promise<SetMainBankAccountFuncType>,
+  ) {
+    return async (member: Member, bankAccountId: number) => {
+      const start = dayjs()
+
+      const [bankAccount, inqueryBankAccountError] = await (
+        await inqueryBankAccount
+      )(member.id, bankAccountId)
+
+      if (inqueryBankAccountError != '') {
+        return response(undefined, unableToInqueryBankAccount, inqueryBankAccountError)
+      }
+
+      const [setMainBankAccountError] = await (await setMainBankAccount)(
+        bankAccount,
+      )
+
+      if (setMainBankAccountError != '') {
+        return response(undefined, UnableToSetMainBankAccount, setMainBankAccountError)
+      }
+
+      this.logger.info(`Done SetMainBankAccountsHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
@@ -368,6 +427,24 @@ export class BankAccountService {
       }
 
       this.logger.info(`Done DeleteBankAccountFormDbFunc ${dayjs().diff(start)} ms`)
+      return ['']
+    }
+  }
+
+  async SetMainBankAccountFunc(etm: EntityManager): Promise<DeleteBankAccountFormDbFuncType> {
+    return async (
+      bankAccount: BankAccount
+    ): Promise<[string]> => {
+      const start = dayjs()
+
+      try {
+        bankAccount.isMain = true
+        await etm.save(bankAccount)
+      } catch (error) {
+        return [error]
+      }
+
+      this.logger.info(`Done SetMainBankAccountFunc ${dayjs().diff(start)} ms`)
       return ['']
     }
   }

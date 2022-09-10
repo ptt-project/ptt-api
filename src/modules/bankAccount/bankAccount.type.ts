@@ -38,3 +38,7 @@ export type DeleteBankAccountFormDbFuncType = (
   bankAccount: BankAccount,
 ) => Promise<[string]>
 
+export type SetMainBankAccountFuncType = (
+  bankAccount: BankAccount,
+) => Promise<[string]>
+
