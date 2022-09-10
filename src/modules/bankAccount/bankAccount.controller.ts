@@ -93,7 +93,7 @@ export class BankAccountController {
     )(member, bankAccountId, body)
   }
 
-  @Put('/:bankAccountId/set-main')
+  @Patch('/:bankAccountId/set-main')
   @Transaction()
   async setMainBankAccount(
     @ReqUser() member: Member,

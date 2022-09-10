@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
 import {
   UnableToDeleteBankAccount,
-  UnableToGetBankAccount, unableToInqueryBankAccount, UnableToInsertBankAccount, UnableToSetMainBankAccount, UnableToUpdateBankAccount, ValidateBankAccount,
+  UnableToGetBankAccount, UnableToInqueryBankAccount, UnableToInsertBankAccount, UnableToSetMainBankAccount, UnableToUpdateBankAccount, ValidateBankAccount,
 } from 'src/utils/response-code'
 
 import {
@@ -167,7 +167,7 @@ export class BankAccountService {
       )(member.id, bankAccountId)
 
       if (inqueryBankAccountError != '') {
-        return response(undefined, unableToInqueryBankAccount, inqueryBankAccountError)
+        return response(undefined, UnableToInqueryBankAccount, inqueryBankAccountError)
       }
 
       const [validateBankAccountErrorMessege] = await (
@@ -227,7 +227,7 @@ export class BankAccountService {
       )(member.id, bankAccountId)
 
       if (inqueryBankAccountError != '') {
-        return response(undefined, unableToInqueryBankAccount, inqueryBankAccountError)
+        return response(undefined, UnableToInqueryBankAccount, inqueryBankAccountError)
       }
 
       const [deleteBankAccountError] = await (await deleteBankAccount)(
@@ -255,7 +255,7 @@ export class BankAccountService {
       )(member.id, bankAccountId)
 
       if (inqueryBankAccountError != '') {
-        return response(undefined, unableToInqueryBankAccount, inqueryBankAccountError)
+        return response(undefined, UnableToInqueryBankAccount, inqueryBankAccountError)
       }
 
       const [setMainBankAccountError] = await (await setMainBankAccount)(
@@ -367,6 +367,19 @@ export class BankAccountService {
       let bankAccount: BankAccount
 
       try {
+        const oldMainAccounts: BankAccount[] = await etm.find(BankAccount, {
+          where: {
+            memberId,
+            isMain: true,
+            deletedAt: null,
+          }
+        })
+
+        let isMain: boolean
+        if (oldMainAccounts.length == 0) {
+          isMain = true
+        }
+
         bankAccount = await etm.create(BankAccount, {
           memberId,
           fullName,
@@ -374,6 +387,7 @@ export class BankAccountService {
           bankCode,
           accountNumber,
           accountHolder,
+          isMain,
         })
         bankAccount = await etm.save(bankAccount)
         
@@ -438,8 +452,25 @@ export class BankAccountService {
       const start = dayjs()
 
       try {
+        const oldMainAccounts: BankAccount[] = await etm.find(BankAccount, {
+          where: {
+            memberId: bankAccount.memberId,
+            isMain: true,
+            deletedAt: null,
+          }
+        })
+
+        for (const account of oldMainAccounts) {
+          account.isMain = false
+        }
+        if (oldMainAccounts.length > 0) {
+          await etm.save(oldMainAccounts)
+        }
+
         bankAccount.isMain = true
         await etm.save(bankAccount)
+
+
       } catch (error) {
         return [error]
       }

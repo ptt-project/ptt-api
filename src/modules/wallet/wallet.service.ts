@@ -4,7 +4,7 @@ import { Between, EntityManager, SelectQueryBuilder } from 'typeorm'
 
 import {
   UnableToAdjustWallet,
-  UnableToGetWalletTransaction, unableToInqueryBankAccount, UnableToInsertDepositReference, UnableToInsertTransaction, UnableToInsertWithdrawReference, UnableToRequestDepositQrCode, UnableToRequestWithdraw,
+  UnableToGetWalletTransaction, UnableToInqueryBankAccount, UnableToInsertDepositReference, UnableToInsertTransaction, UnableToInsertWithdrawReference, UnableToRequestDepositQrCode, UnableToRequestWithdraw,
 } from 'src/utils/response-code'
 
 import {
@@ -155,7 +155,7 @@ export class WalletService {
       )(member.id, bankAccountId)
 
       if (inqueryBankAccountError != '') {
-        return response(undefined, unableToInqueryBankAccount, inqueryBankAccountError)
+        return response(undefined, UnableToInqueryBankAccount, inqueryBankAccountError)
       }
 
       const detail = `Withdraw ${amount} baht with ${
