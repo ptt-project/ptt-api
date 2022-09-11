@@ -22,3 +22,7 @@ export type InquiryGetMobileType = (
   mobile: string,
   member: Member,
 ) => Promise<[Mobile, string]>
+
+export type InquiryMobilesFuncType = (
+  member: Member,
+) => Promise<[Mobile[], string]>
