@@ -4,12 +4,12 @@ import { Between, EntityManager, SelectQueryBuilder } from 'typeorm'
 
 import {
   UnableToAdjustWallet,
-  UnableToGetWalletTransaction, unableToInqueryBankAccount, UnableToInsertReference, UnableToInsertTransaction, UnableToInsertWithdrawReference, UnableToRequestDepositQrCode, UnableToRequestWithdraw, UnableToUpdateReference,
+  UnableToGetWalletTransaction, unableToInqueryBankAccount, UnableToInqueryFeeRate, UnableToInsertReference, UnableToInsertTransaction, UnableToInsertWithdrawReference, UnableToRequestDepositQrCode, UnableToRequestWithdraw, UnableToUpdateReference,
 } from 'src/utils/response-code'
 
 import {
   AdjustWalletFuncType,
-  InqueryWalletTransactionFuncType, InsertReferenceToDbFuncType, InsertTransactionToDbFuncType, InsertWalletToDbFuncType, RequestDepositQrCodeFuncType, RequestInteranlWalletTransactionServiceFuncType, RequestWithdrawFuncType, UpdateReferenceToDbFuncType,
+  InqueryWalletTransactionFuncType, InqueryWithdrawFeeRateFormDbFuncType, InsertReferenceToDbFuncType, InsertTransactionToDbFuncType, InsertWalletToDbFuncType, RequestDepositQrCodeFuncType, RequestInteranlWalletTransactionServiceFuncType, RequestWithdrawFuncType, UpdateReferenceToDbFuncType,
 } from './wallet.type'
 
 import { PinoLogger } from 'nestjs-pino'
@@ -44,6 +44,7 @@ export class WalletService {
       const [walletTransaction, insertTransactionError] = await (await insertTransaction)(
         walletId, 
         amount,
+        0,
         detail,
         type,
       )
@@ -133,6 +134,7 @@ export class WalletService {
       const [walletTransaction, insertTransactionError] = await (await insertTransaction)(
         walletId, 
         amount,
+        0,
         detail,
         'deposit',
       )
@@ -177,6 +179,7 @@ export class WalletService {
   WithdrawHandler(
     verifyOtp: Promise<InquiryVerifyOtpType>,
     inqueryBankAccount: Promise<InqueryBankAccountFormDbFuncType>,
+    inqueryFeeRate: Promise<InqueryWithdrawFeeRateFormDbFuncType>,
     insertTransaction: Promise<InsertTransactionToDbFuncType>,
     insertWithdrawReference: Promise<InsertReferenceToDbFuncType>,
     requestWithdraw: Promise<RequestWithdrawFuncType>,
@@ -208,7 +211,18 @@ export class WalletService {
         return response(undefined, unableToInqueryBankAccount, inqueryBankAccountError)
       }
 
-      const detail = `Withdraw ${amount} baht with ${
+      const [feeRate, inqueryFeeRatetError] = await (
+        await inqueryFeeRate
+      )()
+
+      if (inqueryFeeRatetError != '') {
+        return response(undefined, UnableToInqueryFeeRate, inqueryFeeRatetError)
+      }
+
+      const fee = amount * feeRate
+      const newAmount = amount - fee
+
+      const detail = `Withdraw ${amount} baht fee ${fee} baht with ${
         bankAccount.bankCode
       } **${
         bankAccount.accountNumber.slice(
@@ -220,6 +234,7 @@ export class WalletService {
       const [walletTransaction, insertTransactionError] = await (await insertTransaction)(
         walletId, 
         amount,
+        feeRate,
         detail,
         'withdraw',
         bankAccountId,
@@ -236,7 +251,7 @@ export class WalletService {
       }
 
       const [qrCode, requestWithdrawQrCodeError] = await (await requestWithdraw)(
-        amount,
+        newAmount,
         referenceNo,
         detail,
       )
@@ -244,7 +259,7 @@ export class WalletService {
       if (requestWithdrawQrCodeError != '') {
         return response(undefined, UnableToRequestWithdraw, requestWithdrawQrCodeError)
       }
-
+      
       const [adjestedWallet, adjustWalletError] = await (await adjustWallet)(
         walletId,
         amount,
@@ -355,6 +370,7 @@ export class WalletService {
     return async (
       walletId: number,
       amount: number,
+      feeRate: number,
       detail: string,
       type: TransactionType,
       bankAccountId?: number,
@@ -362,11 +378,18 @@ export class WalletService {
       const start = dayjs()
       let walletTransaction: WalletTransaction
 
+      const fee = amount * feeRate
+      const newAmount = amount - fee
+      const total = amount
+      
       try {
         walletTransaction = etm.create(WalletTransaction, {
           walletId,
           type,
-          amount,
+          amount: newAmount,
+          fee,
+          feeRate,
+          total,
           detail,
           bankAccountId,
           note: type == 'buy' || type == 'buy_happy_point' || type == 'withdraw' ? 'debit' : 'credit',
@@ -470,6 +493,17 @@ export class WalletService {
 
       this.logger.info(`Done RequestWithdrawFunc ${dayjs().diff(start)} ms`)
       return [ref, '']
+    }
+  }
+
+  async InqueryWithdrawFeeRateFormDbFunc(etm: EntityManager): Promise<InqueryWithdrawFeeRateFormDbFuncType> {
+    return async (): Promise<[number, string]> => {
+      const start = dayjs()
+
+      // Todo: inquery withdraw fee rate form db.
+
+      this.logger.info(`Done InqueryWithdrawFeeRateFormDbFunc ${dayjs().diff(start)} ms`)
+      return [0.3, '']
     }
   }
 

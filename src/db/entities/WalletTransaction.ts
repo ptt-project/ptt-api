@@ -3,6 +3,7 @@ import { Column, Entity, ManyToOne, JoinColumn, OneToOne } from 'typeorm'
 import { Wallet } from './Wallet'
 import { WalletTransactionReference } from './WalletTransactionReference'
 import { BankAccount } from './BankAccount'
+import { transformerDecimalToNumber } from 'src/utils/entity-transform'
 
 export type TransactionType = 'deposit' | 'withdraw' | 'buy' | 'sell' | 'buy_happy_point' | 'sell_happy_point'
 export type TransactionStatus = 'success' | 'fail' | 'cancel' | 'pending'
@@ -26,10 +27,44 @@ export class WalletTransaction extends AppEntity {
     nullable: false,
     type: 'decimal',
     precision: 12,
-    scale: 2,
+    scale: 4,
     default: 0,
+    transformer: transformerDecimalToNumber,
   })
   amount: number
+
+  @Column({
+    name: 'fee',
+    nullable: false,
+    type: 'decimal',
+    precision: 12,
+    scale: 4,
+    default: 0,
+    transformer: transformerDecimalToNumber,
+  })
+  fee: number
+
+  @Column({
+    name: 'fee_rate',
+    nullable: false,
+    type: 'decimal',
+    precision: 12,
+    scale: 4,
+    default: 0,
+    transformer: transformerDecimalToNumber,
+  })
+  feeRate: number
+
+  @Column({
+    name: 'total',
+    nullable: false,
+    type: 'decimal',
+    precision: 12,
+    scale: 4,
+    default: 0,
+    transformer: transformerDecimalToNumber,
+  })
+  total: number
 
   @Column({ name: 'detail', nullable: true })
   detail: string

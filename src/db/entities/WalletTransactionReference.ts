@@ -1,6 +1,7 @@
 import { AppEntity } from './AppEntity'
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm'
 import { WalletTransaction } from './WalletTransaction'
+import { transformerDecimalToNumber } from 'src/utils/entity-transform'
 
 @Entity({ name: 'wallet_transaction_references' })
 export class WalletTransactionReference extends AppEntity {
@@ -21,8 +22,9 @@ export class WalletTransactionReference extends AppEntity {
     nullable: false,
     type: 'decimal',
     precision: 12,
-    scale: 2,
+    scale: 4,
     default: 0,
+    transformer: transformerDecimalToNumber,
   })
   amount: number
 

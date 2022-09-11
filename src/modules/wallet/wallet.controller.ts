@@ -69,6 +69,7 @@ export class WalletController {
     return await this.walletService.WithdrawHandler(
       this.otpService.inquiryVerifyOtpFunc(etm),
       this.bankAccountService.InqueryBankAccountFormDbFunc(etm),
+      this.walletService.InqueryWithdrawFeeRateFormDbFunc(etm),
       this.walletService.InsertTransactionToDbFunc(etm),
       this.walletService.InsertWithdrawReferenceToDbFunc(etm),
       this.walletService.RequestWithdrawFunc(etm),
