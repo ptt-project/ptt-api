@@ -13,8 +13,8 @@ export class Wallet extends AppEntity {
     name: 'balance',
     nullable: false,
     type: 'decimal',
-    precision: 12,
-    scale: 2,
+    precision: 14,
+    scale: 4,
     default: 0,
     transformer: transformerDecimalToNumber,
   })

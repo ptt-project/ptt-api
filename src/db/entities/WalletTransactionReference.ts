@@ -21,7 +21,7 @@ export class WalletTransactionReference extends AppEntity {
     name: 'amount',
     nullable: false,
     type: 'decimal',
-    precision: 12,
+    precision: 14,
     scale: 4,
     default: 0,
     transformer: transformerDecimalToNumber,
