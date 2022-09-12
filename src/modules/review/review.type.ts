@@ -1,10 +1,10 @@
 import { Review } from 'src/db/entities/Review'
 import { SelectQueryBuilder } from 'typeorm'
+import { getReviewQueryDTO } from './dto/review.dto'
 
 export type  InquiryReviewsBySellerIdType = (
   memberId: number,
-  isReply: string,
-  star: string,
+  params: getReviewQueryDTO
 ) => Promise<[SelectQueryBuilder<Review>, string]>
 
 export type InquiryReviewsByReviewIdType = (

@@ -2,6 +2,7 @@ import { transformerDayjsToDate } from "src/utils/entity-transform";
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { AppEntity } from "./AppEntity";
 import { Member } from "./Member";
+import { ProductProfile } from "./ProductProfile";
 
 @Entity({ name: 'reviews' })
 export class Review extends AppEntity {
@@ -27,25 +28,28 @@ export class Review extends AppEntity {
   @Column({ name: 'reviewer_id', nullable: false })
   reviewerId: number
 
-  @Column({
-    name: 'created_date',
-    nullable: false,
-    transformer: transformerDayjsToDate,
-  })
-  createdDate: Date
+  @Column({ name: 'product_profile_id', nullable: false })
+  productProfileId: number
 
   @ManyToOne(
     () => Member,
-    member => member.addresses,
+    member => member.sellers,
   )
   @JoinColumn({ name: 'seller_id', referencedColumnName: 'id' })
   seller: Member
 
   @ManyToOne(
     () => Member,
-    member => member.addresses,
+    member => member.reviews,
   )
   @JoinColumn({ name: 'reviewer_id', referencedColumnName: 'id' })
-  Reviewer: Member
+  reviewer: Member
+
+  @ManyToOne(
+    () => ProductProfile,
+    productProfile => productProfile.reviews,
+  )
+  @JoinColumn({ name: 'product_profile_id', referencedColumnName: 'id' })
+  productProfiles: ProductProfile
 
 }

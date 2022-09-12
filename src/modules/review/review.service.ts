@@ -35,7 +35,7 @@ export class ReviewService {
 
       const [reviews, inquiryCommentsError] = await (
         await InquiryReviewsBySellerId
-      )(sellerId, isReply, star)
+      )(sellerId, query)
 
       if (inquiryCommentsError != '') {
         response(
@@ -62,22 +62,42 @@ export class ReviewService {
   ): Promise<InquiryReviewsBySellerIdType> {
     return async (
       sellerId: number,
-      isReply?: string,
-      star?: string,
+      params: getReviewQueryDTO
     ): Promise<[SelectQueryBuilder<Review>, string]> => {
       const start = dayjs()
       let reviews: SelectQueryBuilder<Review>
       try {
         reviews = etm
           .createQueryBuilder(Review, 'reviews')
+          .innerJoin(
+            'reviews.productProfiles',
+            'productProfiles',
+          )
           .where('reviews.deletedAt IS NULL')
           .andWhere('reviews.sellerId = :sellerId', { sellerId })
 
-        if (isReply) {
+        if(params.startDate != undefined){
+          const startDate: String = params.startDate + " 00:00:00"
+          reviews.andWhere('reviews.createdAt >= :startDate', { startDate })
+        }
+
+        if(params.endDate != undefined){
+          const endDate: String = params.endDate + " 23:59:59"
+          reviews.andWhere('reviews.createdAt <= :endDate ', { endDate })
+        }
+
+
+        if (params.productName != undefined) {
+          reviews.andWhere('productProfiles.name ILIKE :queryProductName', { queryProductName: '%'+params.productName+'%' })
+        }
+
+        if (params.isReply != undefined) {
+          const isReply: String = params.isReply
           reviews.andWhere('reviews.isReply = :isReply', { isReply })
         }
 
-        if (star) {
+        if (params.star != undefined) {
+          const star: String = params.star
           reviews.andWhere('reviews.star = :star', { star })
         }
       } catch (error) {

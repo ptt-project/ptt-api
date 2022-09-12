@@ -3,6 +3,7 @@ import { Column, Entity, OneToOne, OneToMany, JoinColumn } from 'typeorm'
 import { Address } from './Address'
 import { AppEntity } from './AppEntity'
 import { Mobile } from './Mobile'
+import { Review } from './Review'
 import { Shop } from './Shop'
 
 export type MemberGenderType = 'F' | 'M' | 'O'
@@ -82,4 +83,19 @@ export class Member extends AppEntity {
     shop => shop.member,
   )
   shop: Shop
+
+  @OneToMany(
+    () => Review,
+    review => review.reviewer,
+  )
+  @JoinColumn({ referencedColumnName: 'member_id' })
+  reviews: Review[]
+
+  @OneToMany(
+    () => Review,
+    review => review.seller,
+  )
+  @JoinColumn({ referencedColumnName: 'member_id' })
+  sellers: Review[]
+
 }

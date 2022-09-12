@@ -4,6 +4,7 @@ import { CategoryProductProfile } from './CategoryProductProfile'
 import { PlatformCategory } from './PlatformCategory'
 import { Product } from './Product'
 import { ProductOption } from './ProductOption'
+import { Review } from './Review'
 import { Shop } from './Shop'
 
 export type ConditionType = 'old' | 'new'
@@ -101,4 +102,12 @@ export class ProductProfile extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'product_profile_id' })
   categoryProductProfiles: CategoryProductProfile[]
+
+  @OneToMany(
+    () => Review,
+    review => review.productProfiles,
+  )
+  @JoinColumn({ referencedColumnName: 'product_profile_id' })
+  reviews: Review[]
+
 }

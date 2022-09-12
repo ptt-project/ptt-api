@@ -25,4 +25,14 @@ export class getReviewQueryDTO {
   @IsOptional()
   @IsIn(['0', '1', '2', '3', '4', '5'])
   star?: string
+
+  @IsOptional()
+  productName?: string
+
+  @IsOptional()
+  startDate?: string
+  
+  @IsOptional()
+  endDate?: string
 }
+
