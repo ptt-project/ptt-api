@@ -107,3 +107,9 @@ export const UnableUpdateProduct = _productError + 17
 
 const _image = 110000
 export const UnableResizeImage = _image + 1
+
+const _config = 300000
+export const UnableToGetBrandOptions = _config + 1
+export const UnableToGetPlatformCategoryOptions = _config + 2
+export const UnableToGetBankOptions = _config + 3
+export const UnableToGetAddressOptions = _config + 4
