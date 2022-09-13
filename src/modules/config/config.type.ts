@@ -10,4 +10,4 @@ export type InquiryPlatformCategoryOptionsFormDbFuncType = () => Promise<[Option
 
 export type InquiryBankOptionsFormDbFuncType = () => Promise<[OptionType[], string]>
 
-export type InquiryAddressOptionsFormDbFuncType = () => Promise<[OptionType[], string]>
+export type InquiryAddressOptionsFormDbFuncType = () => Promise<[any[], string]>

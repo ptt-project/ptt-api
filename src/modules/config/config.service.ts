@@ -9,6 +9,7 @@ import { UnableToGetAddressOptions, UnableToGetBankOptions, UnableToGetBrandOpti
 import { Brand } from 'src/db/entities/Brand'
 import { PlatformCategory } from 'src/db/entities/PlatformCategory'
 import { Bank } from 'src/db/entities/Bank'
+import { AddressMaster } from 'src/db/entities/AddressMaster'
 @Injectable()
 export class AppConfigService {
   constructor(private readonly logger: PinoLogger) {
@@ -135,11 +136,19 @@ export class AppConfigService {
   async InquiryAddressOptionsFormDbFunc(
     etm: EntityManager,
   ): Promise<InquiryAddressOptionsFormDbFuncType> {
-    return async (): Promise<[OptionType[], string]> => {
+    return async (): Promise<[any[], string]> => {
       const start = dayjs()
 
+      let address: AddressMaster
+      try {
+        address = await etm.findOne(AddressMaster, { where: { deletedAt: null } })
+        
+      } catch (error) {
+        return [ undefined, error ]
+      }
+
       this.logger.info(`Done InquiryAddressOptionsFormDbFunc ${dayjs().diff(start)} ms`)
-      return [ [], '' ]
+      return [address.data, '']
     }
   }
 }

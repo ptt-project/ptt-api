@@ -5,9 +5,10 @@ import { AppConsoleService } from './app-console.service'
 import { MockDataConsoleService } from './mock-data.service'
 import { ProductService } from '../product/product.service'
 import { EmailModule } from '../email/email.module'
+import { InitialAppConsoleService } from './initial-app.service'
 
 @Module({
   imports: [AuthModule, SellerModule, EmailModule],
-  providers: [AppConsoleService, MockDataConsoleService, ProductService],
+  providers: [AppConsoleService, MockDataConsoleService, ProductService, InitialAppConsoleService],
 })
 export class AppConsoleModule {}
