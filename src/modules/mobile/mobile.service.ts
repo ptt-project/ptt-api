@@ -190,6 +190,10 @@ export class MobileService {
             memberId: member.id,
             deletedAt: null,
           },
+          order: {
+            isPrimary: "DESC",
+            updatedAt: "DESC",
+          }
         })
       } catch (error) {
         return [mobiles, error]
