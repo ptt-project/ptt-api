@@ -1,9 +1,11 @@
 import {
   Controller,
   Get,
+  Query,
 } from '@nestjs/common'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { AppConfigService } from './config.service'
+import { getConfigOptionRequestDTO } from './dto/config.dto'
 
 @Controller('v1/configs')
 export class AppConfigController {
@@ -14,6 +16,7 @@ export class AppConfigController {
   @Get('/options')
   @Transaction()
   async getMasterOptions(
+    @Query() query: getConfigOptionRequestDTO,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.appConfigService.GetMasterOptionsHandler(
@@ -21,6 +24,6 @@ export class AppConfigController {
       this.appConfigService.InquiryPlatformCategoryOptionsFormDbFunc(etm),
       this.appConfigService.InquiryBankOptionsFormDbFunc(etm),
       this.appConfigService.InquiryAddressOptionsFormDbFunc(etm),
-    )()
+    )(query)
   }
 }

@@ -36,4 +36,4 @@ postgresData
 node_modules
 dist
 
-config
+/config
