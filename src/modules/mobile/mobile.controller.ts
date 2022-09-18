@@ -59,7 +59,7 @@ export class MobileController {
   }
 
   @Auth()
-  @Delete('delete')
+  @Patch('delete')
   @Transaction()
   async deleteMobile(
     @ReqUser() member: Member,
