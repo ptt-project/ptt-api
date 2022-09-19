@@ -9,6 +9,8 @@ import { LoginService } from './login.service'
 import { JwtStrategy } from './jwt.strategy'
 import { MobileService } from '../mobile/mobile.service'
 import { ShopService } from '../seller/shop.service'
+import { EmailService } from '../email/email.service'
+import { PasswordService } from '../member/password.service'
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { ShopService } from '../seller/shop.service'
     JwtStrategy,
     MobileService,
     ShopService,
+    PasswordService,
+    EmailService,
   ],
   exports: [AuthService],
 })

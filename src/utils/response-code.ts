@@ -10,6 +10,8 @@ const _authError = 101000
 export const UnableRegisterEmailAlreayExist = _authError + 1
 export const UnableRegisterUsernameAlreayExist = _authError + 2
 export const UnableInsertMemberToDbError = _authError + 3
+export const UnableInquiryEmailExistByEmailError= _authError + 4
+export const UnableInquiryEmailExistByMobileError= _authError + 5
 
 // login
 export const UnableLoginUsernameDoNotAlreayExist = _authError + 4

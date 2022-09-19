@@ -13,3 +13,11 @@ export type VadlidateOldPasswordType = (
   oldPassword: string,
   oldPasswordParams: string,
 ) => Promise<string>
+
+export type InquiryEmailExistByEmailType = (
+  email: string
+) => Promise<[Member, string]>
+
+export type InquiryEmailExistByMobileType = (
+  mobile: string
+) => Promise<[Member, string]>

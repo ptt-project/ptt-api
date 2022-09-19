@@ -11,6 +11,9 @@ import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { MobileService } from '../mobile/mobile.service'
 import dayjs from 'dayjs'
 import { ShopService } from '../seller/shop.service'
+import { PasswordService } from '../member/password.service'
+import { ForgotPasswordRequestDto } from '../member/dto/forgotPassword.dto'
+import { ResetPasswordRequestDto } from '../member/dto/resetPassword.dto'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -20,6 +23,7 @@ export class AuthController {
     private readonly loginService: LoginService,
     private readonly mobileService: MobileService,
     private readonly shopService: ShopService,
+    private readonly passwordService: PasswordService,
   ) {}
 
   @Post('register')
@@ -33,6 +37,31 @@ export class AuthController {
       this.authService.inquiryMemberExistFunc(etm),
       this.authService.insertMemberToDbFunc(etm),
       this.mobileService.addMobileFunc(etm),
+    )(body)
+  }
+
+  @Post('forgot-password')
+  @Transaction()
+  async forgotPassword(
+    @Body() body: ForgotPasswordRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return this.passwordService.ForgotPasswordHandler(
+      this.passwordService.InquiryMemberExistByEmailFunc(etm),
+    )(body)
+  }
+
+  @Post('reset-password')
+  @Transaction()
+  async resetPassword(
+    @Body() body: ResetPasswordRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return this.passwordService.ResetPasswordHandler(
+      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.passwordService.InquiryMemberExistByEmailFunc(etm),
+      this.passwordService.InquiryMemberExistByMobileFunc(etm),
+      this.passwordService.updatePasswordToMemberFunc(),
     )(body)
   }
 
