@@ -26,8 +26,8 @@ export class MobileController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.mobileService.addMobileHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
-      this.mobileService.addMobileFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
+      this.mobileService.AddMobileFunc(etm),
     )(member, body)
   }
 
@@ -40,9 +40,9 @@ export class MobileController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.mobileService.setMainMobileHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
-      this.mobileService.getMobileFormDbByMobilePhoneFunc(etm),
-      this.mobileService.setMainMobileFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
+      this.mobileService.GetMobileFormDbByMobilePhoneFunc(etm),
+      this.mobileService.SetMainMobileFunc(etm),
     )(member, body)
   }
 
@@ -55,9 +55,9 @@ export class MobileController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.mobileService.deleteMobileHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
-      this.mobileService.getMobileFormDbByMobilePhoneFunc(etm),
-      this.mobileService.deleteMobileFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
+      this.mobileService.GetMobileFormDbByMobilePhoneFunc(etm),
+      this.mobileService.DeleteMobileFunc(etm),
     )(member, body)
   }
 }

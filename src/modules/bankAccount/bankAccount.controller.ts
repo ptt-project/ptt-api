@@ -32,7 +32,7 @@ export class BankAccountController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.bankAccountService.GetBankAccountsHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
       this.bankAccountService.InqueryBankAccountsFormDbFunc(etm)
     )(member, query)
   }
@@ -56,7 +56,7 @@ export class BankAccountController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.bankAccountService.CreateBankAccountsHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
       this.bankAccountService.ValidateBankAccountFunc(etm),
       this.bankAccountService.InsertBankAccountsFormDbFunc(etm),
     )(member, body)
@@ -71,7 +71,7 @@ export class BankAccountController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.bankAccountService.EditBankAccountsHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
       this.bankAccountService.InqueryBankAccountFormDbFunc(etm),
       this.bankAccountService.ValidateBankAccountFunc(etm),
       this.bankAccountService.UpdateBankAccountFunc(etm),
@@ -87,7 +87,7 @@ export class BankAccountController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.bankAccountService.DeleteBankAccountsHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
       this.bankAccountService.InqueryBankAccountFormDbFunc(etm),
       this.bankAccountService.DeleteBankAccountFormDbFunc(etm),
     )(member, bankAccountId, body)

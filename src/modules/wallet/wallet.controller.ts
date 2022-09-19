@@ -67,7 +67,7 @@ export class WalletController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.walletService.WithdrawHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
       this.bankAccountService.InqueryBankAccountFormDbFunc(etm),
       this.walletService.InsertTransactionToDbFunc(etm),
       this.walletService.InsertWithdrawReferenceToDbFunc(etm),

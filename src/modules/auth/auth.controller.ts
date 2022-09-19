@@ -31,10 +31,10 @@ export class AuthController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.authService.registerHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
       this.authService.inquiryMemberExistFunc(etm),
       this.authService.insertMemberToDbFunc(etm),
-      this.mobileService.addMobileFunc(etm),
+      this.mobileService.AddMobileFunc(etm),
       this.walletService.InsertWalletToDbFunc(etm),
     )(body)
   }

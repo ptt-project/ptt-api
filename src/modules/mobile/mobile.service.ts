@@ -20,7 +20,7 @@ import {
 } from './dto/mobile.dto'
 
 import {
-  InquiryAddMobileType,
+  AddMobileFuncType,
   InquirySetMainMobileType,
   InquiryDeleteMobileType,
   InquiryGetMobileType,
@@ -34,7 +34,7 @@ export class MobileService {
 
   addMobileHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
-    inquiryAddMobile: Promise<InquiryAddMobileType>,
+    addMobile: Promise<AddMobileFuncType>,
   ) {
     return async (member: Member, body: addMobileRequestDto) => {
       const start = dayjs()
@@ -52,7 +52,7 @@ export class MobileService {
       }
 
       const { mobile } = body
-      const addMobileErrorMessege = await (await inquiryAddMobile)(
+      const addMobileErrorMessege = await (await addMobile)(
         { mobile, isPrimary: false },
         member,
       )
@@ -160,7 +160,7 @@ export class MobileService {
     }
   }
 
-  async getMobileFormDbByMobilePhoneFunc(
+  async GetMobileFormDbByMobilePhoneFunc(
     etm: EntityManager,
   ): Promise<InquiryGetMobileType> {
     return async (mobile: string, member: Member) => {
@@ -189,7 +189,7 @@ export class MobileService {
     }
   }
 
-  async addMobileFunc(etm: EntityManager): Promise<InquiryAddMobileType> {
+  async AddMobileFunc(etm: EntityManager): Promise<AddMobileFuncType> {
     return async (body: addMobileRegisterDto, member: Member) => {
       const start = dayjs()
       let mobile: Mobile
@@ -241,7 +241,7 @@ export class MobileService {
     }
   }
 
-  async setMainMobileFunc(
+  async SetMainMobileFunc(
     etm: EntityManager,
   ): Promise<InquirySetMainMobileType> {
     return async (mobile: Mobile, member: Member) => {
@@ -274,7 +274,7 @@ export class MobileService {
     }
   }
 
-  async deleteMobileFunc(etm: EntityManager): Promise<InquiryDeleteMobileType> {
+  async DeleteMobileFunc(etm: EntityManager): Promise<InquiryDeleteMobileType> {
     return async (mobile: Mobile, member: Member) => {
       const start = dayjs()
       try {

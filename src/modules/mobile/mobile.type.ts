@@ -3,7 +3,7 @@ import { Member } from 'src/db/entities/Member'
 import { Mobile } from 'src/db/entities/Mobile'
 import { addMobileRegisterDto, addMobileRequestDto } from './dto/mobile.dto'
 
-export type InquiryAddMobileType = (
+export type AddMobileFuncType = (
   body: addMobileRequestDto | addMobileRegisterDto,
   member: Member,
 ) => Promise<string>

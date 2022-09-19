@@ -27,7 +27,7 @@ export class OtpController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.otpService.verifyOtpHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
     )(body)
   }
 }

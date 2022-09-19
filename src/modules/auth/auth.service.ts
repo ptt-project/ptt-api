@@ -23,7 +23,7 @@ import {
 
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
 import { EntityManager } from 'typeorm'
-import { InquiryAddMobileType } from '../mobile/mobile.type'
+import { AddMobileFuncType } from '../mobile/mobile.type'
 
 import {
   InquiryMemberExistType,
@@ -67,7 +67,7 @@ export class AuthService {
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     inquiryMemberEixst: Promise<InquiryMemberExistType>,
     insertMemberToDb: Promise<InsertMemberToDbTye>,
-    addMobileFunc: Promise<InquiryAddMobileType>,
+    addMobileFunc: Promise<AddMobileFuncType>,
     insertWalletToDb: Promise<InsertWalletToDbFuncType>
   ) {
     return async (body: RegisterRequestDto) => {
@@ -109,7 +109,7 @@ export class AuthService {
         return response(undefined, UnableToAddMobile, addMobileErrorMessege)
       }
 
-      const [_, insertWalletToDbError] = await (await insertWalletToDb)(
+      const [, insertWalletToDbError] = await (await insertWalletToDb)(
         member.id,
       )
       if (insertWalletToDbError != '') {
