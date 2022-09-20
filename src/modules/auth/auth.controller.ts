@@ -48,6 +48,7 @@ export class AuthController {
   ) {
     return this.passwordService.ForgotPasswordHandler(
       this.passwordService.InquiryMemberExistByEmailFunc(etm),
+      this.passwordService.InquiryMemberExistByMobileFunc(etm),
     )(body)
   }
 

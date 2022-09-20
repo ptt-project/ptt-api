@@ -135,30 +135,48 @@ export class PasswordService {
 
   ForgotPasswordHandler(
     inquiryEmailExistByEmail: Promise<InquiryEmailExistByEmailType>,
+    inquiryEmailExistByMobile: Promise<InquiryEmailExistByMobileType>,
   ) {
-    return async (query: ForgotPasswordRequestDto) => {
+    return async (body: ForgotPasswordRequestDto) => {
       const start = dayjs()
 
-      const { email } = query
+      const validEmailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
-      const [member, inquiryEmailExistByEmailError] = await (await inquiryEmailExistByEmail)(
-        email,
-      )
+      if ((body.username).match(validEmailRegex)) {
+        const { username } = body
 
-      if (inquiryEmailExistByEmailError !== '') {
-        return response(
-          undefined,
-          UnableInquiryEmailExistByEmailError,
-          inquiryEmailExistByEmailError,
+        const [member, inquiryEmailExistByEmailError] = await (await inquiryEmailExistByEmail)(
+          username,
         )
-      }
 
-      this.emailService.sendEmail({
-        to: email,
-        subject: 'เปลี่ยนรหัสผ่านใหม่บน Happy Shopping Express',
-        templateName: 'forgot-password',
-        context: { username: member.username },
-      })
+        if (inquiryEmailExistByEmailError !== '') {
+          return response(
+            undefined,
+            UnableInquiryEmailExistByEmailError,
+            inquiryEmailExistByEmailError,
+          )
+        }
+
+        this.emailService.sendEmail({
+          to: username,
+          subject: 'เปลี่ยนรหัสผ่านใหม่บน Happy Shopping Express',
+          templateName: 'forgot-password',
+          context: { username: member.username },
+        })
+
+      } else {
+        const [member, inquiryEmailExistByMobileError] = await (await inquiryEmailExistByMobile)(
+          body.username,
+        )
+
+        if (inquiryEmailExistByMobileError !== '') {
+          return response(
+            undefined,
+            UnableInquiryEmailExistByMobileError,
+            inquiryEmailExistByMobileError,
+          )
+        }
+      }
 
       this.logger.info(`Done forgotPasswordHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
