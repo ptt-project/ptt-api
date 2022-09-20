@@ -4,13 +4,12 @@ import { EntityManager } from 'typeorm'
 
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
-import { InquiryAddressOptionsFormDbFuncType, InquiryBankOptionsFormDbFuncType, InquiryBrandOptionsFormDbFuncType, InquiryPlatformCategoryOptionsFormDbFuncType, LanguageOptionType, OptionType } from './config.type'
+import { InquiryAddressOptionsFormDbFuncType, InquiryBankOptionsFormDbFuncType, InquiryBrandOptionsFormDbFuncType, InquiryPlatformCategoryOptionsFormDbFuncType, OptionType } from './config.type'
 import { UnableToGetAddressOptions, UnableToGetBankOptions, UnableToGetBrandOptions, UnableToGetPlatformCategoryOptions } from 'src/utils/response-code'
 import { Brand } from 'src/db/entities/Brand'
 import { PlatformCategory } from 'src/db/entities/PlatformCategory'
 import { Bank } from 'src/db/entities/Bank'
 import { AddressMaster } from 'src/db/entities/AddressMaster'
-import { getConfigOptionRequestDTO } from './dto/config.dto'
 @Injectable()
 export class AppConfigService {
   constructor(private readonly logger: PinoLogger) {
@@ -23,10 +22,8 @@ export class AppConfigService {
     inqueryBankOptions: Promise<InquiryBankOptionsFormDbFuncType>,
     inqueryAddressOptions: Promise<InquiryAddressOptionsFormDbFuncType>,
   ) {
-    return async (query: getConfigOptionRequestDTO) => {
+    return async () => {
       const start = dayjs()
-
-      const { lang = 'TH' } = query
       const [brand, getBrandOptionsError] = await (await inqueryBrandOptions)()
 
       if (getBrandOptionsError != '') {
@@ -47,7 +44,7 @@ export class AppConfigService {
         )
       }
 
-      const [bank, getBankOptionsError] = await (await inqueryBankOptions)(lang)
+      const [bank, getBankOptionsError] = await (await inqueryBankOptions)()
 
       if (getBankOptionsError != '') {
         return response(
@@ -116,7 +113,7 @@ export class AppConfigService {
   async InquiryBankOptionsFormDbFunc(
     etm: EntityManager,
   ): Promise<InquiryBankOptionsFormDbFuncType> {
-    return async (lang: LanguageOptionType): Promise<[OptionType[], string]> => {
+    return async (): Promise<[any[], string]> => {
       const start = dayjs()
 
       let banks: Bank[]
@@ -130,7 +127,8 @@ export class AppConfigService {
       this.logger.info(`Done InquiryBankOptionsFormDbFunc ${dayjs().diff(start)} ms`)
       return [ banks.map(bank => ({ 
         value: bank.bankCode,
-        label: lang == 'EN' ? bank.nameEn : bank.nameTh,
+        labelTh: bank.nameTh,
+        labelEn: bank.nameEn,
       })), '' ]
     }
   }
