@@ -183,7 +183,7 @@ export class OtpService {
     }
   }
 
-  async inquiryVerifyOtpFunc(
+  async InquiryVerifyOtpFunc(
     etm: EntityManager,
   ): Promise<InquiryVerifyOtpType> {
     return async (otpData: verifyOtpRequestDto) => {
