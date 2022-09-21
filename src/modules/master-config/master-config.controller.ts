@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common'
-import { ExchangeRateService } from './exchange-rate.service'
+import { MasterConfigService } from './service/master-config.service'
 import { IsNotEmpty, IsString } from 'class-validator'
 
 export class SendEmailExampleDto {
@@ -9,6 +9,6 @@ export class SendEmailExampleDto {
 }
 
 @Controller('v1/exchange-rates')
-export class ExchangeRateContoller {
-  constructor(private readonly exchagneRateService: ExchangeRateService) {}
+export class MasterConfigContoller {
+  constructor(private readonly masterConfigService: MasterConfigService) {}
 }

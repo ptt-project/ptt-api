@@ -1,11 +1,21 @@
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator'
 
-export class BuyHappyPointRequestDto {
+export class SellHappyPointRequestDto {
+  @IsString()
   @IsNotEmpty()
-  amount: number
+  transactionDate: string
 
   @IsNotEmpty()
   point: number
+
+  @IsNotEmpty()
+  totalAmount: number
+
+  @IsNotEmpty()
+  feeAmount: number
+
+  @IsNotEmpty()
+  amount: number
 
   @IsString()
   @IsNotEmpty()
@@ -23,17 +33,4 @@ export class BuyHappyPointRequestDto {
   @IsString()
   @IsNotEmpty()
   refCode: string
-}
-
-export class RequestSetRedisDto {
-  @IsNotEmpty()
-  key: string
-
-  @IsNotEmpty()
-  value: any
-}
-
-export class RequestGetRedisDto {
-  @IsNotEmpty()
-  key: string
 }

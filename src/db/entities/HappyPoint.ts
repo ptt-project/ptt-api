@@ -14,11 +14,22 @@ export class HappyPoint extends AppEntity {
     nullable: false,
     type: 'decimal',
     precision: 12,
-    scale: 2,
+    scale: 4,
     default: 0,
     transformer: transformerDecimalToNumber,
   })
   balance: number
+
+  @Column({
+    name: 'limtit_transfer',
+    nullable: false,
+    type: 'decimal',
+    precision: 12,
+    scale: 4,
+    default: 0,
+    transformer: transformerDecimalToNumber,
+  })
+  limitTransfer: number
 
   @ManyToOne(
     () => Member,

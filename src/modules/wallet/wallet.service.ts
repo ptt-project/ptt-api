@@ -11,7 +11,6 @@ import {
   UnableToInsertWithdrawReference,
   UnableToRequestDepositQrCode,
   UnableToRequestWithdraw,
-  UnableToUpdateReference,
 } from 'src/utils/response-code'
 
 import {
@@ -54,18 +53,18 @@ export class WalletService {
     this.logger.setContext(WalletService.name)
   }
 
-  RequestInteranlWalletTransactionService(
+  async RequestInteranlWalletTransactionService(
     insertTransaction: Promise<InsertTransactionToDbFuncType>,
     insertTransactionReference: Promise<InsertReferenceToDbFuncType>,
     update3rdPartyTransactionReference: Promise<UpdateReferenceToDbFuncType>,
     adjustWallet: Promise<AdjustWalletFuncType>,
-  ): RequestInteranlWalletTransactionServiceFuncType {
+  ): Promise<RequestInteranlWalletTransactionServiceFuncType> {
     return async (
       walletId: number,
       amount: number,
-      detail: string,
       type: TransactionType,
       thirdPtReferenceNo: string,
+      detail: string,
     ) => {
       const start = dayjs()
 

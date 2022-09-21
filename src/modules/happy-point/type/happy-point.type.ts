@@ -1,11 +1,11 @@
 import { HappyPoint } from 'src/db/entities/HappyPoint'
-import { HappyPointLookup } from 'src/db/entities/HappyPointLookup'
 import {
   HappyPointTransaction,
   HappyPointTransactionNote,
   HappyPointTransactionStatusType,
   HappyPointTransactionType,
 } from 'src/db/entities/HappyPointTransaction'
+import { Lookup } from './lookup.type'
 
 export type InsertHappyPointTypeBuyToDbType = (
   params: InsertHappyPointToDbParams,
@@ -40,18 +40,9 @@ export type UpdateDebitBalanceToDbType = (
   params: UpdateBalanceToDbParams,
 ) => Promise<[HappyPoint, string]>
 
-export type InsertLookupToDbParams = {
-  happyPointId: number
-  exchangeRate: number
-}
-
-export type InsertLookupToDbType = (
-  params: InsertLookupToDbParams,
-) => Promise<[HappyPointLookup, string]>
-
 export type LookupExchangeRageType = (
   refId: string,
-) => Promise<[number, string]>
+) => Promise<[Lookup, string]>
 
 export type ValidateCalculatePointByExchangeAndAmountType = (
   amount: number,
@@ -69,5 +60,42 @@ export type InquiryHappyPointFromUsernameType = (
 
 export type ValidateCalculatePointByTotalPointAndFeeType = (
   totalPoint: number,
+  fee: number,
+  point: number,
+) => Promise<string>
+
+export type ValidateCalculateAmountType = (
+  totoalAmount: number,
+  fee: number,
+  amount: number,
+) => Promise<string>
+
+export type ValidateCalculateFeeAmountType = (
+  totalAmount: number,
+  feeAmountRate: number,
+  feeAmount: number,
+) => Promise<string>
+
+export type ValidateCalculateFeePointType = (
+  totalPoint: number,
+  feePointRate: number,
+  feePoint: number,
+) => Promise<string>
+
+export type InquiryRefIdExistInTransactionType = (
+  refId: string,
+) => Promise<[number, string]>
+
+export type ValidateLimitTransferType = (
+  limiTransfer: number,
+  point: number,
+) => Promise<string>
+
+export type UpdateResetLimitTransferType = (
+  happyPointTransferPercentLimit: number,
+) => Promise<string>
+
+export type UpdateDebitLimitTransferToDbType = (
+  happyPoint: HappyPoint,
   point: number,
 ) => Promise<string>

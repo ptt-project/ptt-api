@@ -39,7 +39,7 @@ import {
 } from './auth.type'
 import { PinoLogger } from 'nestjs-pino'
 import { InsertWalletToDbFuncType } from '../wallet/wallet.type'
-import { InsertHappyPointToDbType } from '../happy-point/happy-point.type'
+import { InsertHappyPointToDbType } from '../happy-point/type/happy-point.type'
 
 @Injectable()
 export class AuthService {

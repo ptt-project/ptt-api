@@ -9,9 +9,9 @@ import { SelectQueryBuilder } from 'typeorm'
 export type RequestInteranlWalletTransactionServiceFuncType = (
   walletId: number,
   amount: number,
-  detail: string,
   type: TransactionType,
   thirdPtReferenceNo: string,
+  detail?: string,
 ) => Promise<[Wallet, string]>
 
 export type InqueryWalletTransactionFuncType = (

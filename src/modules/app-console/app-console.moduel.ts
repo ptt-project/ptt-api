@@ -9,7 +9,7 @@ import { CreateWalletConsoleService } from './create-wallet.service'
 import { ProductService } from '../product/product.service'
 import { EmailModule } from '../email/email.module'
 import { HappyPointModule } from '../happy-point/happy-point.module'
-import { HappyPointService } from '../happy-point/happy-point.service'
+import { HappyPointService } from '../happy-point/service/happy-point.service'
 
 @Module({
   imports: [

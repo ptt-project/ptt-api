@@ -15,9 +15,10 @@ import {
   InsertProductProfileToDbParams,
   InsertProductsToDbParams,
 } from '../product/product.type'
-import { description } from 'commander'
+
 import { Member } from 'src/db/entities/Member'
-import { HappyPointService } from '../happy-point/happy-point.service'
+import { HappyPointService } from '../happy-point/service/happy-point.service'
+import { MasterConfig, MasterConfigType } from 'src/db/entities/MasterConfig'
 
 @Console()
 export class MockDataConsoleService {
@@ -28,6 +29,37 @@ export class MockDataConsoleService {
     private readonly productService: ProductService,
     private readonly happyPointService: HappyPointService,
   ) {}
+
+  @Command({
+    command: 'create-master-config',
+    description: 'create master config for app',
+  })
+  async createMasterConfig() {
+    const connection: Connection = getConnection()
+    const etm: EntityManager = connection.createEntityManager()
+
+    const masterConfig = await etm.findOne(MasterConfig)
+
+    if (masterConfig) {
+      return
+    }
+
+    const masterConfigParams: MasterConfigType = {
+      happyPointBuyRate: 1,
+      happyPointSellRate: 1,
+      happyPointTransferRate: 1,
+      happyPointTransferPercentLimit: 50,
+      happyPointFeePercent: 10,
+      exchangeRate: 1,
+    }
+
+    const newMasterConfig = etm.create(MasterConfig, {
+      config: masterConfigParams,
+    })
+
+    await etm.save(newMasterConfig)
+    console.log('created master config', newMasterConfig.config)
+  }
 
   @Command({
     command: 'clear-data',

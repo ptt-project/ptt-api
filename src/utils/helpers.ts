@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt'
+import { Redis } from 'ioredis'
 
 export const randomStr = (length: number) => {
   let result = ''
@@ -46,4 +47,31 @@ export class ColumnNumericTransformer {
   from(data: string): number {
     return parseFloat(data)
   }
+}
+
+export const setCacheObjectToRedis = (
+  redis: Redis,
+  key: string,
+  data: any,
+  timeout?: number,
+) => {
+  redis.set(key, JSON.stringify(data), 'EX', timeout)
+}
+
+export const setCacheStringToRedis = (
+  redis: Redis,
+  key: string,
+  data: string,
+  timeout?: number,
+) => {
+  redis.set(key, data, 'EX', timeout)
+}
+
+export const getCacheObjectToRedis = async (redis: Redis, key: string) => {
+  const value = await redis.get(key)
+  return JSON.parse(JSON.parse(value))
+}
+
+export const getCacheStringToRedis = async (redis: Redis, key: string) => {
+  return await redis.get(key)
 }

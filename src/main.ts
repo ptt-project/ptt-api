@@ -15,6 +15,8 @@ import { NestExpressApplication } from '@nestjs/platform-express'
 import cookieParser from 'cookie-parser'
 import cookieSession from 'cookie-session'
 import { Logger } from 'nestjs-pino'
+import basicAuth from 'express-basic-auth'
+import { bullServerAdapter } from './task/bull-board.provider'
 
 const loggerDebug: LogLevel[] = ['debug', 'warn', 'error', 'log']
 const loggerProduction: LogLevel[] = ['warn', 'error', 'log']
@@ -103,6 +105,18 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }))
   app.use(urlencoded({ limit: '50mb', extended: true }))
   app.use(cookieParser())
+
+  bullServerAdapter.setBasePath('/bull-board')
+  app.use(
+    '/bull-board',
+    basicAuth({
+      users: {
+        admin: 'P@ssw0rd',
+      },
+      challenge: true,
+    }),
+    bullServerAdapter.getRouter(),
+  )
 
   await app.listen(3000)
 }

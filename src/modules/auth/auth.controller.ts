@@ -12,7 +12,7 @@ import { MobileService } from '../mobile/mobile.service'
 import dayjs from 'dayjs'
 import { WalletService } from '../wallet/wallet.service'
 import { ShopService } from '../seller/shop.service'
-import { HappyPointService } from '../happy-point/happy-point.service'
+import { HappyPointService } from '../happy-point/service/happy-point.service'
 
 @Controller('v1/auth')
 export class AuthController {
