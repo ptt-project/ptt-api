@@ -99,3 +99,8 @@ export type UpdateDebitLimitTransferToDbType = (
   happyPoint: HappyPoint,
   point: number,
 ) => Promise<string>
+
+export type UpdateCreditLimitTransferToDbType = (
+  happyPoint: HappyPoint,
+  point: number,
+) => Promise<string>

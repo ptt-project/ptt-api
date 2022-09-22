@@ -5,10 +5,6 @@ export class TransferHappyPointDto {
   @IsNotEmpty()
   toMemberUsername: string
 
-  @IsString()
-  @IsNotEmpty()
-  transactionDate: string
-
   @IsNotEmpty()
   totalPoint: number
 
@@ -21,11 +17,6 @@ export class TransferHappyPointDto {
   @IsString()
   @IsNotEmpty()
   refId: string
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(10)
-  mobile: string
 
   @IsString()
   @IsNotEmpty()

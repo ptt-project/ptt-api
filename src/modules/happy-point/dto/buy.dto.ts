@@ -13,11 +13,6 @@ export class BuyHappyPointRequestDto {
 
   @IsString()
   @IsNotEmpty()
-  @MaxLength(10)
-  mobile: string
-
-  @IsString()
-  @IsNotEmpty()
   otpCode: string
 
   @IsString()

@@ -1,7 +1,7 @@
 import { Controller, Post, Body } from '@nestjs/common'
 import { HappyPointService } from './service/happy-point.service'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
-import { Auth, ReqHappyPoint, ReqWallet } from '../auth/auth.decorator'
+import { Auth, ReqHappyPoint, ReqUser, ReqWallet } from '../auth/auth.decorator'
 import { BuyHappyPointRequestDto } from './dto/buy.dto'
 import { MasterConfigService } from '../master-config/service/master-config.service'
 import { LookupService } from './service/lookup.service'
@@ -12,6 +12,7 @@ import { WalletService } from '../wallet/wallet.service'
 import { Wallet } from 'src/db/entities/Wallet'
 import { SellHappyPointRequestDto } from './dto/sell.dto'
 import { RedisService } from 'nestjs-redis'
+import { Member } from 'src/db/entities/Member'
 
 @Auth()
 @Controller('v1/happy-points')
@@ -44,6 +45,7 @@ export class HappyPointContoller {
   async buyHappyPoitnController(
     @ReqWallet() wallet: Wallet,
     @ReqHappyPoint() happyPoint: HappyPoint,
+    @ReqUser() member: Member,
     @Body() body: BuyHappyPointRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -62,7 +64,7 @@ export class HappyPointContoller {
         this.walletService.AdjustWalletInDbFunc(etm),
       ),
       this.happyService.UpdateCreditBalanceMemberToDbFunc(etm),
-    )(wallet, happyPoint, body)
+    )(wallet, happyPoint, member, body)
   }
 
   @Post('sell')
@@ -70,6 +72,7 @@ export class HappyPointContoller {
   async sellHappyPoitnController(
     @ReqWallet() wallet: Wallet,
     @ReqHappyPoint() happyPoint: HappyPoint,
+    @ReqUser() member: Member,
     @Body() body: SellHappyPointRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -90,13 +93,14 @@ export class HappyPointContoller {
         this.walletService.AdjustWalletInDbFunc(etm),
       ),
       this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
-    )(wallet, happyPoint, body)
+    )(wallet, happyPoint, member, body)
   }
 
   @Post('transfer')
   @Transaction()
   async transferHappyPointController(
     @ReqHappyPoint() happyPoint: HappyPoint,
+    @ReqUser() member: Member,
     @Body() body: TransferHappyPointDto,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -114,6 +118,6 @@ export class HappyPointContoller {
       this.happyService.UpdateCreditBalanceMemberToDbFunc(etm),
       this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
       this.happyService.UpdateDebitLimitTransferToDbFunc(etm),
-    )(happyPoint, body)
+    )(happyPoint, member, body)
   }
 }

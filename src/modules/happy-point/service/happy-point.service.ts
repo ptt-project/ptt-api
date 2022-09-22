@@ -53,11 +53,12 @@ import {
   ValidateLimitTransferType,
   UpdateResetLimitTransferType,
   UpdateDebitLimitTransferToDbType,
+  UpdateCreditLimitTransferToDbType,
 } from '../type/happy-point.type'
 import { RedisService } from 'nestjs-redis'
 import { GetCacheLookupToRedisType } from '../type/lookup.type'
 import { InquiryMasterConfigType } from 'src/modules/master-config/type/master-config.type'
-import { async } from 'rxjs'
+import { Member } from 'src/db/entities/Member'
 
 @Injectable()
 export class HappyPointService {
@@ -80,6 +81,7 @@ export class HappyPointService {
     return async (
       wallet: Wallet,
       happyPoint: HappyPoint,
+      member: Member,
       body: BuyHappyPointRequestDto,
     ) => {
       const start = dayjs()
@@ -87,7 +89,7 @@ export class HappyPointService {
       const { amount, point, refId } = body
 
       const verifyOtpData: verifyOtpRequestDto = {
-        reference: body.mobile,
+        reference: member.mobile,
         refCode: body.refCode,
         otpCode: body.otpCode,
       }
@@ -131,12 +133,6 @@ export class HappyPointService {
       }
 
       const { happyPointBuyRate } = lookup
-
-      console.log('debug ==>', amount, happyPointBuyRate)
-      console.log('debug2 ==>', amount, Object.keys(lookup))
-      console.log('debug3 ==>', typeof lookup)
-
-      console.log('lookup', lookup)
       const iseErrorValidatePoint = await (await validatePoint)(
         amount,
         happyPointBuyRate,
@@ -216,11 +212,12 @@ export class HappyPointService {
     validateAmount: Promise<ValidateCalculateAmountType>,
     insertHappyPointTypeBuyToDb: Promise<InsertHappyPointTypeBuyToDbType>,
     updateWalletToDb: Promise<RequestInteranlWalletTransactionServiceFuncType>,
-    updateDebitBalanceMemberToDb: Promise<UpdateDebitBalanceToDbType>,
+    updateDebitBalanceMemberToDb: Promise<UpdateCreditBalanceToDbType>,
   ) {
     return async (
       wallet: Wallet,
       happyPoint: HappyPoint,
+      member: Member,
       body: SellHappyPointRequestDto,
     ) => {
       const start = dayjs()
@@ -228,7 +225,7 @@ export class HappyPointService {
       const { amount, point, refId, totalAmount, feeAmount } = body
 
       const verifyOtpData: verifyOtpRequestDto = {
-        reference: body.mobile,
+        reference: member.mobile,
         refCode: body.refCode,
         otpCode: body.otpCode,
       }
@@ -286,7 +283,7 @@ export class HappyPointService {
       }
 
       const iseErrorValidatePoint = await (await validatePoint)(
-        amount,
+        totalAmount,
         happyPointSellRate,
         point,
       )
@@ -377,13 +374,17 @@ export class HappyPointService {
     updateDebitBalanceMemberToDb: Promise<UpdateDebitBalanceToDbType>,
     updateDebitLimitTransferToDb: Promise<UpdateDebitLimitTransferToDbType>,
   ) {
-    return async (happyPoint: HappyPoint, body: TransferHappyPointDto) => {
+    return async (
+      happyPoint: HappyPoint,
+      member: Member,
+      body: TransferHappyPointDto,
+    ) => {
       const start = dayjs()
       const { id: happyPointId } = happyPoint
       const { point, refId, toMemberUsername, totalPoint, feePoint } = body
 
       const verifyOtpData: verifyOtpRequestDto = {
-        reference: body.mobile,
+        reference: member.mobile,
         refCode: body.refCode,
         otpCode: body.otpCode,
       }
@@ -519,7 +520,7 @@ export class HappyPointService {
         point,
         feePoint,
         totalPoint,
-        exchangeRate: undefined,
+        exchangeRate: happyPointTransferRate,
         fromHappyPointId: toHappyPoint.id,
         toHappyPointId: happyPointId,
         type: 'TRANSFER',
@@ -819,6 +820,20 @@ export class HappyPointService {
     return async (happyPoint: HappyPoint, point: number): Promise<string> => {
       try {
         happyPoint.limitTransfer -= point
+        await etm.save(happyPoint)
+      } catch (error) {
+        return error.message
+      }
+      return ''
+    }
+  }
+
+  async UpdateCreditLimitTransferToDbFunc(
+    etm: EntityManager,
+  ): Promise<UpdateCreditLimitTransferToDbType> {
+    return async (happyPoint: HappyPoint, point: number): Promise<string> => {
+      try {
+        happyPoint.limitTransfer += point
         await etm.save(happyPoint)
       } catch (error) {
         return error.message
