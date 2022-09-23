@@ -7,11 +7,12 @@ import {
   Patch,
   Post,
   Put,
+  Query,
 } from '@nestjs/common'
 import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqShop, Seller } from '../auth/auth.decorator'
-import { CreateProductProfileRequestDto, UpdateProductProfileRequestDto } from './dto/product.dto'
+import { CreateProductProfileRequestDto, GetProductListDto, UpdateProductProfileRequestDto } from './dto/product.dto'
 import { ProductService } from './product.service'
 
 @Auth()
@@ -36,6 +37,18 @@ export class ProductController {
       this.productService.InsertProductsToDbFunc(etm),
       this.productService.InquiryProductProfileFromDbFunc(etm),
     )(shop, body)
+  }
+
+  @Get('products')
+  @Transaction()
+  async getProductList(
+    @ReqShop() shop: Shop,
+    @Query() query: GetProductListDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.productService.GetProductByShopIdHandler(
+      this.productService.InquiryProductListByShopIdFunc(etm),
+    )(shop, query)
   }
 
   @Get('products-profile/:productProfileId')

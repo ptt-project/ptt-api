@@ -38,6 +38,16 @@ export class Product extends AppEntity {
   @Column({ name: 'stock', nullable: true })
   stock: number
 
+  @Column({
+    name: 'amout_total',
+    type: 'decimal',
+    default: 0,
+    precision: 12,
+    scale: 4,
+    nullable: false,
+  })
+  amoutTotal: number
+
   @ManyToOne(
     () => ProductProfile,
     productProfile => productProfile.products,
