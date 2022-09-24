@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
-import { EntityManager, In, Repository, SelectQueryBuilder } from 'typeorm'
+import { EntityManager, In, SelectQueryBuilder } from 'typeorm'
 
 import {
   UnableToCreateProductProfile,
@@ -1273,7 +1273,7 @@ export class ProductService {
             })
           }
           if (query.status != undefined) {
-            productProfiles.andWhere('productProfiles.status = :approval', {
+            productProfiles.andWhere('productProfiles.status = :status', {
               status: query.status,
             })
           }
