@@ -39,14 +39,14 @@ export class Product extends AppEntity {
   stock: number
 
   @Column({
-    name: 'amout_total',
+    name: 'sold',
     type: 'decimal',
     default: 0,
     precision: 12,
     scale: 4,
     nullable: false,
   })
-  amoutTotal: number
+  sold: number
 
   @ManyToOne(
     () => ProductProfile,

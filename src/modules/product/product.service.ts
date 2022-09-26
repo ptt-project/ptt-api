@@ -1267,22 +1267,22 @@ export class ProductService {
           .andWhere('productProfiles.shopId = :shopId', {
             shopId,
           })
-          if (query.approval != undefined) {
+          if (query.approval) {
             productProfiles.andWhere('productProfiles.approval = :approval', {
               approval: query.approval,
             })
           }
-          if (query.status != undefined) {
+          if (query.status) {
             productProfiles.andWhere('productProfiles.status = :status', {
               status: query.status,
             })
           }
-          if (query.platformCategoryId != undefined) {
+          if (query.platformCategoryId) {
             productProfiles.andWhere('productProfiles.platformCategoryId = :platformCategoryId', {
               platformCategoryId: query.platformCategoryId,
             })
           }
-          if (query.groupSearch != undefined) {
+          if (query.groupSearch) {
             if(query.groupSearch == 'product name') {
               productProfiles.andWhere('productProfiles.name ILIKE :keyword', {
                 keyword: '%'+query.keyword+'%',
