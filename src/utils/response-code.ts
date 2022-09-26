@@ -11,7 +11,9 @@ export const UnableRegisterEmailAlreayExist = _authError + 1
 export const UnableRegisterUsernameAlreayExist = _authError + 2
 export const UnableInsertMemberToDbError = _authError + 3
 export const UnableInquiryEmailExistByEmailError= _authError + 4
-export const UnableInquiryEmailExistByMobileError= _authError + 5
+export const UnableInquiryMemberExistByMobileError= _authError + 5
+export const UnableUpateLoginTokenToDb= _authError + 6
+export const UnableInquiryMemberExistByLoginTokenAndEmailError= _authError + 7
 
 // login
 export const UnableLoginUsernameDoNotAlreayExist = _authError + 4

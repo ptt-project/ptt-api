@@ -18,6 +18,16 @@ export type InquiryEmailExistByEmailType = (
   email: string
 ) => Promise<[Member, string]>
 
-export type InquiryEmailExistByMobileType = (
+export type InquiryMemberExistByMobileType = (
   mobile: string
 ) => Promise<[Member, string]>
+
+export type InquiryMemberExistByLoginTokenAndEmailType = (
+  loginToken: string,
+  email: string,
+) => Promise<[Member, string]>
+
+export type UpdateLoginTokenToMemberType = (
+  member: Member,
+  loginToken: string,
+) => Promise<string>

@@ -1,20 +1,20 @@
 import { IsNotEmpty, IsOptional, IsString, MaxLength } from "class-validator"
 
-export class ResetPasswordRequestDto {
+export class ResetPasswordMobileRequestDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(50)
-  username: string
+  @MaxLength(10)
+  mobile: string
 
   @IsString()
   @IsNotEmpty()
   password: string
 
-  @IsOptional()
   @IsString()
+  @IsNotEmpty()
   otpCode: string
 
-  @IsOptional()
   @IsString()
+  @IsNotEmpty()
   refCode: string
 }

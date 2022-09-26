@@ -10,14 +10,17 @@ import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
 import {
   UnableUpatePasswordToDb,
   OldPassowrdInvalid,
-  UnableInquiryEmailExistByMobileError,
-  InvalidJSONString,
   UnableInquiryEmailExistByEmailError,
+  UnableUpateLoginTokenToDb,
+  UnableInquiryMemberExistByMobileError,
+  UnableInquiryMemberExistByLoginTokenAndEmailError,
 } from 'src/utils/response-code'
 import {
   InquiryEmailExistByEmailType,
-  InquiryEmailExistByMobileType,
   InquiryMemberByIdType,
+  InquiryMemberExistByLoginTokenAndEmailType,
+  InquiryMemberExistByMobileType,
+  UpdateLoginTokenToMemberType,
   UpdatePasswordToMemberType,
   VadlidateOldPasswordType,
 } from './password.type'
@@ -27,8 +30,10 @@ import { EntityManager } from 'typeorm'
 import { verifyOtpRequestDto } from '../otp/dto/otp.dto'
 import { InquiryVerifyOtpType } from '../otp/otp.type'
 import { EmailService } from '../email/email.service'
-import { ForgotPasswordRequestDto } from './dto/forgotPassword.dto'
-import { ResetPasswordRequestDto } from './dto/resetPassword.dto'
+import { ForgotPasswordRequestDto } from './dto/forgotPasswordEmail.dto'
+import { ResetPasswordEmailRequestDto } from './dto/resetPasswordEmail.dto'
+import { GenAccessTokenType } from '../auth/auth.type'
+import { ResetPasswordMobileRequestDto } from './dto/resetPasswordMobile.dto'
 
 @Injectable()
 export class PasswordService {
@@ -135,18 +140,17 @@ export class PasswordService {
 
   ForgotPasswordHandler(
     inquiryEmailExistByEmail: Promise<InquiryEmailExistByEmailType>,
-    inquiryEmailExistByMobile: Promise<InquiryEmailExistByMobileType>,
+    updateLoginTokenToMember: Promise<UpdateLoginTokenToMemberType>,
+    genAccessToken: Promise<GenAccessTokenType>,
   ) {
     return async (body: ForgotPasswordRequestDto) => {
       const start = dayjs()
 
-      const validEmailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-
-      if ((body.username).match(validEmailRegex)) {
-        const { username } = body
+      let accessToken
+        const { email } = body
 
         const [member, inquiryEmailExistByEmailError] = await (await inquiryEmailExistByEmail)(
-          username,
+          email,
         )
 
         if (inquiryEmailExistByEmailError !== '') {
@@ -157,26 +161,25 @@ export class PasswordService {
           )
         }
 
-        this.emailService.sendEmail({
-          to: username,
-          subject: 'เปลี่ยนรหัสผ่านใหม่บน Happy Shopping Express',
-          templateName: 'forgot-password',
-          context: { username: member.username },
-        })
+        accessToken = await (await genAccessToken)(member)
 
-      } else {
-        const [member, inquiryEmailExistByMobileError] = await (await inquiryEmailExistByMobile)(
-          body.username,
+        const updateLoginTokenToMemberError = await (await updateLoginTokenToMember)(
+          member,
+          accessToken,
         )
-
-        if (inquiryEmailExistByMobileError !== '') {
-          return response(
-            undefined,
-            UnableInquiryEmailExistByMobileError,
-            inquiryEmailExistByMobileError,
+        if (updateLoginTokenToMemberError !== '') {
+          return internalSeverError(
+            UnableUpateLoginTokenToDb,
+            updateLoginTokenToMemberError,
           )
         }
-      }
+
+        this.emailService.sendEmail({
+          to: member.email,
+          subject: 'เปลี่ยนรหัสผ่านใหม่บน Happy Shopping Express',
+          templateName: 'forgot-password',
+          context: { username: member.username, accessToken, email: member.email },
+        })
 
       this.logger.info(`Done forgotPasswordHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
@@ -209,67 +212,123 @@ export class PasswordService {
     }
   }
 
-  ResetPasswordHandler(
-    inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
-    inquiryEmailExistByEmail: Promise<InquiryEmailExistByEmailType>,
-    inquiryEmailExistByMobile: Promise<InquiryEmailExistByMobileType>,
+  async UpdateLoginTokenToMemberFunc(): Promise<UpdateLoginTokenToMemberType> {
+    return async (member: Member, loginToken: string): Promise<string> => {
+      const start = dayjs()
+      try {
+        member.loginToken = loginToken
+        await member.save()
+      } catch (error) {
+        return error
+      }
+
+      this.logger.info(
+        `Done updateLoginTokenToMemberFunc ${dayjs().diff(start)} ms`,
+      )
+      return ''
+    }
+  }
+
+  ResetPasswordEmailHandler(
+    inquiryMemberExistByLoginTokenAndEmail: Promise<InquiryMemberExistByLoginTokenAndEmailType>,
+    updateLoginTokenToMember: Promise<UpdateLoginTokenToMemberType>,
     updatePasswordToMember: Promise<UpdatePasswordToMemberType>,
   ) {
-    return async (body: ResetPasswordRequestDto) => {
+    return async (body: ResetPasswordEmailRequestDto) => {
       const start = dayjs()
 
-      let memberResult: Member
+        const { loginToken, email } = body
 
-      const validEmailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-
-      if ((body.username).match(validEmailRegex)) {
-        const { username } = body
-
-        const [member, inquiryEmailExistByEmailError] = await (await inquiryEmailExistByEmail)(
-          username,
+        const [member, inquiryMemberExistByLoginTokenAndEmailError] = await (await inquiryMemberExistByLoginTokenAndEmail)(
+          loginToken,
+          email
         )
 
-        if (inquiryEmailExistByEmailError !== '') {
+        if (inquiryMemberExistByLoginTokenAndEmailError !== '') {
           return response(
             undefined,
-            UnableInquiryEmailExistByEmailError,
-            inquiryEmailExistByEmailError,
+            UnableInquiryMemberExistByLoginTokenAndEmailError,
+            inquiryMemberExistByLoginTokenAndEmailError,
           )
         }
 
-        memberResult = member
+      const updatePasswordToMemberError = await (await updatePasswordToMember)(
+        member,
+        body.password,
+      )
+      if (updatePasswordToMemberError !== '') {
+        return internalSeverError(
+          UnableUpatePasswordToDb,
+          updatePasswordToMemberError,
+        )
+      }
 
-      } else {
-        if(body.otpCode == undefined){
-          return response(
-            undefined,
-            InvalidJSONString,
-            'otpCode should not be empty',
-          )
+      const updateLoginTokenToMemberError = await (await updateLoginTokenToMember)(
+        member,
+        null,
+      )
+      if (updateLoginTokenToMemberError !== '') {
+        return internalSeverError(
+          UnableUpateLoginTokenToDb,
+          updateLoginTokenToMemberError,
+        )
+      }
+
+      this.logger.info(`Done forgotPasswordHandler ${dayjs().diff(start)} ms`)
+      return response(undefined)
+    }
+  }
+
+  async InquiryMemberExistByLoginTokenAndEmailFunc(
+    etm: EntityManager,
+  ): Promise<InquiryMemberExistByLoginTokenAndEmailType> {
+    return async (loginToken: string, email: string): Promise<[Member, string]> => {
+      const start = dayjs()
+      let member: Member
+      try {
+        member = await etm.findOne(Member, {
+          where: [
+            {
+              loginToken,
+              email,
+            },
+          ],
+        })
+        if (!member) {
+          return [member, 'can not reset password']
         }
+      } catch (error) {
+        return [member, error]
+      }
 
-        if(body.refCode == undefined){
-          return response(
-            undefined,
-            InvalidJSONString,
-            'refCode should not be empty',
-          )
-        }
+      this.logger.info(`Done InquiryEmailExistByLoginTokenFunc ${dayjs().diff(start)} ms`)
+      return [member, '']
+    }
+  }
 
-        const [member, inquiryEmailExistByMobileError] = await (await inquiryEmailExistByMobile)(
-          body.username,
+  ResetPasswordMobileHandler(
+    inquiryMemberExistByMobile: Promise<InquiryMemberExistByMobileType>,
+    inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
+    updatePasswordToMember: Promise<UpdatePasswordToMemberType>,
+  ) {
+    return async (body: ResetPasswordMobileRequestDto) => {
+      const start = dayjs()
+
+
+        const [member, inquiryMemberExistByMobileError] = await (await inquiryMemberExistByMobile)(
+          body.mobile,
         )
 
-        if (inquiryEmailExistByMobileError !== '') {
+        if (inquiryMemberExistByMobileError !== '') {
           return response(
             undefined,
-            UnableInquiryEmailExistByMobileError,
-            inquiryEmailExistByMobileError,
+            UnableInquiryMemberExistByMobileError,
+            inquiryMemberExistByMobileError,
           )
         }
 
         const verifyOtpData: verifyOtpRequestDto = {
-          reference: body.username,
+          reference: body.mobile,
           refCode: body.refCode,
           otpCode: body.otpCode,
         }
@@ -282,11 +341,8 @@ export class PasswordService {
           return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
         }
 
-        memberResult = member
-      }
-
       const updatePasswordToMemberError = await (await updatePasswordToMember)(
-        memberResult,
+        member,
         body.password,
       )
       if (updatePasswordToMemberError !== '') {
@@ -296,17 +352,14 @@ export class PasswordService {
         )
       }
 
-
-
-
-      this.logger.info(`Done forgotPasswordHandler ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done ResetPasswordMobileHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
 
   async InquiryMemberExistByMobileFunc(
     etm: EntityManager,
-  ): Promise<InquiryEmailExistByMobileType> {
+  ): Promise<InquiryMemberExistByMobileType> {
     return async (mobile: string): Promise<[Member, string]> => {
       const start = dayjs()
       let member: Member

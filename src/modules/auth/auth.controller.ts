@@ -12,8 +12,9 @@ import { MobileService } from '../mobile/mobile.service'
 import dayjs from 'dayjs'
 import { ShopService } from '../seller/shop.service'
 import { PasswordService } from '../member/password.service'
-import { ForgotPasswordRequestDto } from '../member/dto/forgotPassword.dto'
-import { ResetPasswordRequestDto } from '../member/dto/resetPassword.dto'
+import { ForgotPasswordRequestDto } from '../member/dto/forgotPasswordEmail.dto'
+import { ResetPasswordEmailRequestDto } from '../member/dto/resetPasswordEmail.dto'
+import { ResetPasswordMobileRequestDto } from '../member/dto/resetPasswordMobile.dto'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -48,19 +49,32 @@ export class AuthController {
   ) {
     return this.passwordService.ForgotPasswordHandler(
       this.passwordService.InquiryMemberExistByEmailFunc(etm),
-      this.passwordService.InquiryMemberExistByMobileFunc(etm),
+      this.passwordService.UpdateLoginTokenToMemberFunc(),
+      this.authService.genAccessTokenFunc(),
     )(body)
   }
 
-  @Post('reset-password')
+  @Post('reset-password/email')
   @Transaction()
-  async resetPassword(
-    @Body() body: ResetPasswordRequestDto,
+  async resetPasswordEmail(
+    @Body() body: ResetPasswordEmailRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return this.passwordService.ResetPasswordHandler(
+    return this.passwordService.ResetPasswordEmailHandler(
+      this.passwordService.InquiryMemberExistByLoginTokenAndEmailFunc(etm),
+      this.passwordService.UpdateLoginTokenToMemberFunc(),
+      this.passwordService.updatePasswordToMemberFunc(),
+    )(body)
+  }
+
+  @Post('reset-password/mobile')
+  @Transaction()
+  async resetPasswordMobile(
+    @Body() body: ResetPasswordMobileRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return this.passwordService.ResetPasswordMobileHandler(
       this.otpService.inquiryVerifyOtpFunc(etm),
-      this.passwordService.InquiryMemberExistByEmailFunc(etm),
       this.passwordService.InquiryMemberExistByMobileFunc(etm),
       this.passwordService.updatePasswordToMemberFunc(),
     )(body)
