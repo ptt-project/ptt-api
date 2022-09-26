@@ -13,3 +13,7 @@ export type UpdateProfileToMemberType = (
   memberId: number,
   params: UpdateProfileToDbParams,
 ) => Promise<string>
+
+export type InquiryUserExistByMemberIdType = (
+  id: number,
+) => Promise<[Member, string]>
