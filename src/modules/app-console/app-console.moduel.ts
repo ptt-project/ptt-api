@@ -8,6 +8,7 @@ import { UnitTestConsoleService } from './service/unit-test.service'
 import { CreateWalletConsoleService } from './service/create-wallet.service'
 import { ProductService } from '../product/service/product.service'
 import { EmailModule } from '../email/email.module'
+import { InitialAppConsoleService } from './initial-app.service'
 
 @Module({
   imports: [AuthModule, SellerModule, WalletModule, EmailModule],
@@ -17,6 +18,7 @@ import { EmailModule } from '../email/email.module'
     UnitTestConsoleService,
     CreateWalletConsoleService,
     ProductService,
+    InitialAppConsoleService,
   ],
 })
 export class AppConsoleModule {}
