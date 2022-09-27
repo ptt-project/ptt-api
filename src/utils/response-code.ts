@@ -63,6 +63,7 @@ export const UnableInsertShopToDb = _sellerError + 2
 export const UnableUpdateShopToDb = _sellerError + 3
 export const UnableToGetShopInfo = _sellerError + 4
 export const UnableToUpdateShopInfo = _sellerError + 5
+export const UnableCreatePartitionOfProductProfile = _sellerError + 6
 
 // review module
 const _reviewError = 107000

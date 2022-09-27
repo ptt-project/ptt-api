@@ -8,7 +8,7 @@ import { AuthService } from './auth.service'
 import { LoginService } from './login.service'
 import { JwtStrategy } from './jwt.strategy'
 import { MobileService } from '../mobile/mobile.service'
-import { ShopService } from '../seller/shop.service'
+import { ShopService } from '../seller/service/shop.service'
 
 @Module({
   imports: [

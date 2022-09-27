@@ -5,14 +5,14 @@ import { EntityManager, UpdateResult } from 'typeorm'
 
 import {
   UnableToGetShopInfo,
-  UnableToUpdateShopInfo
+  UnableToUpdateShopInfo,
 } from 'src/utils/response-code'
 
 import {
   GetShopInfoType,
   UpdateShopInfoToDbParams,
   UpdateShopTobDbByIdType,
-} from './seller.type'
+} from '../type/seller.type'
 import { Shop } from 'src/db/entities/Shop'
 
 import { PinoLogger } from 'nestjs-pino'
@@ -22,26 +22,16 @@ export class ShopService {
   constructor(private readonly logger: PinoLogger) {
     this.logger.setContext(ShopService.name)
   }
-  
-  getShopInfoHandler(
-    getShopInfo: Promise<
-      GetShopInfoType
-    >,
-  ) {
+
+  getShopInfoHandler(getShopInfo: Promise<GetShopInfoType>) {
     return async (member: Member) => {
       const start = dayjs()
       const { id: memberId } = member
 
-      const [shop, getShopInfoError] = await (await getShopInfo)(
-        memberId,
-      )
+      const [shop, getShopInfoError] = await (await getShopInfo)(memberId)
 
       if (getShopInfoError != '') {
-        return response(
-          undefined,
-          UnableToGetShopInfo,
-          getShopInfoError,
-        )
+        return response(undefined, UnableToGetShopInfo, getShopInfoError)
       }
 
       this.logger.info(`Done getShopInfoHandler ${dayjs().diff(start)} ms`)
@@ -49,26 +39,15 @@ export class ShopService {
     }
   }
 
-  updateShopInfoHandler(
-    updateShopInfo: Promise<
-      UpdateShopTobDbByIdType
-    >,
-  ) {
+  updateShopInfoHandler(updateShopInfo: Promise<UpdateShopTobDbByIdType>) {
     return async (member: Member, params: UpdateShopInfoToDbParams) => {
       const start = dayjs()
       const { id: memberId } = member
 
-      const updateShopInfoError = await (await updateShopInfo)(
-        memberId,
-        params,
-      )
+      const updateShopInfoError = await (await updateShopInfo)(memberId, params)
 
       if (updateShopInfoError != '') {
-        return response(
-          undefined,
-          UnableToUpdateShopInfo,
-          updateShopInfoError,
-        )
+        return response(undefined, UnableToUpdateShopInfo, updateShopInfoError)
       }
 
       this.logger.info(`Done updateShopInfoHandler ${dayjs().diff(start)} ms`)
@@ -83,7 +62,10 @@ export class ShopService {
       const start = dayjs()
       let shop: Shop
       try {
-        shop = await etm.findOne(Shop, { withDeleted: false, where: { memberId } })
+        shop = await etm.findOne(Shop, {
+          withDeleted: false,
+          where: { memberId },
+        })
         if (!shop) {
           return [shop, 'Unable to get shop for this user']
         }
@@ -91,7 +73,9 @@ export class ShopService {
         return [shop, error]
       }
 
-      this.logger.info(`Done InquiryShopByMemberIdFunc ${dayjs().diff(start)} ms`)
+      this.logger.info(
+        `Done InquiryShopByMemberIdFunc ${dayjs().diff(start)} ms`,
+      )
       return [shop, '']
     }
   }
@@ -99,10 +83,17 @@ export class ShopService {
   async InquiryUpdateShopByMemberIdFunc(
     etm: EntityManager,
   ): Promise<UpdateShopTobDbByIdType> {
-    return async (memberId: number, params: UpdateShopInfoToDbParams): Promise<string> => {
+    return async (
+      memberId: number,
+      params: UpdateShopInfoToDbParams,
+    ): Promise<string> => {
       const start = dayjs()
       try {
-        const result: UpdateResult = await etm.update(Shop, {memberId}, { ...params })
+        const result: UpdateResult = await etm.update(
+          Shop,
+          { memberId },
+          { ...params },
+        )
         if (result.raw === 0) {
           return 'Unable to update shop info'
         }
@@ -110,7 +101,9 @@ export class ShopService {
         return error
       }
 
-      this.logger.info(`Done InquiryUpdateShopByMemberIdFunc ${dayjs().diff(start)} ms`)
+      this.logger.info(
+        `Done InquiryUpdateShopByMemberIdFunc ${dayjs().diff(start)} ms`,
+      )
       return ''
     }
   }

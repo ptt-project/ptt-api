@@ -19,7 +19,7 @@ import {
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 import { EntityManager } from 'typeorm'
-import { GetShopInfoType } from '../seller/seller.type'
+import { GetShopInfoType } from '../seller/type/seller.type'
 
 @Injectable()
 export class LoginService {
@@ -66,25 +66,19 @@ export class LoginService {
         mobile: member.mobile,
         email: member.email,
         username: member.username,
-        imageId: member.imageId
+        imageId: member.imageId,
       }
 
-      if(member.role == 'Seller'){
-        const [shop, getShopInfoError] = await (await inquiryShopByMemberIdFunc)(
-          member.id,
-        )
+      if (member.role == 'Seller') {
+        const [shop, getShopInfoError] = await (
+          await inquiryShopByMemberIdFunc
+        )(member.id)
 
         if (getShopInfoError != '') {
-          return response(
-            undefined,
-            UnableToGetShopInfo,
-            getShopInfoError,
-          )
+          return response(undefined, UnableToGetShopInfo, getShopInfoError)
         }
         result['approvelStatus'] = shop.approvalStatus
-
       }
-
 
       this.logger.info(`Done loginHandler ${dayjs().diff(start)} ms`)
       return response(result)

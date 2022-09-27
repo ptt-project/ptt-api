@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
 import { EntityManager } from 'typeorm'
-import { RegisterSellerRequestDto } from './dto/seller.dto'
+import { RegisterSellerRequestDto } from '../dto/seller.dto'
 
 import {
   InvalidSellerRegister,
+  UnableCreatePartitionOfProductProfile,
   UnableInsertShopToDb,
   UnableUpdateShopToDb,
 } from 'src/utils/response-code'
@@ -14,11 +15,12 @@ import {
   InsertShopToDbParams,
   ValidateSellerRegisterType,
   InsertShopToDbType,
-} from './seller.type'
+} from '../type/seller.type'
 import { Shop } from 'src/db/entities/Shop'
 
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
+import { CreateTablePartitionOfProductProfileToDbType } from '../type/register.type'
 
 @Injectable()
 export class RegisterService {
@@ -29,6 +31,7 @@ export class RegisterService {
   registerSellerHandler(
     validateSellerData: Promise<ValidateSellerRegisterType>,
     insertShopToDb: Promise<InsertShopToDbType>,
+    createTablePartitionOfProductProfileToDb: CreateTablePartitionOfProductProfileToDbType,
   ) {
     return async (member: Member, body: RegisterSellerRequestDto) => {
       const start = dayjs()
@@ -52,6 +55,17 @@ export class RegisterService {
 
       if (insertShopToDbError != '') {
         return response(undefined, UnableInsertShopToDb, insertShopToDbError)
+      }
+
+      const isErrorCreateTablePartitionOfProductProfileToDb = await createTablePartitionOfProductProfileToDb(
+        shop.id,
+      )
+      if (isErrorCreateTablePartitionOfProductProfileToDb != '') {
+        return response(
+          undefined,
+          UnableCreatePartitionOfProductProfile,
+          isErrorCreateTablePartitionOfProductProfileToDb,
+        )
       }
 
       this.logger.info(`Done registerSellerHandler ${dayjs().diff(start)} ms`)
@@ -140,7 +154,9 @@ export class RegisterService {
         }
         if (
           params.type === 'Mall' &&
-          (!params.corperateId || !params.corperateName || !params.mallApplicantRole)
+          (!params.corperateId ||
+            !params.corperateName ||
+            !params.mallApplicantRole)
         ) {
           return 'corperateId, corperateName and mallApplicantRole are required for Mall shop'
         }
@@ -187,6 +203,24 @@ export class RegisterService {
     }
   }
 
+  CreateTablePartitionOfProductProfileToDbFunc(
+    etm: EntityManager,
+  ): CreateTablePartitionOfProductProfileToDbType {
+    return async (id: number): Promise<string> => {
+      const tablePartiionName = `product_profile_shop_${id}`
+
+      try {
+        await etm.query(
+          `CREATE TABLE ${tablePartiionName} PARTITION OF product_profiles FOR VALUES IN (${id});`,
+        )
+      } catch (error) {
+        return error.message
+      }
+
+      return ''
+    }
+  }
+
   async resubmitShopToDbFunc(etm: EntityManager): Promise<InsertShopToDbType> {
     return async (params: InsertShopToDbParams): Promise<[Shop, string]> => {
       const start = dayjs()
@@ -217,10 +251,10 @@ export class RegisterService {
         shop.note = params.note
         shop.corperateId = params.corperateId
         shop.corperateName = params.corperateName
-        shop.mallApplicantRole = params.mallApplicantRole,
-        shop.mallOfflineShopDetail = params.mallOfflineShopDetail,
-        shop.mallShopDescription = params.mallShopDescription,
-        shop.approvalStatus = 'requested'
+        ;(shop.mallApplicantRole = params.mallApplicantRole),
+          (shop.mallOfflineShopDetail = params.mallOfflineShopDetail),
+          (shop.mallShopDescription = params.mallShopDescription),
+          (shop.approvalStatus = 'requested')
 
         await etm.save(shop)
       } catch (error) {
