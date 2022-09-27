@@ -63,6 +63,7 @@ export class MemberController {
   ) {
     return await this.memberService.updateProfileHandler(
       this.memberService.updateProfileToMemberFunc(etm),
+      this.memberService.InquiryUserExistByMemberIdFunc(etm),
     )(member, body)
   }
 }

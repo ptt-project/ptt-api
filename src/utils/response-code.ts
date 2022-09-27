@@ -28,6 +28,7 @@ const _memberError = 103000
 
 // member service
 export const UnableUpateProfileToDb = _memberError + 1
+export const UnableInquiryUserExistByMemberId = _memberError + 2
 
 // email service
 export const OldPassowrdInvalid = _memberError + 2

@@ -3,11 +3,12 @@ import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
 import { Member } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
-import { UnableUpateProfileToDb } from 'src/utils/response-code'
+import { UnableInquiryUserExistByMemberId, UnableUpateProfileToDb } from 'src/utils/response-code'
 import { EntityManager } from 'typeorm'
 import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
 import {
   getProfileType,
+  InquiryUserExistByMemberIdType,
   UpdateProfileToDbParams,
   UpdateProfileToMemberType,
 } from './member.type'
@@ -38,12 +39,14 @@ export class MemberService {
         birthday: member.birthday,
         gender: member.gender,
         email: member.email,
+        imageId: member.imageId,
       }
     }
   }
 
   updateProfileHandler(
     updateProfileToMember: Promise<UpdateProfileToMemberType>,
+    inquiryUserExistByMemberId: Promise<InquiryUserExistByMemberIdType>,
   ) {
     return async (member: Member, body: UpdateProfiledRequestDto) => {
       const start = dayjs()
@@ -62,8 +65,29 @@ export class MemberService {
         )
       }
 
+      const [memberResult, inquiryUserExistByMemberIdError] = await (await inquiryUserExistByMemberId)(
+        memberId,
+      )
+
+      if (inquiryUserExistByMemberIdError !== '') {
+        return response(
+          undefined,
+          UnableInquiryUserExistByMemberId,
+          inquiryUserExistByMemberIdError,
+        )
+      }
+
       this.logger.info(`Done UpdateProfileHandler ${dayjs().diff(start)} ms`)
-      return response(undefined)
+      return response({
+        username: memberResult.username,
+        firstName: memberResult.firstName,
+        lastName: memberResult.lastName,
+        mobile: memberResult.mobile,
+        birthday: memberResult.birthday,
+        gender: memberResult.gender,
+        email: memberResult.email,
+        imageId: memberResult.imageId,
+      })
     }
   }
 
@@ -85,6 +109,34 @@ export class MemberService {
         `Done UpdateProfileToMemberFunc ${dayjs().diff(start)} ms`,
       )
       return ''
+    }
+  }
+
+  async InquiryUserExistByMemberIdFunc(
+    etm: EntityManager,
+  ): Promise<InquiryUserExistByMemberIdType> {
+    return async (id: number): Promise<[Member, string]> => {
+      const start = dayjs()
+      let member: Member
+      try {
+        member = await etm.findOne(Member, {
+          where: [
+            {
+              id,
+            },
+          ],
+        })
+        if (!member) {
+          return [null, 'Username is not already used']
+        }
+      } catch (error) {
+        return [null, error]
+      }
+
+      this.logger.info(
+        `Done InquiryUserExistByMemberIdFunc ${dayjs().diff(start)} ms`,
+      )
+      return [member, '']
     }
   }
 }
