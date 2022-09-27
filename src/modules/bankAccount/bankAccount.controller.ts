@@ -11,10 +11,10 @@ import {
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
 
-import { BankAccountService } from './bankAccount.service'
+import { BankAccountService } from './service/bankAccount.service'
 import { Member } from 'src/db/entities/Member'
 import { CreateBankAccoutRequestDTO, DeleteBankAccoutRequestDTO, EditBankAccoutRequestDTO, GetBankAccoutRequestDTO } from './dto/BankAccount.dto'
-import { OtpService } from '../otp/otp.service'
+import { OtpService } from '../otp/service/otp.service'
 
 @Auth()
 @Controller('v1/bank-accounts')

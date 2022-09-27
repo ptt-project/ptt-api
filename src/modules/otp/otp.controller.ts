@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { sendOtpRequestDto, verifyOtpRequestDto } from './dto/otp.dto'
-import { OtpService } from './otp.service'
+import { OtpService } from './service/otp.service'
 
 @Controller('v1/otp')
 export class OtpController {

@@ -2,13 +2,13 @@ import { Body, Controller, Delete, Get, Patch, Post } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
-import { OtpService } from '../otp/otp.service'
+import { OtpService } from '../otp/service/otp.service'
 import {
   addMobileRequestDto,
   setMainMobileRequestDto,
   deleteMobileRequestDto,
 } from './dto/mobile.dto'
-import { MobileService } from './mobile.service'
+import { MobileService } from './service/mobile.service'
 
 @Controller('v1/members/mobiles')
 export class MobileController {

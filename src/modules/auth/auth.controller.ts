@@ -1,16 +1,16 @@
 import { Body, Controller, Post, Req } from '@nestjs/common'
-import { AuthService } from './auth.service'
+import { AuthService } from './service/auth.service'
 import {
   RegisterRequestDto,
   ValidateRegisterRequestDto,
 } from './dto/register.dto'
-import { LoginService } from './login.service'
+import { LoginService } from './service/login.service'
 import { LoginRequestDto } from './dto/login.dto'
-import { OtpService } from '../otp/otp.service'
+import { OtpService } from '../otp/service/otp.service'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
-import { MobileService } from '../mobile/mobile.service'
+import { MobileService } from '../mobile/service/mobile.service'
 import dayjs from 'dayjs'
-import { WalletService } from '../wallet/wallet.service'
+import { WalletService } from '../wallet/service/wallet.service'
 import { ShopService } from '../seller/service/shop.service'
 
 @Controller('v1/auth')

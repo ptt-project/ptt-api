@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
-import { EmailService } from './email.service'
+import { EmailService } from './service/email.service'
 
 import { MemberController } from './member.controller'
-import { MemberService } from './member.service'
-import { PasswordService } from './password.service'
+import { MemberService } from './service/member.service'
+import { PasswordService } from './service/password.service'
 
 @Module({
   controllers: [MemberController],

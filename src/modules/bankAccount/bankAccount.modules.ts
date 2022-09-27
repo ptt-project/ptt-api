@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common'
-import { OtpService } from '../otp/otp.service'
+import { OtpService } from '../otp/service/otp.service'
 
 import { BankAccountController } from './bankAccount.controller'
-import { BankAccountService } from './bankAccount.service'
+import { BankAccountService } from './service/bankAccount.service'
 
 @Module({
   controllers: [BankAccountController],
