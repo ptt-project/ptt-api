@@ -295,7 +295,7 @@ export class PasswordService {
           ],
         })
         if (!member) {
-          return [member, 'can not reset password']
+          return [member, 'Can not reset password']
         }
       } catch (error) {
         return [member, error]

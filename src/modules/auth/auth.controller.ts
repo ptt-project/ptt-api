@@ -74,8 +74,8 @@ export class AuthController {
     @TransactionManager() etm: EntityManager,
   ) {
     return this.passwordService.ResetPasswordMobileHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
       this.passwordService.InquiryMemberExistByMobileFunc(etm),
+      this.otpService.inquiryVerifyOtpFunc(etm),
       this.passwordService.updatePasswordToMemberFunc(),
     )(body)
   }
