@@ -28,6 +28,7 @@ const _memberError = 103000
 
 // member service
 export const UnableUpateProfileToDb = _memberError + 1
+export const UnableInquiryUserExistByMemberId = _memberError + 2
 
 // email service
 export const OldPassowrdInvalid = _memberError + 2
@@ -42,6 +43,7 @@ const _mobileError = 104000
 export const UnableToAddMobile = _mobileError + 1
 export const UnableToSetMainMobile = _mobileError + 2
 export const UnableToDeleteMobile = _mobileError + 3
+export const UnableToGetMobiles = _mobileError + 4
 
 // address module
 const _addressError = 105000
@@ -62,6 +64,7 @@ export const UnableInsertShopToDb = _sellerError + 2
 export const UnableUpdateShopToDb = _sellerError + 3
 export const UnableToGetShopInfo = _sellerError + 4
 export const UnableToUpdateShopInfo = _sellerError + 5
+export const UnableCreatePartitionOfProductProfile = _sellerError + 6
 
 // review module
 const _reviewError = 107000

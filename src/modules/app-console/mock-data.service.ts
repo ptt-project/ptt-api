@@ -2,15 +2,19 @@ import { Command, Console } from 'nestjs-console'
 import { Connection, EntityManager, getConnection } from 'typeorm'
 import { AuthService } from '../auth/auth.service'
 import { RegisterRequestDto } from '../auth/dto/register.dto'
-import { RegisterService } from '../seller/register.service'
-import { InsertShopToDbParams } from '../seller/seller.type'
+import { RegisterService } from '../seller/service/register.service'
+import { InsertShopToDbParams } from '../seller/type/seller.type'
 import { PlatformCategory } from 'src/db/entities/PlatformCategory'
 import { Brand } from 'src/db/entities/Brand'
 import { truncates } from 'src/utils/db'
 import { WalletService } from '../wallet/wallet.service'
 import { WalletTransaction } from 'src/db/entities/WalletTransaction'
 import { ProductService } from '../product/product.service'
-import { InsertProductOptionsToDbParams, InsertProductProfileToDbParams, InsertProductsToDbParams } from '../product/product.type'
+import {
+  InsertProductOptionsToDbParams,
+  InsertProductProfileToDbParams,
+  InsertProductsToDbParams,
+} from '../product/product.type'
 
 @Console()
 export class MockDataConsoleService {
@@ -20,6 +24,19 @@ export class MockDataConsoleService {
     private readonly walletService: WalletService,
     private readonly productService: ProductService,
   ) {}
+
+  @Command({
+    command: 'test-create-parition',
+    description: 'delete data from array',
+  })
+  async testCreatePartition() {
+    const connection: Connection = getConnection()
+    const etm: EntityManager = connection.createEntityManager()
+
+    const r = await etm.query(`
+      CREATE TABLE product_profile_shop_1 PARTITION OF product_profiles FOR VALUES IN (1);
+    `)
+  }
 
   @Command({
     command: 'clear-data',
@@ -184,7 +201,7 @@ export class MockDataConsoleService {
     const createProductProfileParams: InsertProductProfileToDbParams = {
       name: 'product profile01',
       detail: 'product profile details',
-      shopId: shop.id,
+      shopId: 1,
       platformCategoryId: platformCategory.id,
       brandId: brand.id,
       status: 'public',
@@ -198,57 +215,74 @@ export class MockDataConsoleService {
       await this.productService.InsertProductProfileToDbFunc(etm)
     )(createProductProfileParams)
     if (insertProductProfileToDbError != '') {
-      return console.log('create product profile error =>', insertProductProfileToDbError)
+      return console.log(
+        'create product profile error =>',
+        insertProductProfileToDbError,
+      )
     }
 
-    const createProductOptionsParams: InsertProductOptionsToDbParams[] = [{
-      name: 'color',
-      productProfileId: productProfile.id,
-      options: ['red', 'black'],
-    }, {
-      name: 'size',
-      productProfileId: productProfile.id,
-      options: ['small', 'large'],
-    }]
+    const createProductOptionsParams: InsertProductOptionsToDbParams[] = [
+      {
+        name: 'color',
+        productProfileId: productProfile.id,
+        options: ['red', 'black'],
+      },
+      {
+        name: 'size',
+        productProfileId: productProfile.id,
+        options: ['small', 'large'],
+      },
+    ]
 
     const [productOptons, insertProductOptionsToDbError] = await (
       await this.productService.InsertProductOptionsToDbFunc(etm)
     )(createProductOptionsParams)
     if (insertProductOptionsToDbError != '') {
-      return console.log('create product options error =>', insertProductOptionsToDbError)
+      return console.log(
+        'create product options error =>',
+        insertProductOptionsToDbError,
+      )
     }
 
-    const createProductsParams: InsertProductsToDbParams[] = [{
-      productProfileId: productProfile.id,
-      option1: 'red',
-      option2: 'small',
-      price: 100.0,
-      stock: 10,
-    }, {
-      productProfileId: productProfile.id,
-      option1: 'red',
-      option2: 'large',
-      price: 200.0,
-      stock: 10,
-    }, {
-      productProfileId: productProfile.id,
-      option1: 'black',
-      option2: 'small',
-      price: 100.0,
-      stock: 10,
-    }, {
-      productProfileId: productProfile.id,
-      option1: 'black',
-      option2: 'large',
-      price: 200.0,
-      stock: 10,
-    }]
+    const createProductsParams: InsertProductsToDbParams[] = [
+      {
+        productProfileId: productProfile.id,
+        option1: 'red',
+        option2: 'small',
+        price: 100.0,
+        stock: 10,
+      },
+      {
+        productProfileId: productProfile.id,
+        option1: 'red',
+        option2: 'large',
+        price: 200.0,
+        stock: 10,
+      },
+      {
+        productProfileId: productProfile.id,
+        option1: 'black',
+        option2: 'small',
+        price: 100.0,
+        stock: 10,
+      },
+      {
+        productProfileId: productProfile.id,
+        option1: 'black',
+        option2: 'large',
+        price: 200.0,
+        stock: 10,
+      },
+    ]
 
     const [products, insertProductsToDbError] = await (
       await this.productService.InsertProductsToDbFunc(etm)
     )(createProductsParams)
     if (insertProductsToDbError != '') {
-      return console.log('create product options error =>', insertProductsToDbError)
+      return console.log(
+        'create product options error =>',
+        insertProductsToDbError,
+      )
     }
 
     console.log('user', member)

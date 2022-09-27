@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Patch, Post } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
@@ -16,6 +16,18 @@ export class MobileController {
     private readonly mobileService: MobileService,
     private readonly otpService: OtpService,
   ) {}
+
+  @Auth()
+  @Get('')
+  @Transaction()
+  async getMobiles(
+    @ReqUser() member: Member,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.mobileService.GetMobilesHandler(
+      this.mobileService.InqueryMobilesFunc(etm),
+    )(member)
+  }
 
   @Auth()
   @Post('add')
@@ -47,7 +59,7 @@ export class MobileController {
   }
 
   @Auth()
-  @Delete('delete')
+  @Patch('delete')
   @Transaction()
   async deleteMobile(
     @ReqUser() member: Member,

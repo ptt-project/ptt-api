@@ -53,6 +53,7 @@ export class MemberController {
     )(member, body, manager)
   }
 
+  @Auth()
   @Put('profile')
   @Transaction()
   async updateProfile(
@@ -62,6 +63,7 @@ export class MemberController {
   ) {
     return await this.memberService.updateProfileHandler(
       this.memberService.updateProfileToMemberFunc(etm),
+      this.memberService.InquiryUserExistByMemberIdFunc(etm),
     )(member, body)
   }
 }
