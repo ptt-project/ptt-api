@@ -5,13 +5,13 @@ import { Member } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
 import { UnableInquiryUserExistByMemberId, UnableUpateProfileToDb } from 'src/utils/response-code'
 import { EntityManager } from 'typeorm'
-import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
+import { UpdateProfiledRequestDto } from '../dto/updateProfile.dto'
 import {
   getProfileType,
   InquiryUserExistByMemberIdType,
   UpdateProfileToDbParams,
   UpdateProfileToMemberType,
-} from './member.type'
+} from '../type/member.type'
 
 @Injectable()
 export class MemberService {

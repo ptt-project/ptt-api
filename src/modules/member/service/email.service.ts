@@ -11,7 +11,7 @@ import { checkPassword } from 'src/utils/helpers'
 
 import { internalSeverError } from 'src/utils/response-error'
 import { response } from 'src/utils/response'
-import { EditEmailRequestDto } from './dto/editEmail.dto'
+import { EditEmailRequestDto } from '../dto/editEmail.dto'
 import { EntityManager } from 'typeorm'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'

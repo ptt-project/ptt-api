@@ -49,7 +49,7 @@ export class GetProductListDto {
   status: ProductProfileStatusType
 
   @IsOptional()
-  platformCategoryId?: number
+  categoryId?: number
 
 
   @IsOptional() 

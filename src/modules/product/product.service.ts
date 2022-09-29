@@ -1277,9 +1277,9 @@ export class ProductService {
               status: query.status,
             })
           }
-          if (query.platformCategoryId) {
-            productProfiles.andWhere('productProfiles.platformCategoryId = :platformCategoryId', {
-              platformCategoryId: query.platformCategoryId,
+          if (query.categoryId) {
+            productProfiles.andWhere('productProfiles.id = (select category_product_profiles.product_profile_id from category_product_profiles where productProfiles.id = category_product_profiles.product_profile_id and category_id = :categoryId)', {
+              categoryId: query.categoryId,
             })
           }
           if (query.groupSearch) {
