@@ -70,7 +70,7 @@ export class ShopService {
           return [shop, 'Unable to get shop for this user']
         }
       } catch (error) {
-        return [shop, error]
+        return [shop, error.message]
       }
 
       this.logger.info(
@@ -98,7 +98,7 @@ export class ShopService {
           return 'Unable to update shop info'
         }
       } catch (error) {
-        return error
+        return error.message
       }
 
       this.logger.info(

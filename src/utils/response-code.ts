@@ -109,3 +109,30 @@ export const UnableUpdateProduct = _productError + 17
 
 const _image = 110000
 export const UnableResizeImage = _image + 1
+
+const _walletError = 114000
+export const UnableToInsertWallet = _walletError + 1
+export const UnableToGetWalletTransaction = _walletError + 2
+export const UnableToInsertTransaction = _walletError + 3
+export const UnableToInsertDepositReference = _walletError + 4
+export const UnableToRequestDepositQrCode = _walletError + 5
+export const UnableToAdjustWallet = _walletError + 6
+export const UnableToInsertWithdrawReference = _walletError + 7
+export const UnableToRequestWithdraw = _walletError + 8
+
+
+const _bankAccountError = 115000
+export const UnableToGetBankAccount = _bankAccountError + 1
+export const UnableToInqueryBankAccount = _bankAccountError + 2
+export const UnableToInsertBankAccount = _bankAccountError + 3
+export const UnableToUpdateBankAccount = _bankAccountError + 4
+export const ValidateBankAccount = _bankAccountError + 5
+export const UnableToDeleteBankAccount = _bankAccountError + 6
+export const UnableToSetMainBankAccount = _bankAccountError + 7
+
+
+const _config = 300000
+export const UnableToGetBrandOptions = _config + 1
+export const UnableToGetPlatformCategoryOptions = _config + 2
+export const UnableToGetBankOptions = _config + 3
+export const UnableToGetAddressOptions = _config + 4

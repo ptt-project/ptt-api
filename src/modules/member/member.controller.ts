@@ -5,9 +5,9 @@ import { Auth, ReqUser } from '../auth/auth.decorator'
 import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
 import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
-import { EmailService } from './email.service'
-import { MemberService } from './member.service'
-import { PasswordService } from './password.service'
+import { EmailService } from './service/email.service'
+import { MemberService } from './service/member.service'
+import { PasswordService } from './service/password.service'
 
 @Controller('v1/members')
 export class MemberController {
