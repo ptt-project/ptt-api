@@ -4,7 +4,7 @@ import {
   Query,
 } from '@nestjs/common'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
-import { AppConfigService } from './config.service'
+import { AppConfigService } from './service/config.service'
 @Controller('v1/configs')
 export class AppConfigController {
   constructor(

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 
 import { AppConfigController } from './config.controller'
-import { AppConfigService } from './config.service'
+import { AppConfigService } from './service/config.service'
 
 @Module({
   controllers: [AppConfigController],

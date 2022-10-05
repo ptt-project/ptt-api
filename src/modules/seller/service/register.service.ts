@@ -161,7 +161,7 @@ export class RegisterService {
           return 'corperateId, corperateName and mallApplicantRole are required for Mall shop'
         }
       } catch (error) {
-        return error
+        return error.message
       }
 
       this.logger.info(`Done validateSellerDataFunc ${dayjs().diff(start)} ms`)
@@ -195,7 +195,7 @@ export class RegisterService {
         })
         await etm.save(shop)
       } catch (error) {
-        return [shop, error]
+        return [shop, error.message]
       }
 
       this.logger.info(`Done insertShopToDbFunc ${dayjs().diff(start)} ms`)
@@ -258,7 +258,7 @@ export class RegisterService {
 
         await etm.save(shop)
       } catch (error) {
-        return [shop, error]
+        return [shop, error.message]
       }
 
       this.logger.info(`Done resubmitShopToDbFunc ${dayjs().diff(start)} ms`)

@@ -12,7 +12,7 @@ import {
 import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqShop, Seller } from '../auth/auth.decorator'
-import { CategoryService } from './category.service'
+import { CategoryService } from './service/category.service'
 
 import {
   UpdateStatusCategoryRequestDto,
@@ -21,7 +21,7 @@ import {
   UpdateCategoryRequestDto,
 } from './dto/category.dto'
 import { getProductQueryDTO } from './dto/product.dto'
-import { ProductService } from './product.service'
+import { ProductService } from './service/product.service'
 
 @Auth()
 @Seller()
