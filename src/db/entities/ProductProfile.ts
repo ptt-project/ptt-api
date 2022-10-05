@@ -8,8 +8,9 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   PrimaryColumn,
+  Generated,
+  PrimaryGeneratedColumn,
 } from 'typeorm'
-// import { AppEntity } from './AppEntity'
 import { CategoryProductProfile } from './CategoryProductProfile'
 import { PlatformCategory } from './PlatformCategory'
 import { Product } from './Product'
@@ -21,7 +22,8 @@ export type ConditionType = 'old' | 'new'
 export type ProductProfileStatusType = 'public' | 'hidden' | 'out of stock'
 @Entity({ name: 'product_profiles' })
 export class ProductProfile {
-  @PrimaryColumn({ primary: false })
+  @PrimaryColumn({ primary: false, nullable: true })
+  @Generated('increment')
   id: number
 
   @Column({ name: 'name' })

@@ -13,6 +13,7 @@ import {
   InsertProductProfileToDbParams,
   InsertProductsToDbParams,
 } from '../product/product.type'
+import { ProductProfile } from 'src/db/entities/ProductProfile'
 
 @Console()
 export class MockDataConsoleService {
@@ -33,6 +34,26 @@ export class MockDataConsoleService {
     const r = await etm.query(`
       CREATE TABLE product_profile_shop_1 PARTITION OF product_profiles FOR VALUES IN (1);
     `)
+  }
+
+  @Command({
+    command: 'query-product',
+    description: 'test query product',
+  })
+  async queryProduct() {
+    const connection: Connection = getConnection()
+    const etm: EntityManager = connection.createEntityManager()
+    const queryProductProfiles = etm
+      .createQueryBuilder(ProductProfile, 'productProfiles')
+      .innerJoin('productProfiles.products', 'products')
+
+    const [
+      productProfiles,
+      countProductProfiles,
+    ] = await queryProductProfiles.getManyAndCount()
+
+    console.log('productProfiles count = ', countProductProfiles)
+    console.log('productProfiles count = ', productProfiles)
   }
 
   @Command({
@@ -60,11 +81,11 @@ export class MockDataConsoleService {
     const etm: EntityManager = connection.createEntityManager()
 
     // const createUserParams: RegisterRequestDto = {
-    //   firstName: 'firstname01',
+    //   firstName: 'firstname02',
     //   lastName: 'lastname01',
     //   email: 'test@gmail.com',
     //   mobile: '0812345678',
-    //   username: 'testuser01',
+    //   username: 'testuser03',
     //   password: '1234567890',
     //   pdpaStatus: true,
     //   otpCode: '',
@@ -76,6 +97,7 @@ export class MockDataConsoleService {
     // if (errorCreateUser != '') {
     //   return console.log('create user error =>', errorCreateUser)
     // }
+    // console.log('user', member)
 
     // const createShopParams: InsertShopToDbParams = {
     //   memberId: member.id,
@@ -99,6 +121,9 @@ export class MockDataConsoleService {
     // if (errorCreateUser != '') {
     //   return console.log('create shop error =>', insertShopToDbError)
     // }
+    // console.log('shop', shop)
+
+    const shopId = 3
 
     const platformCategory = etm.create(PlatformCategory, {
       name: 'platform-category01',
@@ -114,7 +139,7 @@ export class MockDataConsoleService {
     const createProductProfileParams: InsertProductProfileToDbParams = {
       name: 'product profile01',
       detail: 'product profile details',
-      shopId: 1,
+      shopId: shopId,
       platformCategoryId: platformCategory.id,
       brandId: brand.id,
       status: 'public',
@@ -133,6 +158,7 @@ export class MockDataConsoleService {
         insertProductProfileToDbError,
       )
     }
+    console.log('productProfile', productProfile)
 
     const createProductOptionsParams: InsertProductOptionsToDbParams[] = [
       {
@@ -147,6 +173,7 @@ export class MockDataConsoleService {
       },
     ]
 
+    console.log('createProductOptionsParams', createProductOptionsParams)
     const [productOptons, insertProductOptionsToDbError] = await (
       await this.productService.InsertProductOptionsToDbFunc(etm)
     )(createProductOptionsParams)
@@ -198,8 +225,6 @@ export class MockDataConsoleService {
       )
     }
 
-    // console.log('user', member)
-    // console.log('shop', shop)
     console.log('productProfile', productProfile)
     console.log('productOptons', productOptons)
     console.log('products', products)

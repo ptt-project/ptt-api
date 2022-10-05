@@ -1,13 +1,5 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  ManyToMany,
-} from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { AppEntity } from './AppEntity'
-import { Category } from './Category'
 import { PlatformCategory } from './PlatformCategory'
 import { ProductProfile } from './ProductProfile'
 import { Shop } from './Shop'
@@ -41,8 +33,9 @@ export class Product extends AppEntity {
   @ManyToOne(
     () => ProductProfile,
     productProfile => productProfile.products,
+    { createForeignKeyConstraints: false },
   )
-  @JoinColumn({ name: 'product_profile_id', referencedColumnName: 'id' })
+  @JoinColumn({ name: 'product_profile_id' })
   productProfile: ProductProfile
 
   @ManyToOne(
