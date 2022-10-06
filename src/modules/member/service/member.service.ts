@@ -36,7 +36,7 @@ export class MemberService {
         firstName: member.firstName,
         lastName: member.lastName,
         mobile: member.mobile,
-        birthday: member.birthday.toLocaleDateString(),
+        birthday: member.birthday,
         gender: member.gender,
         email: member.email,
         imageId: member.imageId,
@@ -83,7 +83,7 @@ export class MemberService {
         firstName: memberResult.firstName,
         lastName: memberResult.lastName,
         mobile: memberResult.mobile,
-        birthday: memberResult.birthday.toLocaleDateString(),
+        birthday: memberResult.birthday,
         gender: memberResult.gender,
         email: memberResult.email,
         imageId: memberResult.imageId,
@@ -102,7 +102,7 @@ export class MemberService {
       try {
         await etm.update(Member, memberId, { ...params })
       } catch (error) {
-        return error
+        return error.message
       }
 
       this.logger.info(
@@ -130,7 +130,7 @@ export class MemberService {
           return [null, 'Username is not already used']
         }
       } catch (error) {
-        return [null, error]
+        return [null, error.message]
       }
 
       this.logger.info(

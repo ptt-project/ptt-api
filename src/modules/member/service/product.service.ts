@@ -51,31 +51,33 @@ export class ProductService {
       const start = dayjs()
       let productProfiles: SelectQueryBuilder<ProductProfile>
 
+      const partitionQuery: string = "product_profile_shop_" + shopId
+
       try {
         productProfiles = etm
-          .createQueryBuilder(ProductProfile, 'productProfiles')
+          .createQueryBuilder(ProductProfile, partitionQuery)
           .innerJoin(
-            'productProfiles.products',
+            partitionQuery + '.products',
             'products',
           )
-          .where('productProfiles.deletedAt IS NULL')
-          .andWhere('productProfiles.shopId = :shopId', {
+          .where(partitionQuery + '.deletedAt IS NULL')
+          .andWhere(partitionQuery + '.shopId = :shopId', {
             shopId,
           })
           if(query.keyword) {
-            productProfiles.andWhere('productProfiles.name ILIKE :keyword or productProfiles.detail ILIKE :keyword', {
+            productProfiles.andWhere(partitionQuery + '.name ILIKE :keyword or '+ partitionQuery + '.detail ILIKE :keyword', {
               keyword: '%'+query.keyword+'%',
             })
           }
 
           if (query.categoryId) {
-            productProfiles.andWhere('productProfiles.id = (select category_product_profiles.product_profile_id from category_product_profiles where productProfiles.id = category_product_profiles.product_profile_id and category_id = :categoryId)', {
+            productProfiles.andWhere(partitionQuery + '.id = (select category_product_profiles.product_profile_id from category_product_profiles where ' + partitionQuery + '.id = category_product_profiles.product_profile_id and category_id = :categoryId)', {
                 categoryId: query.categoryId,
             })
           }
           
-          productProfiles.select(['productProfiles','products'])
-          productProfiles.orderBy('productProfiles.id', 'ASC')
+          productProfiles.select([partitionQuery,'products'])
+          productProfiles.orderBy(partitionQuery + '.id', 'ASC')
           productProfiles.addOrderBy('products.id', 'ASC')
           
       } catch (error) {

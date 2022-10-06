@@ -12,9 +12,13 @@ import {
   OldPassowrdInvalid,
 } from 'src/utils/response-code'
 
+import {
+  InquiryMemberByIdType,
+  UpdatePasswordToMemberType,
+  VadlidateOldPasswordType,
+} from '../type/password.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
-import { InquiryMemberByIdType, UpdatePasswordToMemberType, VadlidateOldPasswordType } from '../type/password.type'
 
 @Injectable()
 export class PasswordService {
@@ -70,7 +74,7 @@ export class PasswordService {
           return [member, 'Member not found']
         }
       } catch (error) {
-        return [member, error]
+        return [member, error.message]
       }
 
       this.logger.info(`Done InquiryMemberByIdFunc ${dayjs().diff(start)} ms`)
@@ -106,7 +110,7 @@ export class PasswordService {
         member.password = await hashPassword(newPassword)
         await member.save()
       } catch (error) {
-        return error
+        return error.message
       }
 
       this.logger.info(

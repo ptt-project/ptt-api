@@ -9,9 +9,6 @@ export class createProducts1658425577336 implements MigrationInterface {
     )
 
     await queryRunner.query(
-      `ALTER TABLE "products" ADD CONSTRAINT "FK_457d6054a6aeea30985bac2f2a8" FOREIGN KEY ("product_profile_id") REFERENCES "product_profiles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-    )
-    await queryRunner.query(
       `ALTER TABLE "products" ADD CONSTRAINT "FK_9e952e93f369f16e27dd786c33f" FOREIGN KEY ("shop_id") REFERENCES "shops"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     )
     await queryRunner.query(

@@ -160,7 +160,7 @@ export class EmailService {
         member.email = newEmail
         await manager.save(member)
       } catch (error) {
-        return error
+        return error.message
       }
 
       this.logger.info(`Done UpdateEmailToMemberFunc ${dayjs().diff(start)} ms`)
