@@ -22,7 +22,7 @@ export type ConditionType = 'old' | 'new'
 export type ProductProfileStatusType = 'public' | 'hidden' | 'out of stock'
 @Entity({ name: 'product_profiles' })
 export class ProductProfile {
-  @PrimaryColumn({ primary: false, nullable: true })
+  @PrimaryColumn({ primary: false })
   @Generated('increment')
   id: number
 

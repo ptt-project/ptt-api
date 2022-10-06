@@ -1,19 +1,19 @@
 import { Command, Console } from 'nestjs-console'
 import { Connection, EntityManager, getConnection } from 'typeorm'
-import { AuthService } from '../auth/auth.service'
 import { RegisterRequestDto } from '../auth/dto/register.dto'
 import { RegisterService } from '../seller/service/register.service'
 import { InsertShopToDbParams } from '../seller/type/seller.type'
 import { PlatformCategory } from 'src/db/entities/PlatformCategory'
 import { Brand } from 'src/db/entities/Brand'
 import { truncates } from 'src/utils/db'
-import { ProductService } from '../product/product.service'
+import { ProductService } from '../product/service/product.service'
 import {
   InsertProductOptionsToDbParams,
   InsertProductProfileToDbParams,
   InsertProductsToDbParams,
-} from '../product/product.type'
+} from '../product/type/product.type'
 import { ProductProfile } from 'src/db/entities/ProductProfile'
+import { AuthService } from '../auth/service/auth.service'
 
 @Console()
 export class MockDataConsoleService {
