@@ -38,3 +38,7 @@ export const genUuid = () => {
     return (c == 'x' ? r : (r & 0x3) | 0x8).toString(16)
   })
 }
+
+export const padding = (num, n) => num.toString().padStart(n, "0")
+
+export const getTimeFromDate = date => `${padding(date.getHours(), 2)}:${padding(date.getMinutes(), 2)}`

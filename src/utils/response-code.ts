@@ -107,3 +107,13 @@ export const UnableUpdateProduct = _productError + 17
 
 const _image = 110000
 export const UnableResizeImage = _image + 1
+
+const _flashSale = 121000
+export const UnableToInquiryFlashSaleError = _flashSale + 1
+export const ValidateFlashSaleError = _flashSale + 2
+export const UnableToCreateFlashSaleError = _flashSale + 3
+export const UnableToUpdateFlashSaleError = _flashSale + 4
+export const UnableToDeleteFlashSaleError = _flashSale + 5
+export const UnableToGetFlashSaleRoundError = _flashSale + 6
+export const UnableToInquiryFlashSaleByIdError = _flashSale + 7
+export const UnableToGetFlashSaleForMemberError = _flashSale + 8

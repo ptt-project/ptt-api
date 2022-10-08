@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, OneToMany, ManyToOne } from 'typeorm'
 import { AppEntity } from './AppEntity'
 import { CategoryProductProfile } from './CategoryProductProfile'
+import { FlashSaleProductProfile } from './FlashSaleProductProfile'
 import { PlatformCategory } from './PlatformCategory'
 import { Product } from './Product'
 import { ProductOption } from './ProductOption'
@@ -101,4 +102,11 @@ export class ProductProfile extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'product_profile_id' })
   categoryProductProfiles: CategoryProductProfile[]
+  
+  @OneToMany(
+    () => FlashSaleProductProfile,
+    flashSale => flashSale.productProfile,
+  )
+  @JoinColumn({ referencedColumnName: 'product_profile_id' })
+  flashSaleProductProfiles: FlashSaleProductProfile[]
 }

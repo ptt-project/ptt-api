@@ -9,6 +9,8 @@ import { Brand } from 'src/db/entities/Brand'
 import { truncates } from 'src/utils/db'
 import { ProductService } from '../product/product.service'
 import { InsertProductOptionsToDbParams, InsertProductProfileToDbParams, InsertProductsToDbParams } from '../product/product.type'
+import { SellerFlashSaleService } from '../flash-sale/service/seller-flash-sale.service'
+import { FlashSaleRound } from 'src/db/entities/FlashSaleRound'
 
 @Console()
 export class MockDataConsoleService {
@@ -16,6 +18,7 @@ export class MockDataConsoleService {
     private readonly authService: AuthService,
     private readonly regiserSellerService: RegisterService,
     private readonly productService: ProductService,
+    private readonly flashSaleService: SellerFlashSaleService,
   ) {}
 
   @Command({
@@ -31,6 +34,9 @@ export class MockDataConsoleService {
       'product_profiles',
       'products',
       'product_options',
+      'flash_sale_product_profiles',
+      'flash_sales',
+      'flash_sale_rounds',
     )
   }
 
@@ -164,10 +170,54 @@ export class MockDataConsoleService {
       return console.log('create product options error =>', insertProductsToDbError)
     }
 
+    let flashSaleRounds
+    try {
+      const now = new Date()
+      const days = 15
+      const rounds = [["00:00:00", "11:00:00"], ["11:00:00", "18:00:00"], ["18:00:00", "00:00:00"]]
+      const genRounds = new Array(days).fill(0).reduce((mem, cur, i) => {
+        const today = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate() + i}`
+        const tomorrow = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate() + i + 1}`
+        return [
+          ...mem,
+          ...rounds.map(date => ({
+            date: new Date(`${today} 00:00:00.000+07:00`),
+            startTime: new Date(`${today} ${date[0]}.000+07:00`),
+            endTime: new Date(`${date[1] === "00:00:00" ? tomorrow : today} ${date[1]}.000+07:00`),
+          })),
+        ]
+      }, [])
+      flashSaleRounds = etm.create(FlashSaleRound, genRounds)
+      flashSaleRounds = await etm.save(flashSaleRounds)
+    } catch (error) {
+      console.log(error.message)
+    }
+
+    const [flashSale, insertFlashSaleToDbError] = await (
+      await this.flashSaleService.InsertFlashSaleFunc(etm)
+    )(shop.id, {
+      roundId: flashSaleRounds[0].id,
+      status: "active",
+      productProfiles: [
+        {
+          productProfileId: productProfile.id,
+          discountType: "percentage",
+          discount: 10,
+          limitToStock: 5,
+          limitToBuy: 1,
+          isActive: true,
+        }
+      ]
+    })
+    if (insertFlashSaleToDbError != '') {
+      return console.log('create flash sale error =>', insertFlashSaleToDbError)
+    }
+
     console.log('user', member)
     console.log('shop', shop)
     console.log('productProfile', productProfile)
     console.log('productOptons', productOptons)
     console.log('products', products)
+    console.log('flashSale', flashSale)
   }
 }

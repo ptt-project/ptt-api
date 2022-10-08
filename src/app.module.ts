@@ -29,6 +29,7 @@ import { AppConsoleModule } from './modules/app-console/app-console.moduel'
 import { ProductModule } from './modules/product/product.modules'
 import { EmailModule } from './modules/email/email.module'
 import { ImageModule } from './modules/image/image.module'
+import { FlashSaleModule } from './modules/flash-sale/flash-sale.module'
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -93,6 +94,7 @@ import { ImageModule } from './modules/image/image.module'
     ProductModule,
     ImageModule,
     EmailModule,
+    FlashSaleModule,
   ],
   controllers: [AppController],
   providers: [AppService],
