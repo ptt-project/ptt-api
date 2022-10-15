@@ -1,6 +1,8 @@
+import { transformerDecimalToNumber } from 'src/utils/entity-transform'
 import { Column, Entity, JoinColumn, OneToMany, ManyToOne } from 'typeorm'
 import { AppEntity } from './AppEntity'
 import { CategoryProductProfile } from './CategoryProductProfile'
+import { FlashSaleProduct } from './FlashSaleProduct'
 import { PlatformCategory } from './PlatformCategory'
 import { Product } from './Product'
 import { ProductOption } from './ProductOption'
@@ -22,7 +24,7 @@ export class ProductProfile extends AppEntity {
   @Column({ name: 'platform_category_id' })
   platformCategoryId: number
 
-  @Column({ name: 'brand_id' })
+  @Column({ name: 'brand_id', nullable: true })
   brandId: number
 
   @Column({ name: 'status' })
@@ -33,6 +35,15 @@ export class ProductProfile extends AppEntity {
 
   @Column({ name: 'weight', type: 'decimal', precision: 5, scale: 2 })
   weight: number
+
+  @Column({ name: 'width', nullable: false })
+  width: number
+
+  @Column({ name: 'length', nullable: false })
+  length: number
+  
+  @Column({ name: 'height', nullable: false })
+  height: number
 
   @Column({ name: 'exp', nullable: true })
   exp: number
@@ -57,6 +68,26 @@ export class ProductProfile extends AppEntity {
 
   @Column({ name: 'like', default: 0, nullable: true })
   like: number
+
+  @Column({
+    name: 'min_price',
+    type: 'decimal',
+    precision: 14,
+    scale: 4,
+    nullable: false,
+    transformer: transformerDecimalToNumber,
+  })
+  minPrice: number
+
+  @Column({
+    name: 'max_price',
+    type: 'decimal',
+    precision: 14,
+    scale: 4,
+    nullable: false,
+    transformer: transformerDecimalToNumber,
+  })
+  maxPrice: number
 
   @OneToMany(
     () => Product,
@@ -92,4 +123,11 @@ export class ProductProfile extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'product_profile_id' })
   categoryProductProfiles: CategoryProductProfile[]
+  
+  @OneToMany(
+    () => FlashSaleProduct,
+    flashSale => flashSale.productProfile,
+  )
+  @JoinColumn({ referencedColumnName: 'product_profile_id' })
+  flashSaleProductProfiles: FlashSaleProduct[]
 }

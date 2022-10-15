@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator'
-import { ShopType } from 'src/db/entities/Shop'
+import { IsIn, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator'
+import { MallApplicantRoleType, ShopType } from 'src/db/entities/Shop'
 
 export class RegisterSellerRequestDto {
   @IsString()
@@ -59,6 +59,18 @@ export class RegisterSellerRequestDto {
   @IsOptional()
   @MaxLength(50)
   corperateName?: string
+
+  @IsOptional()
+  @IsIn(['Brand Owner', 'Exclusive Distributor', 'Non-Exclusive Distributor', 'Retailer', 'Other'])
+  mallApplicantRole?: MallApplicantRoleType
+
+  @IsOptional()
+  @MaxLength(1000)
+  mallOfflineShopDetail?: string
+
+  @IsOptional()
+  @MaxLength(1000)
+  mallShopDescription?: string
 }
 
 export class UpdateShopInfoRequestDto {

@@ -46,13 +46,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       const accessToken = `${
         response.accessToken
       }; HttpOnly; Path=/; Max-Age=${dayjs().add(
-        10,
-        'second',
-      )};  SameSite=None;`
+        1,
+        'day',
+      )};`
 
       const refreshToken = `${
         response.refreshToken
-      }; HttpOnly; Path=/; Max-Age=${dayjs().add(20, 'second')}; SameSite=None;`
+      }; HttpOnly; Path=/; Max-Age=${dayjs().add(7, 'day')};`
 
       request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
     }

@@ -42,6 +42,7 @@ const _mobileError = 104000
 export const UnableToAddMobile = _mobileError + 1
 export const UnableToSetMainMobile = _mobileError + 2
 export const UnableToDeleteMobile = _mobileError + 3
+export const UnableToGetMobiles = _mobileError + 4
 
 // address module
 const _addressError = 105000
@@ -85,7 +86,26 @@ export const UnableinquiryProductProfileIdsByCategoryId = _categoryError + 12
 export const UnableinquiryProductProfileByCatgoryIdFunc = _categoryError + 13
 export const UnableInquiryCategoryByName = _categoryError + 14
 
-const _image = 109000
+const _productError = 109000
+export const CreateProductValidationFailed = _productError + 1
+export const UnableToCreateProductProfile = _productError + 2
+export const UnableToCreateProductOptions = _productError + 3
+export const UnableToCreateProducts = _productError + 4
+export const UnableToGetProducts = _productError + 5
+export const UnableInquiryProductProfileByProductProfileId = _productError + 6
+export const UnableInquiryProductOptionsByProductProfileId = _productError + 7
+export const UnableInquiryProductsByProductProfileId = _productError + 8
+export const UnableDeleteProductProfileByProductProfileId = _productError + 9
+export const UnableDeleteProductOptionsByProductProfileId = _productError + 10
+export const UnableDeleteProductsByProductProfileId = _productError + 11
+export const UnableUpdateStatusProductByProductProfileId = _productError + 12
+export const UnableUpdateProductProfileByProductProfileId = _productError + 13
+export const UnableRemoveProductOptionByProductOptionId = _productError + 14
+export const UnableUpdateProductOption = _productError + 15
+export const UnableRemoveProductsById = _productError + 16
+export const UnableUpdateProduct = _productError + 17
+
+const _image = 110000
 export const UnableResizeImage = _image + 1
 
 const _promotion = 112000
@@ -94,3 +114,13 @@ export const ValidatePromotionError = _promotion + 2
 export const UnableToCreatePromotionError = _promotion + 3
 export const UnableToUpdatePromotionError = _promotion + 4
 export const UnableToDeletePromotionError = _promotion + 5
+
+const _flashSale = 121000
+export const UnableToInquiryFlashSaleError = _flashSale + 1
+export const ValidateFlashSaleError = _flashSale + 2
+export const UnableToCreateFlashSaleError = _flashSale + 3
+export const UnableToUpdateFlashSaleError = _flashSale + 4
+export const UnableToDeleteFlashSaleError = _flashSale + 5
+export const UnableToGetFlashSaleRoundError = _flashSale + 6
+export const UnableToInquiryFlashSaleByIdError = _flashSale + 7
+export const UnableToGetFlashSaleForMemberError = _flashSale + 8

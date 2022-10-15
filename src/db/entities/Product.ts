@@ -1,5 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
+import { Category } from './Category'
+import { FlashSaleProduct } from './FlashSaleProduct'
 import { PlatformCategory } from './PlatformCategory'
 import { ProductProfile } from './ProductProfile'
 import { Shop } from './Shop'
@@ -12,15 +14,6 @@ export class Product extends AppEntity {
   @Column({ name: 'product_profile_id' })
   productProfileId: number
 
-  @Column({ name: 'shop_id' })
-  shopId: number
-
-  @Column({ name: 'platform_category_id' })
-  platformCategoryId: number
-
-  @Column({ name: 'brand_id' })
-  brandId: number
-
   @Column({ name: 'option1', nullable: true })
   option1: string
 
@@ -30,7 +23,7 @@ export class Product extends AppEntity {
   @Column({
     name: 'price',
     type: 'decimal',
-    precision: 5,
+    precision: 12,
     scale: 2,
     nullable: true,
   })
@@ -59,4 +52,12 @@ export class Product extends AppEntity {
   )
   @JoinColumn({ name: 'platform_category_id', referencedColumnName: 'id' })
   platformCategory: PlatformCategory
+
+
+  @OneToMany(
+    () => FlashSaleProduct,
+    flashSale => flashSale.product,
+  )
+  @JoinColumn({ referencedColumnName: 'product_id' })
+  flashSaleProducts: FlashSaleProduct[]
 }

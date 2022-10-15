@@ -10,6 +10,7 @@ import { OtpService } from '../otp/otp.service'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { MobileService } from '../mobile/mobile.service'
 import dayjs from 'dayjs'
+import { ShopService } from '../seller/shop.service'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -18,6 +19,7 @@ export class AuthController {
     private readonly otpService: OtpService,
     private readonly loginService: LoginService,
     private readonly mobileService: MobileService,
+    private readonly shopService: ShopService,
   ) {}
 
   @Post('register')
@@ -54,6 +56,7 @@ export class AuthController {
   ) {
     const longinResponse = await this.loginService.loginHandler(
       this.loginService.inquiryUserExistByUsernameFunc(etm),
+      this.shopService.InquiryShopByMemberIdFunc(etm),
       this.loginService.validatePasswordFunc(),
       this.authService.genAccessTokenFunc(),
       this.authService.genRefreshTokenFunc(),
@@ -61,11 +64,11 @@ export class AuthController {
 
     const accessToken = `AccessToken=${
       longinResponse.data.accessToken
-    }; HttpOnly; Max-Age=${dayjs().add(1, 'day')}; SameSite=None;`
+    }; Path=/; Max-Age=${dayjs().add(1, 'day')};`
 
     const refreshToken = `RefreshToken=${
       longinResponse.data.refreshToken
-    }; HttpOnly; Max-Age=${dayjs().add(7, 'day')}; SameSite=None;`
+    }; Path=/; Max-Age=${dayjs().add(7, 'day')};`
 
     request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
 

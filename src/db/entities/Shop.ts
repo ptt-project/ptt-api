@@ -1,5 +1,6 @@
 import { Column, Entity, OneToOne, JoinColumn, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
+import { FlashSale } from './FlashSale'
 import { Member } from './Member'
 import { Product } from './Product'
 import { ProductProfile } from './ProductProfile'
@@ -7,6 +8,8 @@ import { Promotion } from './Promotion'
 
 export type ShopType = 'Normal' | 'Mall'
 export type ApprovalType = 'requested' | 'rejected' | 'approved'
+export type MallApplicantRoleType = 'Brand Owner' | 'Exclusive Distributor' | 'Non-Exclusive Distributor' | 'Retailer' | 'Other'
+
 @Entity({ name: 'shops' })
 export class Shop extends AppEntity {
   @Column({
@@ -105,6 +108,20 @@ export class Shop extends AppEntity {
   })
   cancelRate: number
 
+  @Column({
+    name: 'mall_applicant_role',
+    type: 'enum',
+    enum: ['Brand Owner', 'Exclusive Distributor', 'Non-Exclusive Distributor', 'Retailer', 'Other'],
+    nullable: true,
+  })
+  mallApplicantRole: MallApplicantRoleType
+
+  @Column({ name: 'mall_offline_shop_detail', nullable: true })
+  mallOfflineShopDetail: string
+  
+  @Column({ name: 'mall_shop_description', nullable: true })
+  mallShopDescription: string
+
   @Column({ name: 'profile_image_path', nullable: true })
   profileImagePath: string
 
@@ -141,4 +158,11 @@ export class Shop extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'shop_id' })
   promotions: Promotion[]
+
+  @OneToMany(
+    () => FlashSale,
+    flashSale => flashSale.shop,
+  )
+  @JoinColumn({ referencedColumnName: 'shop_id' })
+  flashSales: FlashSale[]
 }

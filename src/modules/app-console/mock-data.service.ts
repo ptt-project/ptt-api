@@ -1,5 +1,4 @@
 import { Command, Console } from 'nestjs-console'
-import { ProductProfile } from 'src/db/entities/ProductProfile'
 import { Connection, EntityManager, getConnection } from 'typeorm'
 import { AuthService } from '../auth/auth.service'
 import { RegisterRequestDto } from '../auth/dto/register.dto'
@@ -7,15 +6,19 @@ import { RegisterService } from '../seller/register.service'
 import { InsertShopToDbParams } from '../seller/seller.type'
 import { PlatformCategory } from 'src/db/entities/PlatformCategory'
 import { Brand } from 'src/db/entities/Brand'
-import { Product } from 'src/db/entities/Product'
-import { ProductOption } from 'src/db/entities/ProductOption'
 import { truncates } from 'src/utils/db'
+import { ProductService } from '../product/product.service'
+import { InsertProductOptionsToDbParams, InsertProductProfileToDbParams, InsertProductsToDbParams } from '../product/product.type'
+import { SellerFlashSaleService } from '../flash-sale/service/seller-flash-sale.service'
+import { FlashSaleRound } from 'src/db/entities/FlashSaleRound'
 
 @Console()
 export class MockDataConsoleService {
   constructor(
     private readonly authService: AuthService,
     private readonly regiserSellerService: RegisterService,
+    private readonly productService: ProductService,
+    private readonly flashSaleService: SellerFlashSaleService,
   ) {}
 
   @Command({
@@ -31,6 +34,9 @@ export class MockDataConsoleService {
       'product_profiles',
       'products',
       'product_options',
+      'flash_sale_product_profiles',
+      'flash_sales',
+      'flash_sale_rounds',
     )
   }
 
@@ -86,7 +92,6 @@ export class MockDataConsoleService {
     const platformCategory = etm.create(PlatformCategory, {
       name: 'platform-category01',
       status: 'active',
-      productCount: 2,
     })
     await etm.save(platformCategory)
 
@@ -95,50 +100,127 @@ export class MockDataConsoleService {
     })
     await etm.save(brand)
 
-    const productProfile = etm.create(ProductProfile, {
+    const createProductProfileParams: InsertProductProfileToDbParams = {
       name: 'product profile01',
       detail: 'product profile details',
       shopId: shop.id,
       platformCategoryId: platformCategory.id,
       brandId: brand.id,
       status: 'public',
-      approval: true,
       weight: 5.5,
-    })
-    await etm.save(productProfile)
+      width: 20,
+      length: 20,
+      height: 20,
+      minPrice: 100,
+      maxPrice: 200,
+    }
 
-    const productOption = etm.create(ProductOption, {
+    const [productProfile, insertProductProfileToDbError] = await (
+      await this.productService.InsertProductProfileToDbFunc(etm)
+    )(createProductProfileParams)
+    if (insertProductProfileToDbError != '') {
+      return console.log('create product profile error =>', insertProductProfileToDbError)
+    }
+
+    const createProductOptionsParams: InsertProductOptionsToDbParams[] = [{
       name: 'color',
       productProfileId: productProfile.id,
       options: ['red', 'black'],
-    })
-    await etm.save(productOption)
-
-    const product01 = etm.create(Product, {
-      sku: 'product-001',
+    }, {
+      name: 'size',
       productProfileId: productProfile.id,
-      shopId: shop.id,
-      platformCategoryId: platformCategory.id,
-      brandId: brand.id,
+      options: ['small', 'large'],
+    }]
+
+    const [productOptons, insertProductOptionsToDbError] = await (
+      await this.productService.InsertProductOptionsToDbFunc(etm)
+    )(createProductOptionsParams)
+    if (insertProductOptionsToDbError != '') {
+      return console.log('create product options error =>', insertProductOptionsToDbError)
+    }
+
+    const createProductsParams: InsertProductsToDbParams[] = [{
+      productProfileId: productProfile.id,
       option1: 'red',
+      option2: 'small',
       price: 100.0,
       stock: 10,
-    })
-    await etm.save(product01)
-
-    const product02 = etm.create(Product, {
-      sku: 'product-002',
+    }, {
       productProfileId: productProfile.id,
-      shopId: shop.id,
-      platformCategoryId: platformCategory.id,
-      brandId: brand.id,
+      option1: 'red',
+      option2: 'large',
+      price: 200.0,
+      stock: 10,
+    }, {
+      productProfileId: productProfile.id,
       option1: 'black',
+      option2: 'small',
       price: 100.0,
       stock: 10,
+    }, {
+      productProfileId: productProfile.id,
+      option1: 'black',
+      option2: 'large',
+      price: 200.0,
+      stock: 10,
+    }]
+
+    const [products, insertProductsToDbError] = await (
+      await this.productService.InsertProductsToDbFunc(etm)
+    )(createProductsParams)
+    if (insertProductsToDbError != '') {
+      return console.log('create product options error =>', insertProductsToDbError)
+    }
+
+    let flashSaleRounds
+    try {
+      const now = new Date()
+      const days = 15
+      const rounds = [["00:00:00", "11:00:00"], ["11:00:00", "18:00:00"], ["18:00:00", "00:00:00"]]
+      const genRounds = new Array(days).fill(0).reduce((mem, cur, i) => {
+        const today = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate() + i}`
+        const tomorrow = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate() + i + 1}`
+        return [
+          ...mem,
+          ...rounds.map(date => ({
+            date: new Date(`${today} 00:00:00.000+07:00`),
+            startTime: new Date(`${today} ${date[0]}.000+07:00`),
+            endTime: new Date(`${date[1] === "00:00:00" ? tomorrow : today} ${date[1]}.000+07:00`),
+          })),
+        ]
+      }, [])
+      flashSaleRounds = etm.create(FlashSaleRound, genRounds)
+      flashSaleRounds = await etm.save(flashSaleRounds)
+    } catch (error) {
+      console.log(error.message)
+    }
+
+    const [flashSale, insertFlashSaleToDbError] = await (
+      await this.flashSaleService.InsertFlashSaleFunc(etm)
+    )(shop.id, {
+      roundId: flashSaleRounds[0].id,
+      status: "active",
+      products: [
+        {
+          productProfileId: productProfile.id,
+          productId: products[0].id,
+          discountType: "percentage",
+          discount: 10,
+          limitToStock: 5,
+          limitToBuy: 1,
+          isActive: true,
+        }
+      ]
     })
-    await etm.save(product02)
+    if (insertFlashSaleToDbError != '') {
+      return console.log('create flash sale error =>', insertFlashSaleToDbError)
+    }
 
     console.log('user', member)
     console.log('shop', shop)
+    console.log('productProfile', productProfile)
+    console.log('productOptons', productOptons)
+    console.log('products', products)
+    console.log('flashSale', flashSale)
   }
 }

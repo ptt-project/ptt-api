@@ -6,6 +6,7 @@ import { LoginRequestDto } from './dto/login.dto'
 import {
   UnableLoginUsernameDoNotAlreayExist,
   PasswordIsInvalid,
+  UnableToGetShopInfo,
 } from 'src/utils/response-code'
 import { validateBadRequest } from 'src/utils/response-error'
 import { GenAccessTokenType, GenRefreshTokenType } from './auth.type'
@@ -18,6 +19,7 @@ import {
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 import { EntityManager } from 'typeorm'
+import { GetShopInfoType } from '../seller/seller.type'
 
 @Injectable()
 export class LoginService {
@@ -27,6 +29,7 @@ export class LoginService {
 
   loginHandler(
     inquiryUserExistByUsername: Promise<InquiryUserExistByUsernameType>,
+    inquiryShopByMemberIdFunc: Promise<GetShopInfoType>,
     validatePassword: Promise<ValidatePasswordType>,
     genAccessToken: Promise<GenAccessTokenType>,
     genRefreshToken: Promise<GenRefreshTokenType>,
@@ -55,16 +58,36 @@ export class LoginService {
       const accessToken = await (await genAccessToken)(member)
       const refreshToken = await (await genRefreshToken)(member)
 
-      this.logger.info(`Done loginHandler ${dayjs().diff(start)} ms`)
-      return response({
+      let result = {
         accessToken,
         refreshToken,
-        firstname: member.firstname,
-        lastname: member.lastname,
+        firstName: member.firstName,
+        lastName: member.lastName,
         mobile: member.mobile,
         email: member.email,
         username: member.username,
-      })
+        imageId: member.imageId
+      }
+
+      if(member.role == 'Seller'){
+        const [shop, getShopInfoError] = await (await inquiryShopByMemberIdFunc)(
+          member.id,
+        )
+
+        if (getShopInfoError != '') {
+          return response(
+            undefined,
+            UnableToGetShopInfo,
+            getShopInfoError,
+          )
+        }
+        result['approvelStatus'] = shop.approvalStatus
+
+      }
+
+
+      this.logger.info(`Done loginHandler ${dayjs().diff(start)} ms`)
+      return response(result)
     }
   }
 
