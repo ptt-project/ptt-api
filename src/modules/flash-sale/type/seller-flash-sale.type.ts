@@ -1,9 +1,10 @@
 import { FlashSale, StatusType } from 'src/db/entities/FlashSale'
-import { DiscountType } from 'src/db/entities/FlashSaleProductProfile'
+import { DiscountType } from 'src/db/entities/FlashSaleProduct'
 import { SelectQueryBuilder } from 'typeorm'
 
-export type InsertFlashSaleProductProfileParams = {
+export type InsertFlashSaleProductParams = {
   productProfileId: number,
+  productId: number,
   discountType: DiscountType,
   discount: number,
   limitToStock?: number,
@@ -19,7 +20,7 @@ export type FilterFlashSaleParams = {
 export type InsertFlashSaleParams = {
   roundId: number,
   status?: StatusType,
-  productProfiles: InsertFlashSaleProductProfileParams[],
+  products: InsertFlashSaleProductParams[],
 }
 
 export type InquiryFlashSaleFuncType = (

@@ -20,6 +20,8 @@ export type InsertProductProfileToDbParams = {
   width: number
   length: number
   height: number
+  minPrice: number
+  maxPrice: number
 }
 
 export type InsertProductOptionsToDbParams = {

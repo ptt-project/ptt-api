@@ -1,13 +1,17 @@
 import { Transform, Type } from 'class-transformer'
 import { ArrayNotEmpty, IsArray, IsBoolean, IsDate, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator'
 import { StatusType } from 'src/db/entities/FlashSale'
-import { DiscountType } from 'src/db/entities/FlashSaleProductProfile'
+import { DiscountType } from 'src/db/entities/FlashSaleProduct'
 // import { IsArrayOfObjects } from 'src/utils/decorator/dto.decorator'
 
-export class CreateFlashSaleProductProfileDTO {
+export class CreateFlashSaleProductDTO {
   @IsNumber()
   @IsNotEmpty()
   productProfileId: number
+
+  @IsNumber()
+  @IsNotEmpty()
+  productId: number
 
   @IsIn(['value', 'percentage'])
   @IsNotEmpty()
@@ -37,10 +41,10 @@ export class CreateFlashSaleRequestDTO {
 
   @IsArray()
   @ArrayNotEmpty()
-  @Type(() => CreateFlashSaleProductProfileDTO)
+  @Type(() => CreateFlashSaleProductDTO)
   // @IsArrayOfObjects()
   // @ValidateNested()
-  productProfiles: CreateFlashSaleProductProfileDTO[]
+  products: CreateFlashSaleProductDTO[]
 }
 
 export class GetFlashSaleQueryDTO {

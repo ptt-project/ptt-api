@@ -1,7 +1,8 @@
+import { transformerDecimalToNumber } from 'src/utils/entity-transform'
 import { Column, Entity, JoinColumn, OneToMany, ManyToOne } from 'typeorm'
 import { AppEntity } from './AppEntity'
 import { CategoryProductProfile } from './CategoryProductProfile'
-import { FlashSaleProductProfile } from './FlashSaleProductProfile'
+import { FlashSaleProduct } from './FlashSaleProduct'
 import { PlatformCategory } from './PlatformCategory'
 import { Product } from './Product'
 import { ProductOption } from './ProductOption'
@@ -68,6 +69,26 @@ export class ProductProfile extends AppEntity {
   @Column({ name: 'like', default: 0, nullable: true })
   like: number
 
+  @Column({
+    name: 'min_price',
+    type: 'decimal',
+    precision: 14,
+    scale: 4,
+    nullable: false,
+    transformer: transformerDecimalToNumber,
+  })
+  minPrice: number
+
+  @Column({
+    name: 'max_price',
+    type: 'decimal',
+    precision: 14,
+    scale: 4,
+    nullable: false,
+    transformer: transformerDecimalToNumber,
+  })
+  maxPrice: number
+
   @OneToMany(
     () => Product,
     product => product.productProfile,
@@ -104,9 +125,9 @@ export class ProductProfile extends AppEntity {
   categoryProductProfiles: CategoryProductProfile[]
   
   @OneToMany(
-    () => FlashSaleProductProfile,
+    () => FlashSaleProduct,
     flashSale => flashSale.productProfile,
   )
   @JoinColumn({ referencedColumnName: 'product_profile_id' })
-  flashSaleProductProfiles: FlashSaleProductProfile[]
+  flashSaleProductProfiles: FlashSaleProduct[]
 }

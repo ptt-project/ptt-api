@@ -8,6 +8,7 @@ import {
 } from 'typeorm'
 import { AppEntity } from './AppEntity'
 import { Category } from './Category'
+import { FlashSaleProduct } from './FlashSaleProduct'
 import { PlatformCategory } from './PlatformCategory'
 import { ProductProfile } from './ProductProfile'
 import { Shop } from './Shop'
@@ -58,4 +59,12 @@ export class Product extends AppEntity {
   )
   @JoinColumn({ name: 'platform_category_id', referencedColumnName: 'id' })
   platformCategory: PlatformCategory
+
+
+  @OneToMany(
+    () => FlashSaleProduct,
+    flashSale => flashSale.product,
+  )
+  @JoinColumn({ referencedColumnName: 'product_id' })
+  flashSaleProducts: FlashSaleProduct[]
 }

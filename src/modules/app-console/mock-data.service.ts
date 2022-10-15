@@ -111,6 +111,8 @@ export class MockDataConsoleService {
       width: 20,
       length: 20,
       height: 20,
+      minPrice: 100,
+      maxPrice: 200,
     }
 
     const [productProfile, insertProductProfileToDbError] = await (
@@ -198,9 +200,10 @@ export class MockDataConsoleService {
     )(shop.id, {
       roundId: flashSaleRounds[0].id,
       status: "active",
-      productProfiles: [
+      products: [
         {
           productProfileId: productProfile.id,
+          productId: products[0].id,
           discountType: "percentage",
           discount: 10,
           limitToStock: 5,

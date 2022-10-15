@@ -3,11 +3,11 @@ import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
 import { response } from 'src/utils/response'
 import { UnableToGetFlashSaleForMemberError } from 'src/utils/response-code'
-import { EntityManager, LessThanOrEqual, MoreThan, SelectQueryBuilder } from 'typeorm'
+import { EntityManager, LessThan, LessThanOrEqual, MoreThan, SelectQueryBuilder } from 'typeorm'
 import { paginate } from 'nestjs-typeorm-paginate'
 import { InquiryFlashSaleByRoundFuncType, InquiryCurrentFlashSaleRoundFuncType } from '../type/member-flash-sale.type'
 import { GetMemberFlashSaleQueryDTO } from '../dto/member-flash-sale.dto'
-import { FlashSaleProductProfile } from 'src/db/entities/FlashSaleProductProfile'
+import { FlashSaleProduct } from 'src/db/entities/FlashSaleProduct'
 import { FlashSaleRound } from 'src/db/entities/FlashSaleRound'
 
 @Injectable()
@@ -37,7 +37,7 @@ export class MemberFlashSaleService {
         return response(undefined, UnableToGetFlashSaleForMemberError, inquiryFlashSaleError)
       }
 
-      const result = await paginate<FlashSaleProductProfile>(flashSaleQuery, { limit, page })
+      const result = await paginate<FlashSaleProduct>(flashSaleQuery, { limit, page })
       this.logger.info(`Done GetMemberFlashSaleHandler ${dayjs().diff(start)} ms`)
       return response({...result, currentRound})
     }
@@ -78,19 +78,21 @@ export class MemberFlashSaleService {
   async InquiryCurrentFlashSaleByRoundFunc(
     etm: EntityManager,
   ): Promise<InquiryFlashSaleByRoundFuncType> {
-    return async (roundId: number): Promise<[SelectQueryBuilder<FlashSaleProductProfile>, string]> => {
+    return async (roundId: number): Promise<[SelectQueryBuilder<FlashSaleProduct>, string]> => {
       const start = dayjs()
       
-      let flashSaleQuery: SelectQueryBuilder<FlashSaleProductProfile>
+      let flashSaleQuery: SelectQueryBuilder<FlashSaleProduct>
 
       try {
-        flashSaleQuery = etm.createQueryBuilder(FlashSaleProductProfile, 'flashSaleProductProfile')
+        flashSaleQuery = etm.createQueryBuilder(FlashSaleProduct, 'flashSaleProduct')
         flashSaleQuery
-        .leftJoinAndSelect("flashSaleProductProfile.productProfile", "productProfile")
-        .leftJoinAndSelect("flashSaleProductProfile.flashSale", "flashSale")
-        const condition: any = { deletedAt: null, flashSale: {} }
+        .leftJoinAndSelect("flashSaleProduct.productProfile", "productProfile")
+        .leftJoinAndSelect("flashSaleProduct.flashSale", "flashSale")
+        const condition: any = { deletedAt: null, flashSale: {}, productProfile: {} }
         condition.flashSale.roundId = roundId
         condition.flashSale.status = 'active'
+        condition.productProfile.status = 'public'
+        condition.productProfile.approval = true
         condition.isActive = true
         flashSaleQuery.where(condition)
 

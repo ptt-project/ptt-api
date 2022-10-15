@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
-import { FlashSaleProductProfile } from './FlashSaleProductProfile'
+import { FlashSaleProduct } from './FlashSaleProduct'
 import { FlashSaleRound } from './FlashSaleRound'
 import { Shop } from './Shop'
 
@@ -50,9 +50,9 @@ export class FlashSale extends AppEntity {
   round: FlashSaleRound
 
   @OneToMany(
-    () => FlashSaleProductProfile,
-    flashSaleProductProfile => flashSaleProductProfile.flashSale,
+    () => FlashSaleProduct,
+    flashSaleProduct => flashSaleProduct.flashSale,
   )
   @JoinColumn({ referencedColumnName: 'flash_sale_id'})
-  productProfiles: FlashSaleProductProfile[]
+  products: FlashSaleProduct[]
 }
