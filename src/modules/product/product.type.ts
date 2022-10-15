@@ -1,6 +1,7 @@
 import { Product } from 'src/db/entities/Product'
 import { ProductOption } from 'src/db/entities/ProductOption'
 import { ConditionType, ProductProfile, ProductProfileStatusType } from 'src/db/entities/ProductProfile'
+import { Shop } from 'src/db/entities/Shop'
 import { CreateProductProfileRequestDto } from './dto/product.dto'
 
 export type InsertProductProfileToDbParams = {
@@ -37,6 +38,7 @@ export type InsertProductsToDbParams = {
   option2?: string
   price: number
   stock: number
+  shop: Shop
 }
 
 export type UpdateProductProfileToDbParams = {

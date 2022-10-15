@@ -3,7 +3,7 @@ import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqShop, Seller } from '../auth/auth.decorator'
 import { CreatePromotionRequestDTO, GetPromotionQueryDTO } from './dto/promotion'
-import { PromotionService } from './promotion.service'
+import { PromotionService } from './service/promotion.service'
 @Auth()
 @Seller()
 @Controller('v1/shops/promotions')

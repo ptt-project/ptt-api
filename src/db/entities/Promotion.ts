@@ -2,11 +2,11 @@ import { Column, Entity, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
 import { transformerDayjsToDate } from 'src/utils/entity-transform'
 import { Shop } from './Shop'
-import { ProductProfilePromotion } from './ProductProfilePromotion'
+import { ProductPromotion } from './ProductPromotion'
 
 @Entity({ name: 'promotions' })
 export class Promotion extends AppEntity {
-  @Column({ name: 'shopId', nullable: false })
+  @Column({ name: 'shop_id', nullable: false })
   shopId: number
 
   @Column({ name: 'name', nullable: false })
@@ -36,9 +36,9 @@ export class Promotion extends AppEntity {
   shop: Shop
 
   @OneToMany(
-    () => ProductProfilePromotion,
-    productProfilePromotion => productProfilePromotion.promotion,
+    () => ProductPromotion,
+    productPromotion => productPromotion.promotion,
   )
   @JoinColumn({ referencedColumnName: 'promotion_id' })
-  productProfiles: ProductProfilePromotion[]
+  products: ProductPromotion[]
 }

@@ -1,9 +1,9 @@
-import { DiscountType } from 'src/db/entities/ProductProfilePromotion'
+import { DiscountType } from 'src/db/entities/ProductPromotion'
 import { Promotion } from 'src/db/entities/Promotion'
 import { SelectQueryBuilder } from 'typeorm'
 
-export type InsertProductProfilePromotionParams = {
-  productProfileId: number,
+export type InsertProductPromotionParams = {
+  productId: number,
   discountType: DiscountType,
   discount: number,
   isActive: boolean,
@@ -20,7 +20,7 @@ export type InsertPromotionParams = {
   name: string,
   startDate: Date,
   endDate: Date,
-  productProfiles: InsertProductProfilePromotionParams[],
+  products: InsertProductPromotionParams[],
 }
 
 export type InqueryPromotionFuncType = (

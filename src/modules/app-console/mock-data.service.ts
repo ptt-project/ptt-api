@@ -145,24 +145,28 @@ export class MockDataConsoleService {
       option2: 'small',
       price: 100.0,
       stock: 10,
+      shop,
     }, {
       productProfileId: productProfile.id,
       option1: 'red',
       option2: 'large',
       price: 200.0,
       stock: 10,
+      shop,
     }, {
       productProfileId: productProfile.id,
       option1: 'black',
       option2: 'small',
       price: 100.0,
       stock: 10,
+      shop,
     }, {
       productProfileId: productProfile.id,
       option1: 'black',
       option2: 'large',
       price: 200.0,
       stock: 10,
+      shop,
     }]
 
     const [products, insertProductsToDbError] = await (

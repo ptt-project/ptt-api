@@ -3,13 +3,13 @@ import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
 import { Shop } from 'src/db/entities/Shop'
 import { response } from 'src/utils/response'
-import { CreatePromotionRequestDTO, GetPromotionQueryDTO } from './dto/promotion'
-import { DeletePromotionFuncType, FilterPromotionParams, InqueryPromotionFuncType, InsertPromotionFuncType, InsertPromotionParams, UpdatePromotionFuncType, ValidatePromotionFuncType } from './promotion.type'
+import { CreatePromotionRequestDTO, GetPromotionQueryDTO } from '../dto/promotion'
+import { DeletePromotionFuncType, FilterPromotionParams, InqueryPromotionFuncType, InsertPromotionFuncType, InsertPromotionParams, UpdatePromotionFuncType, ValidatePromotionFuncType } from '../type/promotion.type'
 import { UnableToCreatePromotionError, UnableToDeletePromotionError, UnableToGetPromotionError, UnableToUpdatePromotionError, ValidatePromotionError } from 'src/utils/response-code'
 import { Between, EntityManager, In, LessThan, Like, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm'
 import { Promotion } from 'src/db/entities/Promotion'
-import { ProductProfile } from 'src/db/entities/ProductProfile'
-import { ProductProfilePromotion } from 'src/db/entities/ProductProfilePromotion'
+import { Product } from 'src/db/entities/Product'
+import { ProductPromotion } from 'src/db/entities/ProductPromotion'
 import { paginate } from 'nestjs-typeorm-paginate'
 @Injectable()
 export class PromotionService {
@@ -133,7 +133,9 @@ export class PromotionService {
       try {
         promotionQuery = etm.createQueryBuilder(Promotion, 'promotion')
         promotionQuery
-        .leftJoinAndSelect("promotion.productProfiles", "productProfilePromotion")
+        .leftJoinAndSelect("promotion.products", "productPromotion")
+        .leftJoinAndSelect("productPromotion.product", "product")
+        .leftJoinAndSelect("product.productProfile", "productProfile")
         let condition: any = { shopId, deletedAt: null }
         if (name) {
           condition.name = Like(`%${name}%`)
@@ -152,7 +154,7 @@ export class PromotionService {
         promotionQuery.where(condition)
 
       } catch (error) {
-        return [promotionQuery, error]
+        return [promotionQuery, error.message]
       }
       
       this.logger.info(
@@ -168,14 +170,14 @@ export class PromotionService {
     return async (shopId: number, params: InsertPromotionParams, promotionId?: number): Promise<[boolean, string]> => {
       const start = dayjs()
       
-      const { productProfiles, startDate, endDate } = params
+      const { products, startDate, endDate } = params
 
       if (endDate <= startDate) {
         return [false, 'startDate must less than endDate']
       }
 
       let discountError = ''
-      productProfiles.forEach((product) => {
+      products.forEach((product) => {
         if (product.discountType == 'percentage' && ( product.discount <= 0 || product.discount >= 100) ) {
           discountError = 'discount in percentage must be more than 0 and less than 100'
         } else if (product.discountType == 'value' && product.discount <= 0) {
@@ -186,22 +188,25 @@ export class PromotionService {
         return [false, discountError]
       }
 
-      const productProfileIds = productProfiles.map(productProfile => productProfile.productProfileId).sort()
+      const productIds = products.map(product => product.productId).sort()
       try {
-        const productProfileData = await etm.find(ProductProfile, {
+        const productData = await etm.find(Product, {
           where: {
-            id: In(productProfileIds),
-            shopId,
+            id: In(productIds),
+            shop: {
+              id: shopId
+            },
             deletedAt: null,
-          }
+          }, 
+          relations: ['shop']
         })
 
-        if (productProfileData.length !== productProfileIds.length) {
-          return [false, `${productProfileIds.length - productProfileData.length} products are not found`]
+        if (productData.length !== productIds.length) {
+          return [false, `${productIds.length - productData.length} products are not found`]
         }
 
         const profilePromoWhere: any = {
-          productProfileId: In(productProfileIds),
+          productId: In(productIds),
           deletedAt: null,
         }
 
@@ -209,7 +214,7 @@ export class PromotionService {
           profilePromoWhere.promotionId = Not(promotionId)
         }
 
-        const propuctProfilePromotions = await etm.find(ProductProfilePromotion, {
+        const propuctProfilePromotions = await etm.find(ProductPromotion, {
           where: profilePromoWhere,
           relations: ['promotion'],
         })
@@ -220,7 +225,7 @@ export class PromotionService {
               startDate >= current.promotion.startDate && startDate <= current.promotion.endDate ||
               endDate >= current.promotion.startDate && endDate <= current.promotion.endDate
             ) {
-              overlaped[current.productProfileId] = true
+              overlaped[current.productId] = true
             }
             return overlaped
           }
@@ -231,7 +236,7 @@ export class PromotionService {
         }
 
       } catch (error) {
-        return [false, error]
+        return [false, error.message]
       }
       
       this.logger.info(
@@ -256,19 +261,42 @@ export class PromotionService {
         })
         promotion = await etm.save(promotion)
 
-        const productPromotion = etm.create( ProductProfilePromotion, params.productProfiles.map(
-          productProfilePromo => ({
-            productProfileId: productProfilePromo.productProfileId,
-            discountType: productProfilePromo.discountType,
-            discount: productProfilePromo.discount,
-            isActive: productProfilePromo.isActive,
-            promotionId: promotion.id
+        const products: Product[] = await etm.findByIds(
+          Product,
+          params.products.map(
+            promotionProduct => promotionProduct.productId
+          ),
+          {
+            where: {
+              deletedAt: null,
+            }
+          }
+        )
+
+        if (products.length !== params.products.length) {
+          return [null, 'Some of products are not found']
+        }
+
+        const productMap = products.reduce((mem, cur) => {
+          return {...mem, [cur.id]: cur}
+        }, {})
+
+        const productPromotion = etm.create( ProductPromotion, params.products.map(
+          productPromo => ({
+            productId: productPromo.productId,
+            discountType: productPromo.discountType,
+            discount: productPromo.discount,
+            isActive: productPromo.isActive,
+            promotionId: promotion.id,
+            price: productPromo.discountType === "percentage"
+              ? productMap[productPromo.productId].price * ((100 - productPromo.discount) / 100)
+              : productMap[productPromo.productId].price - productPromo.discount
           })
         ))
         await etm.save(productPromotion)
 
       } catch (error) {
-        return [null, error]
+        return [null, error.message]
       }
       this.logger.info(
         `Done InsertPromotionFunc ${dayjs().diff(start)} ms`,
@@ -297,26 +325,50 @@ export class PromotionService {
         promotion.startDate = params.startDate
         promotion.endDate = params.endDate
         promotion = await etm.save(promotion)
-        const oldProductPromotion = await etm.find(ProductProfilePromotion, {
+
+        const products: Product[] = await etm.findByIds(
+          Product,
+          params.products.map(
+            promotionProduct => promotionProduct.productId
+          ),
+          {
+            where: {
+              deletedAt: null,
+            }
+          }
+        )
+
+        if (products.length !== params.products.length) {
+          return [null, 'Some of products are not found']
+        }
+
+        const productMap = products.reduce((mem, cur) => {
+          return {...mem, [cur.id]: cur}
+        }, {})
+
+        const oldProductPromotion = await etm.find(ProductPromotion, {
           where: {
             promotionId,
           }
         })
         await etm.softRemove(oldProductPromotion)
 
-        const productPromotion = etm.create( ProductProfilePromotion, params.productProfiles.map(
-          productProfilePromo => ({
-            productProfileId: productProfilePromo.productProfileId,
-            discountType: productProfilePromo.discountType,
-            discount: productProfilePromo.discount,
-            isActive: productProfilePromo.isActive,
-            promotionId: promotion.id
+        const productPromotion = etm.create( ProductPromotion, params.products.map(
+          productPromo => ({
+            productId: productPromo.productId,
+            discountType: productPromo.discountType,
+            discount: productPromo.discount,
+            isActive: productPromo.isActive,
+            promotionId: promotion.id,
+            price: productPromo.discountType === "percentage"
+              ? productMap[productPromo.productId].price * ((100 - productPromo.discount) / 100)
+              : productMap[productPromo.productId].price - productPromo.discount
           })
         ))
         await etm.save(productPromotion)
 
       } catch (error) {
-        return [null, error]
+        return [null, error.message]
       }
       this.logger.info(
         `Done UpdatePromotionFunc ${dayjs().diff(start)} ms`,
@@ -346,7 +398,7 @@ export class PromotionService {
           return [promotion, `Promotion ${promotionId} is not found`]
         }
 
-        const productProfilePromotions = await etm.find(ProductProfilePromotion, {
+        const productPromotions = await etm.find(ProductPromotion, {
           where: {
             promotionId,
             deletedAt: null,
@@ -354,10 +406,10 @@ export class PromotionService {
         })
 
         await etm.softRemove(promotion)
-        await etm.softRemove(productProfilePromotions)
+        await etm.softRemove(productPromotions)
 
       } catch (error) {
-        return [promotion, error]
+        return [promotion, error.message]
       }
       
       this.logger.info(

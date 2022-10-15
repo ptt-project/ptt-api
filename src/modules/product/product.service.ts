@@ -141,6 +141,7 @@ export class ProductService {
               return {
                 ...pd,
                 productProfileId: productProfile.id,
+                shop,
               }
             }
           )
@@ -163,6 +164,7 @@ export class ProductService {
             stock: params.stock,
             sku: params.sku,
             productProfileId: productProfile.id,
+            shop,
           }
         ]
 
@@ -894,7 +896,8 @@ export class ProductService {
                 option1: product.option1,
                 option2: product.option2,
                 price: product.price,
-                stock: product.stock  
+                stock: product.stock,
+                shop,
               })
             } else {
               let found: boolean = false
@@ -1005,6 +1008,7 @@ export class ProductService {
                 return {
                   ...pd,
                   productProfileId: productProfile.id,
+                  shop,
                 }
               }
             )
@@ -1053,6 +1057,7 @@ export class ProductService {
             stock: params.stock,
             sku: params.sku,
             productProfileId: productProfile.id,
+            shop,
           }
         ]
 

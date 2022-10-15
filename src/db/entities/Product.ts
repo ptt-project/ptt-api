@@ -4,6 +4,7 @@ import { Category } from './Category'
 import { FlashSaleProduct } from './FlashSaleProduct'
 import { PlatformCategory } from './PlatformCategory'
 import { ProductProfile } from './ProductProfile'
+import { ProductPromotion } from './ProductPromotion'
 import { Shop } from './Shop'
 
 @Entity({ name: 'products' })
@@ -60,4 +61,11 @@ export class Product extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'product_id' })
   flashSaleProducts: FlashSaleProduct[]
+
+  @OneToMany(
+    () => ProductPromotion,
+    promotion => promotion.product,
+  )
+  @JoinColumn({ referencedColumnName: 'product_id' })
+  productPromotions: ProductPromotion[]
 }

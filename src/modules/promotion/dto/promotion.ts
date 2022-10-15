@@ -1,12 +1,12 @@
 import { Transform, Type } from 'class-transformer'
 import { ArrayNotEmpty, IsArray, IsBoolean, IsDate, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator'
-import { DiscountType } from 'src/db/entities/ProductProfilePromotion'
+import { DiscountType } from 'src/db/entities/ProductPromotion'
 import { IsArrayOfObjects } from 'src/utils/decorator/dto.decorator'
 
-export class CreateProductProfilePromotionDTO {
+export class CreateProductPromotionDTO {
   @IsNumber()
   @IsNotEmpty()
-  productProfileId: number
+  productId: number
 
   @IsIn(['value', 'percentage'])
   @IsNotEmpty()
@@ -44,10 +44,10 @@ export class CreatePromotionRequestDTO {
 
   @IsArray()
   @ArrayNotEmpty()
-  @Type(() => CreateProductProfilePromotionDTO)
+  @Type(() => CreateProductPromotionDTO)
   @IsArrayOfObjects()
   @ValidateNested()
-  productProfiles: CreateProductProfilePromotionDTO[]
+  products: CreateProductPromotionDTO[]
 }
 
 export class GetPromotionQueryDTO {
