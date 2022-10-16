@@ -7,10 +7,6 @@ import { DiscountType } from 'src/db/entities/FlashSaleProduct'
 export class CreateFlashSaleProductDTO {
   @IsNumber()
   @IsNotEmpty()
-  productProfileId: number
-
-  @IsNumber()
-  @IsNotEmpty()
   productId: number
 
   @IsIn(['value', 'percentage'])

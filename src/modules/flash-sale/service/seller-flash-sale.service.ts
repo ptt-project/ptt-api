@@ -12,7 +12,6 @@ import { CreateFlashSaleRequestDTO, GetFlashSaleQueryDTO, GetFlashSaleRoundDTO, 
 import { FlashSaleRound } from 'src/db/entities/FlashSaleRound'
 import { FlashSaleProduct } from 'src/db/entities/FlashSaleProduct'
 import { getTimeFromDate } from 'src/utils/helpers'
-import { ProductProfile } from 'src/db/entities/ProductProfile'
 import { Product } from 'src/db/entities/Product'
 
 @Injectable()
@@ -243,8 +242,8 @@ export class SellerFlashSaleService {
         flashSaleQuery = etm.createQueryBuilder(FlashSale, 'flashSale')
         flashSaleQuery
         .leftJoinAndSelect("flashSale.products", "flashSaleProduct")
-        .leftJoinAndSelect("flashSaleProduct.productProfile", "productProfile")
         .leftJoinAndSelect("flashSaleProduct.product", "product")
+        .leftJoinAndSelect("product.productProfile", "productProfile")
         .leftJoinAndSelect("flashSale.round", "flashSaleRound")
         const condition: any = { shopId, deletedAt: null, round: {} }
         console.log(date)
@@ -332,12 +331,14 @@ export class SellerFlashSaleService {
         return [false, discountError]
       }
 
-      const productIds = products.map(productProfile => productProfile.productProfileId)
+      const productIds = products.map(product => product.productId)
       try {
-        const productData = await etm.find(ProductProfile, {
+        const productData = await etm.find(Product, {
           where: {
             id: In(productIds),
-            shopId,
+            shop: {
+              id: shopId,
+            },
             deletedAt: null,
           }
         })
@@ -391,7 +392,6 @@ export class SellerFlashSaleService {
 
         const flashSaleProducts = etm.create( FlashSaleProduct, params.products.map(
           flashSaleProduct => ({
-            productProfileId: flashSaleProduct.productProfileId,
             productId: flashSaleProduct.productId,
             discountType: flashSaleProduct.discountType,
             discount: flashSaleProduct.discount,
@@ -437,6 +437,27 @@ export class SellerFlashSaleService {
           flashSale.status = params.status
         }
         flashSale = await etm.save(flashSale)
+
+        const products: Product[] = await etm.findByIds(
+          Product,
+          params.products.map(
+            flashSaleProduct => flashSaleProduct.productId
+          ),
+          {
+            where: {
+              deletedAt: null,
+            }
+          }
+        )
+
+        if (products.length !== params.products.length) {
+          return [null, 'Some of products are not found']
+        }
+
+        const productMap = products.reduce((mem, cur) => {
+          return {...mem, [cur.id]: cur}
+        }, {})
+
         const oldFlashSaleProduct = await etm.find(FlashSaleProduct, {
           where: {
             flashSaleId,
@@ -446,14 +467,16 @@ export class SellerFlashSaleService {
 
         const flashSaleProducts = etm.create( FlashSaleProduct, params.products.map(
           flashSaleProduct => ({
-            productProfileId: flashSaleProduct.productProfileId,
             productId: flashSaleProduct.productId,
             discountType: flashSaleProduct.discountType,
             discount: flashSaleProduct.discount,
             isActive: flashSaleProduct.isActive,
             limitToBuy: flashSaleProduct.limitToBuy,
             limitToStock: flashSaleProduct.limitToStock,
-            flashSaleId: flashSale.id
+            flashSaleId: flashSale.id,
+            price: flashSaleProduct.discountType === "percentage"
+              ? productMap[flashSaleProduct.productId].price * ((100 - flashSaleProduct.discount) / 100)
+              : productMap[flashSaleProduct.productId].price - flashSaleProduct.discount
           })
         ))
         await etm.save(flashSaleProducts)
@@ -463,7 +486,7 @@ export class SellerFlashSaleService {
             id: flashSaleId,
             shopId,
           },
-          relations: ['productProfiles']
+          relations: ['products', 'products.product', 'products.product.productProfile']
         })
 
       } catch (error) {
@@ -533,7 +556,7 @@ export class SellerFlashSaleService {
             shopId,
             deletedAt: null,
           },
-          relations: ['productProfiles', 'round', 'productProfiles.productProfile'],
+          relations: ['products', 'round', 'products.product', 'products.product.productProfile'],
         })
 
         console.log('flashSale', flashSale)

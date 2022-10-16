@@ -3,7 +3,6 @@ import { DiscountType } from 'src/db/entities/FlashSaleProduct'
 import { SelectQueryBuilder } from 'typeorm'
 
 export type InsertFlashSaleProductParams = {
-  productProfileId: number,
   productId: number,
   discountType: DiscountType,
   discount: number,

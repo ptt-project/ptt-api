@@ -206,7 +206,6 @@ export class MockDataConsoleService {
       status: "active",
       products: [
         {
-          productProfileId: productProfile.id,
           productId: products[0].id,
           discountType: "percentage",
           discount: 10,

@@ -86,13 +86,18 @@ export class MemberFlashSaleService {
       try {
         flashSaleQuery = etm.createQueryBuilder(FlashSaleProduct, 'flashSaleProduct')
         flashSaleQuery
-        .leftJoinAndSelect("flashSaleProduct.productProfile", "productProfile")
+        .leftJoinAndSelect("flashSaleProduct.product", "product")
+        .leftJoinAndSelect("product.productProfile", "productProfile")
         .leftJoinAndSelect("flashSaleProduct.flashSale", "flashSale")
-        const condition: any = { deletedAt: null, flashSale: {}, productProfile: {} }
+        const condition: any = { 
+          deletedAt: null,
+          flashSale: { deletedAt: null },
+          product: { deletedAt: null, productProfile: { deletedAt: null } },
+        }
         condition.flashSale.roundId = roundId
         condition.flashSale.status = 'active'
-        condition.productProfile.status = 'public'
-        condition.productProfile.approval = true
+        condition.product.productProfile.status = 'public'
+        condition.product.productProfile.approval = true
         condition.isActive = true
         flashSaleQuery.where(condition)
 

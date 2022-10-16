@@ -123,11 +123,4 @@ export class ProductProfile extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'product_profile_id' })
   categoryProductProfiles: CategoryProductProfile[]
-  
-  @OneToMany(
-    () => FlashSaleProduct,
-    flashSale => flashSale.productProfile,
-  )
-  @JoinColumn({ referencedColumnName: 'product_profile_id' })
-  flashSaleProductProfiles: FlashSaleProduct[]
 }

@@ -11,9 +11,6 @@ export class FlashSaleProduct extends AppEntity {
   @Column({ name: 'flash_sale_id', nullable: false })
   flashSaleId: number
 
-  @Column({ name: 'product_profile_id', nullable: false })
-  productProfileId: number
-
   @Column({ name: 'product_id', nullable: false })
   productId: number
 
@@ -63,13 +60,6 @@ export class FlashSaleProduct extends AppEntity {
   )
   @JoinColumn({ name: 'flash_sale_id', referencedColumnName: 'id' })
   flashSale: FlashSale
-
-  @ManyToOne(
-    () => ProductProfile,
-    productProfile => productProfile.flashSaleProductProfiles,
-  )
-  @JoinColumn({ name: 'product_profile_id', referencedColumnName: 'id' })
-  productProfile: ProductProfile
 
   @ManyToOne(
     () => Product,
