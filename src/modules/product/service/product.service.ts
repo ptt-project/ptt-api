@@ -284,7 +284,7 @@ export class ProductService {
       const start = dayjs()
       let savedProductProfile: ProductProfile
       try {
-        const productProfile = etm.create(ProductProfile, params)
+        const productProfile = etm.create(ProductProfile, { ...params, approval: true })
         savedProductProfile = await etm.save(productProfile)
       } catch (error) {
         return [null, error.message]
