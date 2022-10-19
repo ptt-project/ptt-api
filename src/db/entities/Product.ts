@@ -36,8 +36,9 @@ export class Product extends AppEntity {
   @ManyToOne(
     () => ProductProfile,
     productProfile => productProfile.products,
+    { createForeignKeyConstraints: false },
   )
-  @JoinColumn({ name: 'product_profile_id', referencedColumnName: 'id' })
+  @JoinColumn({ name: 'product_profile_id' })
   productProfile: ProductProfile
 
   @ManyToOne(

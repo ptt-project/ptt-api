@@ -26,11 +26,16 @@ import { SellerModule } from './modules/seller/seller.modules'
 import { ReviewModule } from './modules/review/review.modules'
 import { CategoryModule } from './modules/category/category.modules'
 import { AppConsoleModule } from './modules/app-console/app-console.moduel'
+import { WalletModule } from './modules/wallet/wallet.modules'
+
+console.log('__dirname', __dirname)
 import { ProductModule } from './modules/product/product.modules'
 import { EmailModule } from './modules/email/email.module'
 import { ImageModule } from './modules/image/image.module'
 import { PromotionModule } from './modules/promotion/promotion.module'
 import { FlashSaleModule } from './modules/flash-sale/flash-sale.module'
+import { BankAccountModule } from './modules/bankAccount/bankAccount.modules'
+import { AppConfigModule } from './modules/config/config.modules'
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -92,11 +97,14 @@ import { FlashSaleModule } from './modules/flash-sale/flash-sale.module'
     SellerModule,
     ReviewModule,
     CategoryModule,
+    WalletModule,
     ProductModule,
     ImageModule,
     PromotionModule,
     EmailModule,
     FlashSaleModule,
+    BankAccountModule,
+    AppConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService],
