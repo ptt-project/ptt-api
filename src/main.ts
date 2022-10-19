@@ -44,6 +44,7 @@ async function bootstrap() {
     'http://happyshoppingexpress.com:3000',
     'http://localhost:3000',
     'http://localhost:3008',
+    'http://124.109.2.49:3000',
   ]
   app.enableCors({
     // origin: function(origin, callback) {
