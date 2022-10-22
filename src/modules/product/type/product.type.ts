@@ -3,6 +3,7 @@ import { ProductOption } from 'src/db/entities/ProductOption'
 import { ConditionType, ProductProfile, ProductProfileStatusType } from 'src/db/entities/ProductProfile'
 import { SelectQueryBuilder } from 'typeorm'
 import { CreateProductProfileRequestDto, GetProductListDto } from '../dto/product.dto'
+import { Shop } from 'src/db/entities/Shop'
 
 export type InsertProductProfileToDbParams = {
   name: string
@@ -21,6 +22,8 @@ export type InsertProductProfileToDbParams = {
   width: number
   length: number
   height: number
+  minPrice: number
+  maxPrice: number
 }
 
 export type InsertProductOptionsToDbParams = {
@@ -36,6 +39,7 @@ export type InsertProductsToDbParams = {
   option2?: string
   price: number
   stock: number
+  shop: Shop
 }
 
 export type UpdateProductProfileToDbParams = {

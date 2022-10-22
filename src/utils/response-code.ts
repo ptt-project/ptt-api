@@ -110,6 +110,23 @@ export const UnableUpdateProduct = _productError + 17
 const _image = 110000
 export const UnableResizeImage = _image + 1
 
+const _promotion = 112000
+export const UnableToGetPromotionError = _promotion + 1
+export const ValidatePromotionError = _promotion + 2
+export const UnableToCreatePromotionError = _promotion + 3
+export const UnableToUpdatePromotionError = _promotion + 4
+export const UnableToDeletePromotionError = _promotion + 5
+
+const _flashSale = 121000
+export const UnableToInquiryFlashSaleError = _flashSale + 1
+export const ValidateFlashSaleError = _flashSale + 2
+export const UnableToCreateFlashSaleError = _flashSale + 3
+export const UnableToUpdateFlashSaleError = _flashSale + 4
+export const UnableToDeleteFlashSaleError = _flashSale + 5
+export const UnableToGetFlashSaleRoundError = _flashSale + 6
+export const UnableToInquiryFlashSaleByIdError = _flashSale + 7
+export const UnableToGetFlashSaleForMemberError = _flashSale + 8
+
 const _walletError = 114000
 export const UnableToInsertWallet = _walletError + 1
 export const UnableToGetWalletTransaction = _walletError + 2

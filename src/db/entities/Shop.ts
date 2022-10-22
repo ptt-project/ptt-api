@@ -1,8 +1,10 @@
 import { Column, Entity, OneToOne, JoinColumn, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
+import { FlashSale } from './FlashSale'
 import { Member } from './Member'
 import { Product } from './Product'
 import { ProductProfile } from './ProductProfile'
+import { Promotion } from './Promotion'
 
 export type ShopType = 'Normal' | 'Mall'
 export type ApprovalType = 'requested' | 'rejected' | 'approved'
@@ -149,4 +151,18 @@ export class Shop extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'shop_id' })
   productProfiles: ProductProfile[]
+
+  @OneToMany(
+    () => Promotion,
+    promotion => promotion.shop,
+  )
+  @JoinColumn({ referencedColumnName: 'shop_id' })
+  promotions: Promotion[]
+
+  @OneToMany(
+    () => FlashSale,
+    flashSale => flashSale.shop,
+  )
+  @JoinColumn({ referencedColumnName: 'shop_id' })
+  flashSales: FlashSale[]
 }

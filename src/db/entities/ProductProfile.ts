@@ -12,11 +12,12 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { CategoryProductProfile } from './CategoryProductProfile'
+import { FlashSaleProduct } from './FlashSaleProduct'
 import { PlatformCategory } from './PlatformCategory'
 import { Product } from './Product'
 import { ProductOption } from './ProductOption'
 import { Shop } from './Shop'
-import { transformerDayjsToDate } from 'src/utils/entity-transform'
+import { transformerDayjsToDate, transformerDecimalToNumber } from 'src/utils/entity-transform'
 
 export type ConditionType = 'old' | 'new'
 export type ProductProfileStatusType = 'public' | 'hidden' | 'out of stock'
@@ -82,6 +83,26 @@ export class ProductProfile {
 
   @Column({ name: 'like', default: 0, nullable: true })
   like: number
+
+  @Column({
+    name: 'min_price',
+    type: 'decimal',
+    precision: 14,
+    scale: 4,
+    nullable: false,
+    transformer: transformerDecimalToNumber,
+  })
+  minPrice: number
+
+  @Column({
+    name: 'max_price',
+    type: 'decimal',
+    precision: 14,
+    scale: 4,
+    nullable: false,
+    transformer: transformerDecimalToNumber,
+  })
+  maxPrice: number
 
   @OneToMany(
     () => Product,

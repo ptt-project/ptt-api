@@ -95,10 +95,19 @@ export class ProductService {
         )
       }
 
+      const minPrice = params.isMultipleOptions 
+        ? Math.min(...params.products.map(product => product.price))
+        : params.price
+      const maxPrice = params.isMultipleOptions 
+        ? Math.max(...params.products.map(product => product.price))
+        : params.price
+
       const newProductProfile: InsertProductProfileToDbParams = {
         ...params,
         shopId: shop.id,
         status: 'hidden',
+        minPrice,
+        maxPrice,
       }
       const [productProfile, insertProductProfileError] = await (await insertProductProfile)(
         newProductProfile
@@ -134,6 +143,7 @@ export class ProductService {
               return {
                 ...pd,
                 productProfileId: productProfile.id,
+                shop,
               }
             }
           )
@@ -156,6 +166,7 @@ export class ProductService {
             stock: params.stock,
             sku: params.sku,
             productProfileId: productProfile.id,
+            shop,
           }
         ]
 
@@ -887,7 +898,8 @@ export class ProductService {
                 option1: product.option1,
                 option2: product.option2,
                 price: product.price,
-                stock: product.stock  
+                stock: product.stock,
+                shop,
               })
             } else {
               let found = false
@@ -998,6 +1010,7 @@ export class ProductService {
                 return {
                   ...pd,
                   productProfileId: productProfile.id,
+                  shop,
                 }
               }
             )
@@ -1046,6 +1059,7 @@ export class ProductService {
             stock: params.stock,
             sku: params.sku,
             productProfileId: productProfile.id,
+            shop,
           }
         ]
 
