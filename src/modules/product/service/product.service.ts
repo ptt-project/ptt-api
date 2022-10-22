@@ -1256,37 +1256,42 @@ export class ProductService {
       const start = dayjs()
       let productProfiles: SelectQueryBuilder<ProductProfile>
 
-      const partitionQuery: string = "product_profile_shop_" + shopId
+      const partitionQuery: string = `product_profile_shop_${shopId}`
 
       try {
         productProfiles = etm
           .createQueryBuilder(ProductProfile, partitionQuery)
           .innerJoin(
-            partitionQuery + '.products',
+            `${partitionQuery}.products`,
             'products',
           )
-          .where(partitionQuery + '.deletedAt IS NULL')
-          .andWhere(partitionQuery + '.shopId = :shopId', {
+          if (query.categoryId) {
+            productProfiles.innerJoin(
+              'category_product_profiles',
+              'category_product_profiles',
+              `${partitionQuery}.id = category_product_profiles.product_profile_id and category_id = :categoryId`, {
+                categoryId: query.categoryId,
+            }
+            )
+          }
+          
+          productProfiles.where(partitionQuery + '.deletedAt IS NULL')
+          .andWhere(`${partitionQuery}.shopId = :shopId`, {
             shopId,
           })
           if (query.approval) {
-            productProfiles.andWhere(partitionQuery + '.approval = :approval', {
+            productProfiles.andWhere(`${partitionQuery}.approval = :approval`, {
               approval: query.approval,
             })
           }
           if (query.status) {
-            productProfiles.andWhere(partitionQuery + '.status = :status', {
+            productProfiles.andWhere(`${partitionQuery}.status = :status`, {
               status: query.status,
-            })
-          }
-          if (query.categoryId) {
-            productProfiles.andWhere(partitionQuery + '.id = (select category_product_profiles.product_profile_id from category_product_profiles where ' + partitionQuery + '.id = category_product_profiles.product_profile_id and category_id = :categoryId)', {
-              categoryId: query.categoryId,
             })
           }
           if (query.groupSearch) {
             if(query.groupSearch == 'product name') {
-              productProfiles.andWhere(partitionQuery + '.name ILIKE :keyword', {
+              productProfiles.andWhere(`${partitionQuery}.name ILIKE :keyword`, {
                 keyword: '%'+query.keyword+'%',
               })
             }
@@ -1301,9 +1306,9 @@ export class ProductService {
               })
             }
           }
-          productProfiles.select([partitionQuery,'products'])
-          productProfiles.orderBy(partitionQuery + '.id', 'ASC')
+          productProfiles.orderBy(`${partitionQuery}.id`, 'ASC')
           productProfiles.addOrderBy('products.id', 'ASC')
+          productProfiles.select([partitionQuery,'products'])
           
       } catch (error) {
         return [productProfiles, error]
