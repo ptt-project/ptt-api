@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
-import { EntityManager, In } from 'typeorm'
+import { EntityManager, In, SelectQueryBuilder } from 'typeorm'
 
 import {
   UnableToCreateProductProfile,
@@ -46,16 +46,18 @@ import {
   UpdateProductsToDbType,
   DeleteProductOptionByIdType,
   UpdateProductOptionsToDbType,
+  InquiryProductListByShopIdType,
 } from '../type/product.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
-import { CreateProductProfileRequestDto, UpdateProductProfileRequestDto } from '../dto/product.dto'
+import { CreateProductProfileRequestDto, GetProductListDto, UpdateProductProfileRequestDto } from '../dto/product.dto'
 import { Shop } from 'src/db/entities/Shop'
 import { ProductProfile, ProductProfileStatusType } from 'src/db/entities/ProductProfile'
 import { ProductOption } from 'src/db/entities/ProductOption'
 import { Product } from 'src/db/entities/Product'
 import { internalSeverError } from 'src/utils/response-error'
 import _ from 'lodash'
+import { paginate } from 'nestjs-typeorm-paginate'
 
 @Injectable()
 export class ProductService {
@@ -1217,4 +1219,107 @@ export class ProductService {
       return ''
     }
   }
+
+  GetProductByShopIdHandler(
+    inquiryProductProfileByShopId: Promise<InquiryProductListByShopIdType>,
+    ) {
+    return async (shop: Shop, query: GetProductListDto) => {
+      const start = dayjs()
+      const { limit = 10, page = 1 } = query
+
+      const [productProfiles, inquiryProductProfileByShopIdError] = await (
+        await inquiryProductProfileByShopId
+      )(shop.id, query)
+
+      if (inquiryProductProfileByShopIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          inquiryProductProfileByShopIdError,
+        )
+      }
+
+      this.logger.info(`Done GetProductByShopIdHandler ${dayjs().diff(start)} ms`)
+      const result = await paginate<ProductProfile>(productProfiles, {
+        limit,
+        page,
+      })
+      return response(result)
+    }
+  }
+
+  async InquiryProductListByShopIdFunc(
+    etm: EntityManager,
+  ): Promise<InquiryProductListByShopIdType> {
+    return async (shopId: number, query: GetProductListDto): Promise<[SelectQueryBuilder<ProductProfile>, string]> => {
+
+      const start = dayjs()
+      let productProfiles: SelectQueryBuilder<ProductProfile>
+
+      const partitionQuery: string = `product_profile_shop_${shopId}`
+
+      try {
+        productProfiles = etm
+          .createQueryBuilder(ProductProfile, partitionQuery)
+          .innerJoin(
+            `${partitionQuery}.products`,
+            'products',
+          )
+          if (query.categoryId) {
+            productProfiles.innerJoin(
+              'category_product_profiles',
+              'category_product_profiles',
+              `${partitionQuery}.id = category_product_profiles.product_profile_id and category_id = :categoryId`, {
+                categoryId: query.categoryId,
+            }
+            )
+          }
+          
+          productProfiles.where(partitionQuery + '.deletedAt IS NULL')
+          .andWhere(`${partitionQuery}.shopId = :shopId`, {
+            shopId,
+          })
+          if (query.approval) {
+            productProfiles.andWhere(`${partitionQuery}.approval = :approval`, {
+              approval: query.approval,
+            })
+          }
+          if (query.status) {
+            productProfiles.andWhere(`${partitionQuery}.status = :status`, {
+              status: query.status,
+            })
+          }
+          if (query.groupSearch) {
+            if(query.groupSearch == 'product name') {
+              productProfiles.andWhere(`${partitionQuery}.name ILIKE :keyword`, {
+                keyword: '%'+query.keyword+'%',
+              })
+            }
+            if(query.groupSearch == 'sku') {
+              productProfiles.andWhere('products.sku ILIKE :keyword', {
+                keyword: '%'+query.keyword+'%',
+              })
+            }
+            if(query.groupSearch == 'product option') {
+              productProfiles.andWhere('products.option1 ILIKE :keyword or products.option2 ILIKE :keyword', {
+                keyword: '%'+query.keyword+'%',
+              })
+            }
+          }
+          productProfiles.orderBy(`${partitionQuery}.id`, 'ASC')
+          productProfiles.addOrderBy('products.id', 'ASC')
+          productProfiles.select([partitionQuery,'products'])
+          
+      } catch (error) {
+        return [productProfiles, error]
+      }
+
+      this.logger.info(
+        `Done InquiryProductListByShopIdFunc ${dayjs().diff(start)} ms`,
+      )
+
+      return [productProfiles, '']
+    }
+  }
+
 }
