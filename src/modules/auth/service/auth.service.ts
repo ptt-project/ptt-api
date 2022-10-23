@@ -68,7 +68,7 @@ export class AuthService {
     inquiryMemberEixst: Promise<InquiryMemberExistType>,
     insertMemberToDb: Promise<InsertMemberToDbTye>,
     addMobileFunc: Promise<AddMobileFuncType>,
-    insertWalletToDb: Promise<InsertWalletToDbFuncType>
+    insertWalletToDb: Promise<InsertWalletToDbFuncType>,
   ) {
     return async (body: RegisterRequestDto) => {
       const start = dayjs()
@@ -202,7 +202,7 @@ export class AuthService {
     return async (
       accessToken: string,
       refreshToken: string,
-      id: number,
+      id: string,
     ): Promise<[ValidateTokenResponse, boolean]> => {
       const start = dayjs()
       const isExiredAccessToken = await (await exiredToken)(accessToken)
@@ -248,7 +248,7 @@ export class AuthService {
   async inquiryUserExistByIdFunc(
     etm: EntityManager,
   ): Promise<InquiryUserExistByIdType> {
-    return async (id: number): Promise<[Member, string]> => {
+    return async (id: string): Promise<[Member, string]> => {
       const start = dayjs()
       let member: Member
       try {

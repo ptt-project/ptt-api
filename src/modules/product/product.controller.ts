@@ -11,16 +11,17 @@ import {
 import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqShop, Seller } from '../auth/auth.decorator'
-import { CreateProductProfileRequestDto, UpdateProductProfileRequestDto } from './dto/product.dto'
+import {
+  CreateProductProfileRequestDto,
+  UpdateProductProfileRequestDto,
+} from './dto/product.dto'
 import { ProductService } from './service/product.service'
 
 @Auth()
 @Seller()
 @Controller('v1/shops')
 export class ProductController {
-  constructor(
-    private readonly productService: ProductService,
-  ) {}
+  constructor(private readonly productService: ProductService) {}
 
   @Post('products')
   @Transaction()
@@ -41,7 +42,7 @@ export class ProductController {
   @Get('products-profile/:productProfileId')
   @Transaction()
   async getProductByProductId(
-    @Param('productProfileId') productProfileId: number,
+    @Param('productProfileId') productProfileId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.productService.GetProductByProductIdHandler(
@@ -54,7 +55,7 @@ export class ProductController {
   @Delete('products-profile/:productProfileId')
   @Transaction()
   async deleteProduct(
-    @Param('productProfileId') productProfileId: number,
+    @Param('productProfileId') productProfileId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.productService.DeleteProductByProductIdHandler(
@@ -68,7 +69,7 @@ export class ProductController {
   @Patch('products-profile/:productProfileId/hidden/toggle')
   @Transaction()
   async hiddenToggleProduct(
-    @Param('productProfileId') productProfileId: number,
+    @Param('productProfileId') productProfileId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.productService.HiddenToggleProductHandler(
@@ -81,7 +82,7 @@ export class ProductController {
   @Transaction()
   async updateProduct(
     @ReqShop() shop: Shop,
-    @Param('productProfileId') productProfileId: number,
+    @Param('productProfileId') productProfileId: string,
     @Body() body: UpdateProductProfileRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {

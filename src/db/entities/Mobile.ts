@@ -5,7 +5,7 @@ import { Member } from './Member'
 @Entity({ name: 'mobiles' })
 export class Mobile extends AppEntity {
   @Column({ name: 'member_id', nullable: false })
-  memberId: number
+  memberId: string
 
   @Column({ name: 'mobile', nullable: false, length: 20 })
   mobile: string

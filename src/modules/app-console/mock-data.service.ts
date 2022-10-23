@@ -14,6 +14,7 @@ import {
 } from '../product/type/product.type'
 import { ProductProfile } from 'src/db/entities/ProductProfile'
 import { AuthService } from '../auth/service/auth.service'
+import { genUuid } from 'src/utils/helpers'
 
 @Console()
 export class MockDataConsoleService {
@@ -123,7 +124,7 @@ export class MockDataConsoleService {
     // }
     // console.log('shop', shop)
 
-    const shopId = 3
+    const shopId = genUuid()
 
     const platformCategory = etm.create(PlatformCategory, {
       name: 'platform-category01',

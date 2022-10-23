@@ -63,7 +63,7 @@ export class PasswordService {
   }
 
   async inquiryMemberByIdFunc(): Promise<InquiryMemberByIdType> {
-    return async (memberId: number): Promise<[Member, string]> => {
+    return async (memberId: string): Promise<[Member, string]> => {
       const start = dayjs()
       let member: Member
       try {

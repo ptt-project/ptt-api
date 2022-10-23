@@ -1,24 +1,27 @@
 import { Wallet } from 'src/db/entities/Wallet'
-import { TransactionType, WalletTransaction } from 'src/db/entities/WalletTransaction'
+import {
+  TransactionType,
+  WalletTransaction,
+} from 'src/db/entities/WalletTransaction'
 import { SelectQueryBuilder } from 'typeorm'
 
 export type InqueryWalletTransactionFuncType = (
-  walletId: number,
+  walletId: string,
   startDate: Date,
   endDate: Date,
   type: TransactionType,
 ) => Promise<[SelectQueryBuilder<WalletTransaction>, string]>
 
 export type InsertWalletToDbFuncType = (
-  memberId: number,
+  memberId: string,
 ) => Promise<[Wallet, string]>
 
 export type InsertTransactionToDbFuncType = (
-  walletId: number,
+  walletId: string,
   amount: number,
   detail: string,
   type: TransactionType,
-  bankAccountId?: number,
+  bankAccountId?: string,
 ) => Promise<[WalletTransaction, string]>
 
 export type InsertReferenceToDbFuncType = (
@@ -48,6 +51,6 @@ export type RequestWithdrawFuncType = (
 ) => Promise<[string, string]>
 
 export type AdjustWalletFuncType = (
-  walletId: number,
+  walletId: string,
   adjustBalance: number,
 ) => Promise<[Wallet, string]>

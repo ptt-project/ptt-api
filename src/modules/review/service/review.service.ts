@@ -61,7 +61,7 @@ export class ReviewService {
     etm: EntityManager,
   ): Promise<InquiryReviewsBySellerIdType> {
     return async (
-      sellerId: number,
+      sellerId: string,
       isReply?: string,
       star?: string,
     ): Promise<[SelectQueryBuilder<Review>, string]> => {
@@ -95,7 +95,7 @@ export class ReviewService {
   getReviewsByReviewIdHandler(
     InquiryReviewsByReviewId: Promise<InquiryReviewsByReviewIdType>,
   ) {
-    return async (reviewId: number) => {
+    return async (reviewId: string) => {
       const start = dayjs()
       const [review, InquiryReviewsByReviewIdError] = await (
         await InquiryReviewsByReviewId
@@ -119,7 +119,7 @@ export class ReviewService {
   async InquiryReviewsByReviewIdFunc(
     etm: EntityManager,
   ): Promise<InquiryReviewsByReviewIdType> {
-    return async (reviewId: number): Promise<[Review, string]> => {
+    return async (reviewId: string): Promise<[Review, string]> => {
       const start = dayjs()
       let review: Review
 
@@ -144,9 +144,9 @@ export class ReviewService {
     InquiryReviewsByReviewId: Promise<InquiryReviewsByReviewIdType>,
     replyReviewByReviewIdToDb: Promise<replyReviewByReviewIdType>,
   ) {
-    return async (reviewId: number, body: replyCommentRequestDto) => {
+    return async (reviewId: string, body: replyCommentRequestDto) => {
       const start = dayjs()
-      const [review, inquiryReviewsByReviewIdError] = await (
+      const [, inquiryReviewsByReviewIdError] = await (
         await InquiryReviewsByReviewId
       )(reviewId)
 
@@ -181,7 +181,7 @@ export class ReviewService {
     etm: EntityManager,
   ): Promise<replyReviewByReviewIdType> {
     return async (
-      reviewId: number,
+      reviewId: string,
       params: ReplyReviewToDbParams,
     ): Promise<string> => {
       const start = dayjs()

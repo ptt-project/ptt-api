@@ -91,69 +91,80 @@ export class MockDataConsoleService {
       {
         walletId: wallet.id,
         status: 'success',
-        amount: 100000.00,
+        amount: 100000.0,
         type: 'deposit',
-        detail: 'ฝากเงินผ่านเบอร์มือถือ'
-      }, {
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+      },
+      {
         walletId: wallet.id,
         status: 'fail',
-        amount: 1000.00,
+        amount: 1000.0,
         type: 'deposit',
-        detail: 'ฝากเงินผ่านเบอร์มือถือ'
-      }, {
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+      },
+      {
         walletId: wallet.id,
         status: 'pending',
-        amount: 1000.00,
+        amount: 1000.0,
         type: 'deposit',
-        detail: 'ฝากเงินผ่านธนาคาร'
-      }, {
+        detail: 'ฝากเงินผ่านธนาคาร',
+      },
+      {
         walletId: wallet.id,
         status: 'success',
-        amount: -1000.00,
+        amount: -1000.0,
         type: 'withdraw',
-        detail: 'ถอนเงิน'
-      }, {
+        detail: 'ถอนเงิน',
+      },
+      {
         walletId: wallet.id,
         status: 'success',
-        amount: -1000.00,
+        amount: -1000.0,
         type: 'buy',
-        detail: 'ซื้อสินค้า'
-      }, {
+        detail: 'ซื้อสินค้า',
+      },
+      {
         walletId: wallet.id,
         status: 'success',
-        amount: -1000.00,
+        amount: -1000.0,
         type: 'buy',
-        detail: 'ซื้อสินค้า'
-      }, {
+        detail: 'ซื้อสินค้า',
+      },
+      {
         walletId: wallet.id,
         status: 'success',
-        amount: 1000.00,
+        amount: 1000.0,
         type: 'sell',
-        detail: 'ขายสินค้า'
-      }, {
+        detail: 'ขายสินค้า',
+      },
+      {
         walletId: wallet.id,
         status: 'success',
-        amount: -1000.00,
+        amount: -1000.0,
         type: 'buy',
-        detail: 'ซื้อสินค้า'
-      }, {
+        detail: 'ซื้อสินค้า',
+      },
+      {
         walletId: wallet.id,
         status: 'cancel',
-        amount: 1000.00,
+        amount: 1000.0,
         type: 'deposit',
-        detail: 'ฝากเงินผ่านเบอร์มือถือ'
-      }, {
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+      },
+      {
         walletId: wallet.id,
         status: 'success',
-        amount: 2000.00,
+        amount: 2000.0,
         type: 'deposit',
-        detail: 'ฝากเงินผ่านเบอร์มือถือ'
-      },, {
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+      },
+      ,
+      {
         walletId: wallet.id,
         status: 'success',
-        amount: 5000.00,
+        amount: 5000.0,
         type: 'deposit',
-        detail: 'ฝากเงินผ่านเบอร์มือถือ'
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
       },
     ])
     await etm.save(walletTransactions)
@@ -201,7 +212,7 @@ export class MockDataConsoleService {
     const createProductProfileParams: InsertProductProfileToDbParams = {
       name: 'product profile01',
       detail: 'product profile details',
-      shopId: 1,
+      shopId: shop.id,
       platformCategoryId: platformCategory.id,
       brandId: brand.id,
       status: 'public',

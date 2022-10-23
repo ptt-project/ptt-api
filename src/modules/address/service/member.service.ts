@@ -149,7 +149,7 @@ export class MemberService {
   ) {
     return async (
       member: Member,
-      addressId: number,
+      addressId: string,
       body: MemberUpdateAddressRequestDto,
     ) => {
       const { id: memberId, role } = member
@@ -259,7 +259,7 @@ export class MemberService {
     etm: EntityManager,
   ): Promise<UpdateAddressByIdType> {
     return async (
-      addressId: number,
+      addressId: string,
       params: UpdateAddressToDbParams,
     ): Promise<string> => {
       try {
@@ -285,7 +285,7 @@ export class MemberService {
     >,
     updateIdMainAddressByIdToDb: Promise<UpdateIsMainAddressesByIdToDbType>,
   ) {
-    return async (member: Member, addressId: number) => {
+    return async (member: Member, addressId: string) => {
       const { id: memberId } = member
 
       const isErrorUpdate = await (await updateNotMainAddressByMemberId)(
@@ -319,7 +319,7 @@ export class MemberService {
   async UpdateIsMainAddressesByIdToDbFunc(
     etm: EntityManager,
   ): Promise<UpdateIsMainAddressesByIdToDbType> {
-    return async (addressId: number): Promise<string> => {
+    return async (addressId: string): Promise<string> => {
       try {
         await etm.update(Address, addressId, { isMain: true })
       } catch (error) {
@@ -333,7 +333,7 @@ export class MemberService {
   async UpdateNotMainAddressesByMemberIdToDbFunc(
     etm: EntityManager,
   ): Promise<UpdateNotMainAddressesByMemberIdType> {
-    return async (memberId: number): Promise<string> => {
+    return async (memberId: string): Promise<string> => {
       try {
         await etm.update(Address, { memberId }, { isMain: false })
       } catch (error) {
@@ -347,7 +347,7 @@ export class MemberService {
   async UpdateNotPickupAddressesByMemberIdToDbFunc(
     etm: EntityManager,
   ): Promise<UpdateNotPickupAddressesByMemberIdType> {
-    return async (memberId: number, role: MemberRoleType): Promise<string> => {
+    return async (memberId: string, role: MemberRoleType): Promise<string> => {
       if (role !== 'Seller') {
         return "Forbidden can't update isPickup"
       }
@@ -365,7 +365,7 @@ export class MemberService {
   async UpdateNotReturnItemAddressesByMemberIdToDbFunc(
     etm: EntityManager,
   ): Promise<UpdateNotReturnItemAddressesByMemberIdType> {
-    return async (memberId: number, role: MemberRoleType): Promise<string> => {
+    return async (memberId: string, role: MemberRoleType): Promise<string> => {
       if (role !== 'Seller') {
         return "Forbidden can't update isReturnItem"
       }
@@ -383,7 +383,7 @@ export class MemberService {
     inquiryAddressById: Promise<InquiryAddressByIdType>,
     deleteAddressByIdToDb: Promise<DeleteAddressByIdInDbType>,
   ) {
-    return async (member: Member, addressId: number) => {
+    return async (member: Member, addressId: string) => {
       const { role } = member
       const [address, inquiryAddressByIdError] = await (
         await inquiryAddressById
@@ -446,7 +446,7 @@ export class MemberService {
   }
 
   getAddressHandler(inquiryAddressById: Promise<InquiryAddressByIdType>) {
-    return async (addressId: number) => {
+    return async (addressId: string) => {
       const [address, inquiryAddressByIdError] = await (
         await inquiryAddressById
       )(addressId)
@@ -466,7 +466,7 @@ export class MemberService {
   async InquiryAddressByIdFunc(
     etm: EntityManager,
   ): Promise<InquiryAddressByIdType> {
-    return async (addressId: number): Promise<[Address, string]> => {
+    return async (addressId: string): Promise<[Address, string]> => {
       let address: Address
       try {
         address = await etm.findOne(Address, addressId, { withDeleted: false })
@@ -507,7 +507,7 @@ export class MemberService {
   async InquiryAddressesByMemberIdFunc(
     etm: EntityManager,
   ): Promise<InquiryAddressesByMemberIdType> {
-    return async (memberId: number): Promise<[Address[], string]> => {
+    return async (memberId: string): Promise<[Address[], string]> => {
       let address: Address[]
       try {
         address = await etm.find(Address, {

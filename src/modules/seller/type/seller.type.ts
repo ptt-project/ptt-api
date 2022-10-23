@@ -7,7 +7,7 @@ import {
 
 export type InsertShopToDbParams = {
   type: ShopType
-  memberId: number
+  memberId: string
   fullName: string
   mobile: string
   email: string
@@ -26,7 +26,7 @@ export type InsertShopToDbParams = {
 }
 
 export type UpdateShopToDbParams = {
-  memberId: number
+  memberId: string
   fullName: string
   mobile: string
   email: string
@@ -54,14 +54,14 @@ export type InsertShopToDbType = (
 ) => Promise<[Shop, string]>
 
 export type ValidateSellerRegisterType = (
-  memberId: number,
+  memberId: string,
   params: RegisterSellerRequestDto,
   isResubmit: boolean,
 ) => Promise<string>
 
-export type GetShopInfoType = (memberId: number) => Promise<[Shop, string]>
+export type GetShopInfoType = (memberId: string) => Promise<[Shop, string]>
 
 export type UpdateShopTobDbByIdType = (
-  memberId: number,
+  memberId: string,
   params: UpdateShopInfoRequestDto,
 ) => Promise<string>

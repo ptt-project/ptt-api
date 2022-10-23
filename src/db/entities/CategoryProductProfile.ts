@@ -6,10 +6,10 @@ import { ProductProfile } from './ProductProfile'
 @Entity({ name: 'category_product_profiles' })
 export class CategoryProductProfile extends AppEntity {
   @Column({ name: 'category_id', nullable: false })
-  categoryId: number
+  categoryId: string
 
   @Column({ name: 'product_profile_id', nullable: false })
-  productProfileId: number
+  productProfileId: string
 
   @ManyToOne(
     () => Category,

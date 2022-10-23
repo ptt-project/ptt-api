@@ -13,7 +13,12 @@ import { Auth, ReqUser } from '../auth/auth.decorator'
 
 import { BankAccountService } from './service/bankAccount.service'
 import { Member } from 'src/db/entities/Member'
-import { CreateBankAccoutRequestDTO, DeleteBankAccoutRequestDTO, EditBankAccoutRequestDTO, GetBankAccoutRequestDTO } from './dto/BankAccount.dto'
+import {
+  CreateBankAccoutRequestDTO,
+  DeleteBankAccoutRequestDTO,
+  EditBankAccoutRequestDTO,
+  GetBankAccoutRequestDTO,
+} from './dto/BankAccount.dto'
 import { OtpService } from '../otp/service/otp.service'
 
 @Auth()
@@ -33,7 +38,7 @@ export class BankAccountController {
   ) {
     return await this.bankAccountService.GetBankAccountsHandler(
       this.otpService.InquiryVerifyOtpFunc(etm),
-      this.bankAccountService.InqueryBankAccountsFormDbFunc(etm)
+      this.bankAccountService.InqueryBankAccountsFormDbFunc(etm),
     )(member, query)
   }
 
@@ -66,7 +71,7 @@ export class BankAccountController {
   @Transaction()
   async editBankAccount(
     @ReqUser() member: Member,
-    @Param('bankAccountId') bankAccountId: number,
+    @Param('bankAccountId') bankAccountId: string,
     @Body() body: EditBankAccoutRequestDTO,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -82,7 +87,7 @@ export class BankAccountController {
   @Transaction()
   async deleteBankAccount(
     @ReqUser() member: Member,
-    @Param('bankAccountId') bankAccountId: number,
+    @Param('bankAccountId') bankAccountId: string,
     @Body() body: DeleteBankAccoutRequestDTO,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -97,7 +102,7 @@ export class BankAccountController {
   @Transaction()
   async setMainBankAccount(
     @ReqUser() member: Member,
-    @Param('bankAccountId') bankAccountId: number,
+    @Param('bankAccountId') bankAccountId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.bankAccountService.SetMainBankAccountsHandler(

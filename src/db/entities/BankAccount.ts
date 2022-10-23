@@ -6,7 +6,7 @@ import { WalletTransaction } from './WalletTransaction'
 @Entity({ name: 'bank_accounts' })
 export class BankAccount extends AppEntity {
   @Column({ name: 'member_id', nullable: false })
-  memberId: number
+  memberId: string
 
   @Column({ name: 'full_name', nullable: false })
   fullName: string
@@ -35,7 +35,7 @@ export class BankAccount extends AppEntity {
 
   @OneToMany(
     () => WalletTransaction,
-    walletTransaction => walletTransaction.bankAccount
+    walletTransaction => walletTransaction.bankAccount,
   )
   transactions: WalletTransaction[]
 }

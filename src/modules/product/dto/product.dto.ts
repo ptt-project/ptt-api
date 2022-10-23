@@ -1,4 +1,13 @@
-import { ArrayNotEmpty, IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator'
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator'
 import { ConditionType } from 'src/db/entities/ProductProfile'
 
 export class CreateProductOptionDto {
@@ -44,13 +53,13 @@ export class CreateProductProfileRequestDto {
   @MaxLength(500)
   detail: string
 
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  platformCategoryId: number
+  platformCategoryId: string
 
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  brandId?: number
+  brandId?: string
 
   @IsNumber()
   @IsNotEmpty()
@@ -128,18 +137,18 @@ export class UpdateProductProfileRequestDto {
   @MaxLength(500)
   detail: string
 
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  platformCategoryId: number
+  platformCategoryId: string
 
   @IsOptional()
-  @IsNumber()
-  brandId?: number
+  @IsString()
+  brandId?: string
 
   @IsNumber()
   @IsNotEmpty()
   weight: number
-  
+
   @IsOptional()
   @IsNumber()
   exp?: number
@@ -202,9 +211,9 @@ export class UpdateProductProfileRequestDto {
 }
 
 export class UpdateProductOptionDto {
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  id: number
+  id: string
 
   @IsString()
   @IsNotEmpty()
@@ -216,9 +225,9 @@ export class UpdateProductOptionDto {
 }
 
 export class UpdateProductDto {
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  id: number
+  id: string
 
   @IsString()
   @IsNotEmpty()

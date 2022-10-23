@@ -3,7 +3,10 @@ import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
 import { Member } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
-import { UnableInquiryUserExistByMemberId, UnableUpateProfileToDb } from 'src/utils/response-code'
+import {
+  UnableInquiryUserExistByMemberId,
+  UnableUpateProfileToDb,
+} from 'src/utils/response-code'
 import { EntityManager } from 'typeorm'
 import { UpdateProfiledRequestDto } from '../dto/updateProfile.dto'
 import {
@@ -65,9 +68,9 @@ export class MemberService {
         )
       }
 
-      const [memberResult, inquiryUserExistByMemberIdError] = await (await inquiryUserExistByMemberId)(
-        memberId,
-      )
+      const [memberResult, inquiryUserExistByMemberIdError] = await (
+        await inquiryUserExistByMemberId
+      )(memberId)
 
       if (inquiryUserExistByMemberIdError !== '') {
         return response(
@@ -95,7 +98,7 @@ export class MemberService {
     etm: EntityManager,
   ): Promise<UpdateProfileToMemberType> {
     return async (
-      memberId: number,
+      memberId: string,
       params: UpdateProfileToDbParams,
     ): Promise<string> => {
       const start = dayjs()
@@ -115,7 +118,7 @@ export class MemberService {
   async InquiryUserExistByMemberIdFunc(
     etm: EntityManager,
   ): Promise<InquiryUserExistByMemberIdType> {
-    return async (id: number): Promise<[Member, string]> => {
+    return async (id: string): Promise<[Member, string]> => {
       const start = dayjs()
       let member: Member
       try {

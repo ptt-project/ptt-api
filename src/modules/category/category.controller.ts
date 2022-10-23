@@ -59,7 +59,7 @@ export class CategoryController {
   @Patch(':categoryId/status')
   @Transaction()
   async updateStatusCategory(
-    @Param('categoryId') categoryId: number,
+    @Param('categoryId') categoryId: string,
     @Body() body: UpdateStatusCategoryRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -85,7 +85,7 @@ export class CategoryController {
   @Put(':categoryId')
   @Transaction()
   async updateCategory(
-    @Param('categoryId') categoryId: number,
+    @Param('categoryId') categoryId: string,
     @Body() body: UpdateCategoryRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -102,7 +102,7 @@ export class CategoryController {
   @Get(':categoryId')
   @Transaction()
   async getCategory(
-    @Param('categoryId') categoryId: number,
+    @Param('categoryId') categoryId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.categoryService.inquiryCategoryHandler(
@@ -114,7 +114,7 @@ export class CategoryController {
   @Delete(':categoryId')
   @Transaction()
   async deleteCategory(
-    @Param('categoryId') categoryId: number,
+    @Param('categoryId') categoryId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.categoryService.deleteCategoryHandler(
@@ -127,7 +127,7 @@ export class CategoryController {
   @Get(':categoryId/products')
   @Transaction()
   async getProducts(
-    @Param('categoryId') categoryId: number,
+    @Param('categoryId') categoryId: string,
     @Query() query: getProductQueryDTO,
     @TransactionManager() etm: EntityManager,
   ) {

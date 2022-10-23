@@ -10,7 +10,7 @@ export class Product extends AppEntity {
   sku: string
 
   @Column({ name: 'product_profile_id' })
-  productProfileId: number
+  productProfileId: string
 
   @Column({ name: 'option1', nullable: true })
   option1: string

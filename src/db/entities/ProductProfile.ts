@@ -23,8 +23,8 @@ export type ProductProfileStatusType = 'public' | 'hidden' | 'out of stock'
 @Entity({ name: 'product_profiles' })
 export class ProductProfile {
   @PrimaryColumn({ primary: false })
-  @Generated('increment')
-  id: number
+  @Generated('uuid')
+  id: string
 
   @Column({ name: 'name' })
   name: string
@@ -33,13 +33,13 @@ export class ProductProfile {
   detail: string
 
   @Column({ name: 'shop_id' })
-  shopId: number
+  shopId: string
 
   @Column({ name: 'platform_category_id' })
-  platformCategoryId: number
+  platformcategoryId: string
 
   @Column({ name: 'brand_id', nullable: true })
-  brandId: number
+  brandId: string
 
   @Column({ name: 'status' })
   status: ProductProfileStatusType

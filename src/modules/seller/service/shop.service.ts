@@ -58,7 +58,7 @@ export class ShopService {
   async InquiryShopByMemberIdFunc(
     etm: EntityManager,
   ): Promise<GetShopInfoType> {
-    return async (memberId: number): Promise<[Shop, string]> => {
+    return async (memberId: string): Promise<[Shop, string]> => {
       const start = dayjs()
       let shop: Shop
       try {
@@ -84,7 +84,7 @@ export class ShopService {
     etm: EntityManager,
   ): Promise<UpdateShopTobDbByIdType> {
     return async (
-      memberId: number,
+      memberId: string,
       params: UpdateShopInfoToDbParams,
     ): Promise<string> => {
       const start = dayjs()
