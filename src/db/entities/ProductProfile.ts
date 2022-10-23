@@ -9,7 +9,6 @@ import {
   DeleteDateColumn,
   PrimaryColumn,
   Generated,
-  PrimaryGeneratedColumn,
 } from 'typeorm'
 import { CategoryProductProfile } from './CategoryProductProfile'
 import { PlatformCategory } from './PlatformCategory'
