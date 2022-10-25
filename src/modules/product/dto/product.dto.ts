@@ -280,3 +280,11 @@ export class UpdateProductDto {
   @IsOptional()
   sku?: string
 }
+
+export class GetProductsDTO {
+  @IsOptional()
+  limit?: number
+
+  @IsOptional()
+  page?: number
+}

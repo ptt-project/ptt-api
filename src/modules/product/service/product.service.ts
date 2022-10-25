@@ -30,7 +30,7 @@ import {
   InsertProductsToDbFuncType,
   InsertProductsToDbParams,
   ValidateProductParamsFuncType,
-  InquiryProductProfileFromDbFuncType,
+  InquiryProductProfileByIdFromDbFuncType,
   InquiryProductProfileByProductProfileIdType,
   InquiryProductOptionsByProductProfileIdType,
   InquiryProductsByProductProfileIdType,
@@ -47,11 +47,13 @@ import {
   DeleteProductOptionByIdType,
   UpdateProductOptionsToDbType,
   InquiryProductListByShopIdType,
+  InquiryProductProfileFromDbType,
 } from '../type/product.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 import {
   CreateProductProfileRequestDto,
+  GetProductsDTO,
   UpdateProductProfileRequestDto,
   GetProductListDto,
 } from '../dto/product.dto'
@@ -78,7 +80,7 @@ export class ProductService {
     insertProductProfile: Promise<InsertProductProfileToDbFuncType>,
     insertProductOptions: Promise<InsertProductOptionsToDbFuncType>,
     insertProducts: Promise<InsertProductsToDbFuncType>,
-    getProductProfile: Promise<InquiryProductProfileFromDbFuncType>,
+    getProductProfile: Promise<InquiryProductProfileByIdFromDbFuncType>,
   ) {
     return async (shop: Shop, params: CreateProductProfileRequestDto) => {
       const start = dayjs()
@@ -371,9 +373,9 @@ export class ProductService {
     }
   }
 
-  async InquiryProductProfileFromDbFunc(
+  async InquiryProductProfileByIdFromDbFunc(
     etm: EntityManager,
-  ): Promise<InquiryProductProfileFromDbFuncType> {
+  ): Promise<InquiryProductProfileByIdFromDbFuncType> {
     return async (
       productProfileId: string,
     ): Promise<[ProductProfile, string]> => {
@@ -393,7 +395,7 @@ export class ProductService {
       }
 
       this.logger.info(
-        `Done InquiryProductProfileFromDbFunc ${dayjs().diff(start)} ms`,
+        `Done InquiryProductProfileByIdFromDbFunc ${dayjs().diff(start)} ms`,
       )
       return [productProfile[0], '']
     }
@@ -1459,6 +1461,51 @@ export class ProductService {
       this.logger.info(
         `Done InquiryProductListByShopIdFunc ${dayjs().diff(start)} ms`,
       )
+
+      return [productProfiles, '']
+    }
+  }
+
+  InquiryProductProfileHandler(
+    inquiryProductProfileFromDb: Promise<InquiryProductProfileFromDbType>,
+  ) {
+    return async (query: GetProductsDTO) => {
+      const { limit, page } = query
+      const [productProfiles, errorInquiryProductProfileFromDb] = await (
+        await inquiryProductProfileFromDb
+      )()
+
+      if (errorInquiryProductProfileFromDb != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          errorInquiryProductProfileFromDb,
+        )
+      }
+
+      const result = await paginate<ProductProfile>(productProfiles, {
+        limit,
+        page,
+      })
+      return response(result)
+    }
+  }
+
+  async InquiryProductProfileFromDbFunc(
+    etm: EntityManager,
+  ): Promise<InquiryProductProfileFromDbType> {
+    return async (): Promise<[SelectQueryBuilder<ProductProfile>, string]> => {
+      let productProfiles: SelectQueryBuilder<ProductProfile>
+
+      try {
+        productProfiles = etm
+          .createQueryBuilder(ProductProfile, 'productProfiles')
+
+          .where('productProfiles.deletedAt IS NULL')
+          .orderBy('productProfiles.createdAt', 'DESC')
+      } catch (error) {
+        return [productProfiles, error.message]
+      }
 
       return [productProfiles, '']
     }

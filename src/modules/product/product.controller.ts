@@ -15,6 +15,7 @@ import { Auth, ReqShop, Seller } from '../auth/auth.decorator'
 import {
   CreateProductProfileRequestDto,
   GetProductListDto,
+  GetProductsDTO,
   UpdateProductProfileRequestDto,
 } from './dto/product.dto'
 import { ProductService } from './service/product.service'
@@ -22,7 +23,7 @@ import { ProductService } from './service/product.service'
 @Auth()
 @Seller()
 @Controller('v1/shops')
-export class ProductController {
+export class ProductWithAuthController {
   constructor(private readonly productService: ProductService) {}
 
   @Post('products')
@@ -37,7 +38,7 @@ export class ProductController {
       this.productService.InsertProductProfileToDbFunc(etm),
       this.productService.InsertProductOptionsToDbFunc(etm),
       this.productService.InsertProductsToDbFunc(etm),
-      this.productService.InquiryProductProfileFromDbFunc(etm),
+      this.productService.InquiryProductProfileByIdFromDbFunc(etm),
     )(shop, body)
   }
 
@@ -115,5 +116,21 @@ export class ProductController {
       this.productService.RemoveProductByProductIdFunc(etm),
       this.productService.RemoveProductOptionByProductOptionIdFunc(etm),
     )(shop, productProfileId, body)
+  }
+}
+
+@Controller('v1/products')
+export class ProductController {
+  constructor(private readonly productService: ProductService) {}
+
+  @Get('')
+  @Transaction()
+  async getProducts(
+    @Query() query: GetProductsDTO,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.productService.InquiryProductProfileHandler(
+      this.productService.InquiryProductProfileFromDbFunc(etm),
+    )(query)
   }
 }

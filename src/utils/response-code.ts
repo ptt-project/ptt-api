@@ -106,6 +106,7 @@ export const UnableRemoveProductOptionByProductOptionId = _productError + 14
 export const UnableUpdateProductOption = _productError + 15
 export const UnableRemoveProductsById = _productError + 16
 export const UnableUpdateProduct = _productError + 17
+export const UnableInquiryProductProfileFromDb = _productError + 18
 
 const _image = 110000
 export const UnableResizeImage = _image + 1
@@ -120,7 +121,6 @@ export const UnableToAdjustWallet = _walletError + 6
 export const UnableToInsertWithdrawReference = _walletError + 7
 export const UnableToRequestWithdraw = _walletError + 8
 
-
 const _bankAccountError = 115000
 export const UnableToGetBankAccount = _bankAccountError + 1
 export const UnableToInqueryBankAccount = _bankAccountError + 2
@@ -129,7 +129,6 @@ export const UnableToUpdateBankAccount = _bankAccountError + 4
 export const ValidateBankAccount = _bankAccountError + 5
 export const UnableToDeleteBankAccount = _bankAccountError + 6
 export const UnableToSetMainBankAccount = _bankAccountError + 7
-
 
 const _config = 300000
 export const UnableToGetBrandOptions = _config + 1

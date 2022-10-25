@@ -200,6 +200,11 @@ export class MockDataConsoleService {
     //   return console.log('create shop error =>', insertShopToDbError)
     // }
 
+    // wallet.balance = walletTransactions.reduce((balance, transaction) => {
+    //   if (transaction.status === 'success') return balance + +transaction.amount
+    //   return balance
+    // }, 0.0)
+    // etm.save(wallet)
     // console.log('=== debug 1 ===')
     // console.log('shop.id',shopId)
     // const errorInsertTablePartitionOfProductProfileToDbFunc = await (
@@ -216,6 +221,19 @@ export class MockDataConsoleService {
     // }
 
     const shopId = 'd3955847-cfac-4e67-be9c-77dacdc7bf88'
+
+    // const errorInsertTablePartitionOfProductProfileToDbFunc = await (
+    //   await this.regiserSellerService.CreateTablePartitionOfProductProfileToDbFunc(
+    //     etm,
+    //   )
+    // )(shop.id)
+
+    // if (errorInsertTablePartitionOfProductProfileToDbFunc != '') {
+    //   return console.log(
+    //     'create error InsertTablePartitionOfProductProfileToDbFunc =>',
+    //     errorInsertTablePartitionOfProductProfileToDbFunc,
+    //   )
+    // }
 
     const platformCategory = etm.create(PlatformCategory, {
       id: genUuid(),
