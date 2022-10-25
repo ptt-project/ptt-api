@@ -67,11 +67,21 @@ export class AuthController {
 
     const accessToken = `AccessToken=${
       longinResponse.data.accessToken
-    }; Path=/; Max-Age=${dayjs().add(1, 'day')};`
+    }; Path=/; Max-Age=${dayjs().add(
+      1,
+      'day',
+    )}; HttpOnly; Secure; SameSite=None; Domain=${
+      process.env.SET_COOKIES_DOMAIN
+    };`
 
     const refreshToken = `RefreshToken=${
       longinResponse.data.refreshToken
-    }; Path=/; Max-Age=${dayjs().add(7, 'day')};`
+    }; Path=/; Max-Age=${dayjs().add(
+      7,
+      'day',
+    )}; HttpOnly; Secure; SameSite=None; Domain=${
+      process.env.SET_COOKIES_DOMAIN
+    };`
 
     request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
 

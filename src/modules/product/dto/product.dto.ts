@@ -7,8 +7,13 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  IsBooleanString,
+  IsIn,
 } from 'class-validator'
-import { ConditionType } from 'src/db/entities/ProductProfile'
+import {
+  ConditionType,
+  ProductProfileStatusType,
+} from 'src/db/entities/ProductProfile'
 
 export class CreateProductOptionDto {
   @IsString()
@@ -40,6 +45,32 @@ export class CreateProductDto {
   @IsString()
   @IsOptional()
   sku?: string
+}
+
+export class GetProductListDto {
+  @IsOptional()
+  limit?: number
+
+  @IsOptional()
+  page?: number
+
+  @IsOptional()
+  @IsBooleanString()
+  approval?: string
+
+  @IsOptional()
+  @IsIn(['public', 'hidden', 'out of stock'])
+  status: ProductProfileStatusType
+
+  @IsOptional()
+  categoryId?: number
+
+  @IsOptional()
+  @IsIn(['product name', 'sku', 'product option'])
+  groupSearch: string
+
+  @IsOptional()
+  keyword: string
 }
 
 export class CreateProductProfileRequestDto {

@@ -5,7 +5,11 @@ import {
   ProductProfile,
   ProductProfileStatusType,
 } from 'src/db/entities/ProductProfile'
-import { CreateProductProfileRequestDto } from '../dto/product.dto'
+import { SelectQueryBuilder } from 'typeorm'
+import {
+  CreateProductProfileRequestDto,
+  GetProductListDto,
+} from '../dto/product.dto'
 
 export type InsertProductProfileToDbParams = {
   name: string
@@ -144,3 +148,8 @@ export type UpdateProductProfileStatusByProductProfileIdType = (
   produceProfileId: string,
   status: ProductProfileStatusType,
 ) => Promise<string>
+
+export type InquiryProductListByShopIdType = (
+  shopId: string,
+  query: GetProductListDto,
+) => Promise<[SelectQueryBuilder<ProductProfile>, string]>
