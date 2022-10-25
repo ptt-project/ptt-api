@@ -33,6 +33,7 @@ import { ProductModule } from './modules/product/product.modules'
 import { EmailModule } from './modules/email/email.module'
 import { ImageModule } from './modules/image/image.module'
 import { BankAccountModule } from './modules/bankAccount/bankAccount.modules'
+import { AppConfigModule } from './modules/config/config.modules'
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -99,6 +100,7 @@ import { BankAccountModule } from './modules/bankAccount/bankAccount.modules'
     ImageModule,
     EmailModule,
     BankAccountModule,
+    AppConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService],

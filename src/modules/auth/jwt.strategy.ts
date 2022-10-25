@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
 import { jwtConstants } from './auth.constants'
-import { AuthService } from './auth.service'
-import { TokenType } from './auth.type'
+import { AuthService } from './service/auth.service'
+import { TokenType } from './type/auth.type'
 import { Request } from 'express'
 import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
@@ -43,16 +43,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (isError) {
       return false
     } else {
-      const accessToken = `${
-        response.accessToken
-      }; HttpOnly; Path=/; Max-Age=${dayjs().add(
-        1,
-        'day',
-      )};`
+      const accessToken = `${response.accessToken}; HttpOnly; Domain=${
+        process.env.SET_COOKIES_DOMAIN
+      }; Path=/; Max-Age=${dayjs().add(1, 'day')};`
 
-      const refreshToken = `${
-        response.refreshToken
-      }; HttpOnly; Path=/; Max-Age=${dayjs().add(7, 'day')};`
+      const refreshToken = `${response.refreshToken}; HttpOnly; Domain=${
+        process.env.SET_COOKIES_DOMAIN
+      }; Path=/; Max-Age=${dayjs().add(7, 'day')};`
 
       request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
     }

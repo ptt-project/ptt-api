@@ -8,12 +8,12 @@ import {
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser, ReqWallet } from '../auth/auth.decorator'
 
-import { WalletService } from './wallet.service'
+import { WalletService } from './service/wallet.service'
 import { getWalletTransactionQueryDTO, RequestDepositQrCodeRequestDTO, WithdrawRequestDTO } from './dto/wallet.dto'
 import { Wallet } from 'src/db/entities/Wallet'
-import { OtpService } from '../otp/otp.service'
+import { OtpService } from '../otp/service/otp.service'
 import { Member } from 'src/db/entities/Member'
-import { BankAccountService } from '../bankAccount/bankAccount.service'
+import { BankAccountService } from '../bankAccount/service/bankAccount.service'
 
 @Auth()
 @Controller('v1/wallets')
@@ -67,7 +67,7 @@ export class WalletController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.walletService.WithdrawHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
       this.bankAccountService.InqueryBankAccountFormDbFunc(etm),
       this.walletService.InqueryWithdrawFeeRateFormDbFunc(etm),
       this.walletService.InsertTransactionToDbFunc(etm),

@@ -31,6 +31,7 @@ export class Member extends AppEntity {
 
   @Column({
     name: 'birthday',
+    type: 'date',
     nullable: true,
     transformer: transformerDayjsToDate,
   })

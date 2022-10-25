@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
-import { BankAccountService } from '../bankAccount/bankAccount.service'
-import { OtpService } from '../otp/otp.service'
+import { BankAccountService } from '../bankAccount/service/bankAccount.service'
+import { OtpService } from '../otp/service/otp.service'
 
 import { WalletController } from './wallet.controller'
-import { WalletService } from './wallet.service'
+import { WalletService } from './service/wallet.service'
 
 @Module({
   controllers: [WalletController],
