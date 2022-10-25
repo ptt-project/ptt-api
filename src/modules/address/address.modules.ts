@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 
 import { AddressController } from './address.controller'
-import { MemberService } from './member.service'
+import { MemberService } from './service/member.service'
 
 @Module({
   controllers: [AddressController],

@@ -31,6 +31,7 @@ const _memberError = 103000
 
 // member service
 export const UnableUpateProfileToDb = _memberError + 1
+export const UnableInquiryUserExistByMemberId = _memberError + 2
 
 // email service
 export const OldPassowrdInvalid = _memberError + 2
@@ -48,6 +49,7 @@ const _mobileError = 104000
 export const UnableToAddMobile = _mobileError + 1
 export const UnableToSetMainMobile = _mobileError + 2
 export const UnableToDeleteMobile = _mobileError + 3
+export const UnableToGetMobiles = _mobileError + 4
 
 // address module
 const _addressError = 105000
@@ -68,6 +70,7 @@ export const UnableInsertShopToDb = _sellerError + 2
 export const UnableUpdateShopToDb = _sellerError + 3
 export const UnableToGetShopInfo = _sellerError + 4
 export const UnableToUpdateShopInfo = _sellerError + 5
+export const UnableCreatePartitionOfProductProfile = _sellerError + 6
 
 // review module
 const _reviewError = 107000
@@ -90,3 +93,52 @@ export const UnableDeleteCategoryProductToDb = _categoryError + 11
 export const UnableinquiryProductProfileIdsByCategoryId = _categoryError + 12
 export const UnableinquiryProductProfileByCatgoryIdFunc = _categoryError + 13
 export const UnableInquiryCategoryByName = _categoryError + 14
+
+const _productError = 109000
+export const CreateProductValidationFailed = _productError + 1
+export const UnableToCreateProductProfile = _productError + 2
+export const UnableToCreateProductOptions = _productError + 3
+export const UnableToCreateProducts = _productError + 4
+export const UnableToGetProducts = _productError + 5
+export const UnableInquiryProductProfileByProductProfileId = _productError + 6
+export const UnableInquiryProductOptionsByProductProfileId = _productError + 7
+export const UnableInquiryProductsByProductProfileId = _productError + 8
+export const UnableDeleteProductProfileByProductProfileId = _productError + 9
+export const UnableDeleteProductOptionsByProductProfileId = _productError + 10
+export const UnableDeleteProductsByProductProfileId = _productError + 11
+export const UnableUpdateStatusProductByProductProfileId = _productError + 12
+export const UnableUpdateProductProfileByProductProfileId = _productError + 13
+export const UnableRemoveProductOptionByProductOptionId = _productError + 14
+export const UnableUpdateProductOption = _productError + 15
+export const UnableRemoveProductsById = _productError + 16
+export const UnableUpdateProduct = _productError + 17
+
+const _image = 110000
+export const UnableResizeImage = _image + 1
+
+const _walletError = 114000
+export const UnableToInsertWallet = _walletError + 1
+export const UnableToGetWalletTransaction = _walletError + 2
+export const UnableToInsertTransaction = _walletError + 3
+export const UnableToInsertDepositReference = _walletError + 4
+export const UnableToRequestDepositQrCode = _walletError + 5
+export const UnableToAdjustWallet = _walletError + 6
+export const UnableToInsertWithdrawReference = _walletError + 7
+export const UnableToRequestWithdraw = _walletError + 8
+
+
+const _bankAccountError = 115000
+export const UnableToGetBankAccount = _bankAccountError + 1
+export const UnableToInqueryBankAccount = _bankAccountError + 2
+export const UnableToInsertBankAccount = _bankAccountError + 3
+export const UnableToUpdateBankAccount = _bankAccountError + 4
+export const ValidateBankAccount = _bankAccountError + 5
+export const UnableToDeleteBankAccount = _bankAccountError + 6
+export const UnableToSetMainBankAccount = _bankAccountError + 7
+
+
+const _config = 300000
+export const UnableToGetBrandOptions = _config + 1
+export const UnableToGetPlatformCategoryOptions = _config + 2
+export const UnableToGetBankOptions = _config + 3
+export const UnableToGetAddressOptions = _config + 4

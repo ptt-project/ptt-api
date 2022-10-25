@@ -1,15 +1,17 @@
-import { Body, Controller, Get, Patch, Put, Query } from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch, Put, Query } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
 import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
 import { GetRelationRequestDto } from './dto/relation.dto'
+import { RelationService } from './service/relation.service'
+import { GetProductListMemberDto } from './dto/getProductList.dto'
 import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
-import { EmailService } from './email.service'
-import { MemberService } from './member.service'
-import { PasswordService } from './password.service'
-import { RelationService } from './relation.service'
+import { EmailService } from './service/email.service'
+import { MemberService } from './service/member.service'
+import { PasswordService } from './service/password.service'
+import { ProductService } from './service/product.service'
 
 @Controller('v1/members')
 export class MemberController {
@@ -18,6 +20,7 @@ export class MemberController {
     private readonly memberService: MemberService,
     private readonly emailService: EmailService,
     private readonly relationService: RelationService,
+    private readonly productService: ProductService,
   ) {}
 
   @Auth()
@@ -56,6 +59,7 @@ export class MemberController {
     )(member, body, manager)
   }
 
+  @Auth()
   @Put('profile')
   @Transaction()
   async updateProfile(
@@ -65,6 +69,7 @@ export class MemberController {
   ) {
     return await this.memberService.updateProfileHandler(
       this.memberService.updateProfileToMemberFunc(etm),
+      this.memberService.InquiryUserExistByMemberIdFunc(etm),
     )(member, body)
   }
 
@@ -79,5 +84,18 @@ export class MemberController {
     return await this.relationService.getRelationHandler(
       this.relationService.InquiryMemberRelationFunc(etm),
     )(member, query)
+  }
+
+  @Auth()
+  @Get('products/:shopId')
+  @Transaction()
+  async getProductListByShopId(
+    @Param('shopId') shopId: number,
+    @Query() query: GetProductListMemberDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.productService.GetProductBuyerByShopIdHandler(
+      this.productService.InquiryProductListByShopIdFunc(etm),
+    )(shopId, query)
   }
 }
