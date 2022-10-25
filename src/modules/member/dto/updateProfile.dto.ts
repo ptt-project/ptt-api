@@ -12,12 +12,12 @@ export class UpdateProfiledRequestDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
-  firstname: string
+  firstName: string
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
-  lastname: string
+  lastName: string
 
   @IsOptional()
   @IsISO8601()
@@ -26,4 +26,7 @@ export class UpdateProfiledRequestDto {
   @IsOptional()
   @IsIn(['M', 'F', 'O'])
   gender?: MemberGenderType
+
+  @IsOptional()
+  imageId?: string
 }

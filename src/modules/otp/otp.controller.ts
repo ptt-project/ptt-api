@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { sendOtpRequestDto, verifyOtpRequestDto } from './dto/otp.dto'
-import { OtpService } from './otp.service'
+import { OtpService } from './service/otp.service'
 
 @Controller('v1/otp')
 export class OtpController {
@@ -27,7 +27,7 @@ export class OtpController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.otpService.verifyOtpHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
     )(body)
   }
 }

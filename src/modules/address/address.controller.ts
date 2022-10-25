@@ -12,7 +12,7 @@ import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
 
-import { MemberService } from './member.service'
+import { MemberService } from './service/member.service'
 import {
   CreateAddressRequestDto,
   MemberUpdateAddressRequestDto,

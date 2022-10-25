@@ -1,4 +1,3 @@
-import { update } from 'lodash'
 import { transformerDayjsToDate } from 'src/utils/entity-transform'
 import {
   BaseEntity,

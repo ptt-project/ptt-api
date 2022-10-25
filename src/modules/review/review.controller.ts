@@ -4,7 +4,7 @@ import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
 import { getReviewQueryDTO, replyCommentRequestDto } from './dto/review.dto'
-import { ReviewService } from './review.service'
+import { ReviewService } from './service/review.service'
 
 @Auth()
 @Controller('v1/sellers')
