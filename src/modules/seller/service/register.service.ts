@@ -207,11 +207,11 @@ export class RegisterService {
     etm: EntityManager,
   ): CreateTablePartitionOfProductProfileToDbType {
     return async (id: string): Promise<string> => {
-      const tablePartiionName = `product_profile_shop_${id}`
+      const tablePartiionName = `"product_profile_shop_${id}"`
 
       try {
         await etm.query(
-          `CREATE TABLE ${tablePartiionName} PARTITION OF product_profiles FOR VALUES IN (${id});`,
+          `CREATE TABLE ${tablePartiionName} PARTITION OF product_profiles FOR VALUES IN ('${id}');`,
         )
       } catch (error) {
         return error.message

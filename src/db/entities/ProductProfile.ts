@@ -35,7 +35,7 @@ export class ProductProfile {
   shopId: string
 
   @Column({ name: 'platform_category_id' })
-  platformcategoryId: string
+  platformCategoryId: string
 
   @Column({ name: 'brand_id', nullable: true })
   brandId: string
