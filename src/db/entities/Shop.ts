@@ -140,6 +140,9 @@ export class Shop extends AppEntity {
   @Column({ name: 'member_id', nullable: true })
   memberId: string
 
+  @Column({ name: 'is_recommended', nullable: false, default: false })
+  isRecommended: boolean
+
   @OneToOne(
     () => Member,
     member => member.shop,

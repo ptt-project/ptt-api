@@ -40,6 +40,9 @@ export class Product extends AppEntity {
   })
   sold: number
 
+  @Column({ name: 'amount_sold', nullable: false, default: 0 })
+  amountSold: number
+
   @ManyToOne(
     () => ProductProfile,
     productProfile => productProfile.products,
