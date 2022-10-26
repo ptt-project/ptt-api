@@ -122,7 +122,7 @@ export class HappyPointContoller {
     )(happyPoint, member, body)
   }
 
-  @Get('')
+  @Get('balance')
   @Transaction()
   async getBalanceHappyPoint(@ReqHappyPoint() happyPoint: HappyPoint) {
     return response({ balance: happyPoint.balance })
