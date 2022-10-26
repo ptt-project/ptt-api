@@ -1,3 +1,4 @@
+import { transformerDecimalToNumber } from 'src/utils/entity-transform'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { AppEntity } from './AppEntity'
 import { PlatformCategory } from './PlatformCategory'
@@ -24,6 +25,7 @@ export class Product extends AppEntity {
     precision: 12,
     scale: 2,
     nullable: true,
+    transformer: transformerDecimalToNumber,
   })
   price: number
 
@@ -37,6 +39,7 @@ export class Product extends AppEntity {
     precision: 12,
     scale: 4,
     nullable: false,
+    transformer: transformerDecimalToNumber,
   })
   sold: number
 
