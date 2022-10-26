@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common'
+import { Controller, Post, Body, Get } from '@nestjs/common'
 import { HappyPointService } from './service/happy-point.service'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqHappyPoint, ReqUser, ReqWallet } from '../auth/auth.decorator'
@@ -13,6 +13,7 @@ import { Wallet } from 'src/db/entities/Wallet'
 import { SellHappyPointRequestDto } from './dto/sell.dto'
 import { RedisService } from 'nestjs-redis'
 import { Member } from 'src/db/entities/Member'
+import { response } from 'src/utils/response'
 
 @Auth()
 @Controller('v1/happy-points')
@@ -119,5 +120,11 @@ export class HappyPointContoller {
       this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
       this.happyService.UpdateDebitLimitTransferToDbFunc(etm),
     )(happyPoint, member, body)
+  }
+
+  @Get('')
+  @Transaction()
+  async getBalanceHappyPoint(@ReqHappyPoint() happyPoint: HappyPoint) {
+    return response({ balance: happyPoint.balance })
   }
 }
