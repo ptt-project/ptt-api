@@ -10,6 +10,7 @@ import {
   GetProductListDto,
 } from '../dto/product.dto'
 import { SelectQueryBuilder } from 'typeorm'
+import { Pagination, IPaginationMeta } from 'nestjs-typeorm-paginate'
 
 export type InsertProductProfileToDbParams = {
   name: string
@@ -157,3 +158,7 @@ export type InquiryProductListByShopIdType = (
 export type InquiryProductProfileFromDbType = () => Promise<
   [SelectQueryBuilder<ProductProfile>, string]
 >
+
+export type ConvertDataToProductProfileLandingPageType = (
+  paginateProductProfile: Pagination<ProductProfile, IPaginationMeta>,
+) => Pagination<ProductProfile, IPaginationMeta>

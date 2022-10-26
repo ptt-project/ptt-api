@@ -48,6 +48,7 @@ import {
   UpdateProductOptionsToDbType,
   InquiryProductListByShopIdType,
   InquiryProductProfileFromDbType,
+  ConvertDataToProductProfileLandingPageType,
 } from '../type/product.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
@@ -67,7 +68,7 @@ import { ProductOption } from 'src/db/entities/ProductOption'
 import { Product } from 'src/db/entities/Product'
 import { internalSeverError } from 'src/utils/response-error'
 import _ from 'lodash'
-import { paginate } from 'nestjs-typeorm-paginate'
+import { paginate, Pagination, IPaginationMeta } from 'nestjs-typeorm-paginate'
 
 @Injectable()
 export class ProductService {
@@ -1468,6 +1469,7 @@ export class ProductService {
 
   InquiryProductProfileHandler(
     inquiryProductProfileFromDb: Promise<InquiryProductProfileFromDbType>,
+    convertProductProfileToProductProfileLandingPage: ConvertDataToProductProfileLandingPageType,
   ) {
     return async (query: GetProductsDTO) => {
       const { limit, page } = query
@@ -1483,10 +1485,18 @@ export class ProductService {
         )
       }
 
-      const result = await paginate<ProductProfile>(productProfiles, {
-        limit,
-        page,
-      })
+      const paginateProductProfile = await paginate<ProductProfile>(
+        productProfiles,
+        {
+          limit,
+          page,
+        },
+      )
+
+      const result = convertProductProfileToProductProfileLandingPage(
+        paginateProductProfile,
+      )
+
       return response(result)
     }
   }
@@ -1500,6 +1510,16 @@ export class ProductService {
       try {
         productProfiles = etm
           .createQueryBuilder(ProductProfile, 'productProfiles')
+          .innerJoinAndMapMany(
+            'productProfiles.products',
+            'productProfiles.products',
+            'products',
+          )
+          .innerJoinAndMapOne(
+            'productProfiles.shop',
+            'productProfiles.shop',
+            'shops',
+          )
 
           .where('productProfiles.deletedAt IS NULL')
           .orderBy('productProfiles.createdAt', 'DESC')
@@ -1508,6 +1528,39 @@ export class ProductService {
       }
 
       return [productProfiles, '']
+    }
+  }
+
+  ConvertDataToProductProfileLandingPageFunc(): ConvertDataToProductProfileLandingPageType {
+    return (
+      paginateProductProfile: Pagination<ProductProfile, IPaginationMeta>,
+    ): Pagination<ProductProfile, IPaginationMeta> => {
+      const items = paginateProductProfile.items.map(
+        (productProfile: ProductProfile) => {
+          const { shop, products } = productProfile
+          let amountSold = 0
+          let price = Number.MAX_VALUE
+          console.log('products', products)
+          for (const product of products) {
+            amountSold += product.amountSold
+
+            if (price > product.price) {
+              price = product.price
+            }
+          }
+
+          return {
+            ...productProfile,
+            amountSold,
+            price,
+            isRecommended: shop.isRecommended,
+            scoreCount: shop.scoreCount,
+            shop: undefined,
+            products: undefined,
+          }
+        },
+      )
+      return { ...paginateProductProfile, items }
     }
   }
 }

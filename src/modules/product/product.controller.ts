@@ -131,6 +131,7 @@ export class ProductController {
   ) {
     return await this.productService.InquiryProductProfileHandler(
       this.productService.InquiryProductProfileFromDbFunc(etm),
+      this.productService.ConvertDataToProductProfileLandingPageFunc(),
     )(query)
   }
 }
