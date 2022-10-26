@@ -61,8 +61,6 @@ export class LookupService {
         happyPointId: happyPoint.id,
       }
 
-      console.log('=== debug ===', params)
-
       const isErrorsetCacheLookupToRedis = await (await setCacheLookupToRedis)(
         params,
       )
@@ -76,7 +74,14 @@ export class LookupService {
       }
 
       const { refId } = params
-      return response({ refId, exchangeRate })
+      return response({
+        refId,
+        exchangeRate,
+        happyPointBuyRate,
+        happyPointSellRate,
+        happyPointFeePercent,
+        happyPointTransferRate,
+      })
     }
   }
 
