@@ -5,10 +5,10 @@ import { Auth, ReqHappyPoint, ReqUser, ReqWallet } from '../auth/auth.decorator'
 import { BuyHappyPointRequestDto } from './dto/buy.dto'
 import { MasterConfigService } from '../master-config/service/master-config.service'
 import { LookupService } from './service/lookup.service'
-import { OtpService } from '../otp/otp.service'
+import { OtpService } from '../otp/service/otp.service'
 import { HappyPoint } from 'src/db/entities/HappyPoint'
 import { TransferHappyPointDto } from './dto/transfer.dto'
-import { WalletService } from '../wallet/wallet.service'
+import { WalletService } from '../wallet/service/wallet.service'
 import { Wallet } from 'src/db/entities/Wallet'
 import { SellHappyPointRequestDto } from './dto/sell.dto'
 import { RedisService } from 'nestjs-redis'
@@ -52,7 +52,7 @@ export class HappyPointContoller {
     const redis = this.redisService.getClient()
 
     return await this.happyService.BuyHappyPointHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
       this.lookupService.InquiryRefIdExistInTransactionFunc(etm),
       this.lookupService.GetCacheLookupToRedisFunc(redis),
       this.happyService.ValidateCalculatePointByExchangeAndAmountFunc(),
@@ -79,7 +79,7 @@ export class HappyPointContoller {
     const redis = this.redisService.getClient()
 
     return await this.happyService.SellHappyPointHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
       this.lookupService.InquiryRefIdExistInTransactionFunc(etm),
       this.lookupService.GetCacheLookupToRedisFunc(redis),
       this.happyService.ValidateCalculateFeeAmountFunc(),
@@ -107,7 +107,7 @@ export class HappyPointContoller {
     const redis = this.redisService.getClient()
 
     return await this.happyService.TransferHappyPointHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
       this.lookupService.InquiryRefIdExistInTransactionFunc(etm),
       this.lookupService.GetCacheLookupToRedisFunc(redis),
       this.happyService.ValidateCalculateFeePointFunc(),

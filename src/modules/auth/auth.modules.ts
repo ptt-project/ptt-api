@@ -7,9 +7,9 @@ import { AuthController } from './auth.controller'
 import { AuthService } from './service/auth.service'
 import { LoginService } from './service/login.service'
 import { JwtStrategy } from './jwt.strategy'
-import { MobileService } from '../mobile/mobile.service'
-import { WalletService } from '../wallet/wallet.service'
-import { ShopService } from '../seller/shop.service'
+import { MobileService } from '../mobile/service/mobile.service'
+import { WalletService } from '../wallet/service/wallet.service'
+import { ShopService } from '../seller/service/shop.service'
 import { HappyPointService } from '../happy-point/service/happy-point.service'
 
 @Module({

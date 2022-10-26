@@ -1,8 +1,15 @@
 import { Product } from 'src/db/entities/Product'
 import { ProductOption } from 'src/db/entities/ProductOption'
-import { ConditionType, ProductProfile, ProductProfileStatusType } from 'src/db/entities/ProductProfile'
-import { SelectQueryBuilder } from 'typeorm'
-import { CreateProductProfileRequestDto, GetProductListDto } from '../dto/product.dto'
+import {
+  ConditionType,
+  ProductProfile,
+  ProductProfileStatusType,
+} from 'src/db/entities/ProductProfile'
+import { Column, SelectQueryBuilder } from 'typeorm'
+import {
+  CreateProductProfileRequestDto,
+  GetProductListDto,
+} from '../dto/product.dto'
 
 export type InsertProductProfileToDbParams = {
   name: string
@@ -54,7 +61,6 @@ export type UpdateProductProfileToDbParams = {
   length: number
   height: number
 }
-
 
 export type UpdateProductOptionsToDbParams = {
   id: number
@@ -109,7 +115,7 @@ export type InquiryProductProfileFromDbFuncType = (
 export type InquiryProductProfileByProductProfileIdType = (
   produceProfileId: number,
 ) => Promise<[ProductProfile, string]>
-    
+
 export type InquiryProductOptionsByProductProfileIdType = (
   produceProfileId: number,
 ) => Promise<[ProductOption[], string]>
@@ -121,7 +127,7 @@ export type InquiryProductsByProductProfileIdType = (
 export type DeleteProductProfileByProductProfileIdType = (
   produceProfile: ProductProfile,
 ) => Promise<string>
-      
+
 export type DeleteProductOptionsByProductProfileIdType = (
   produceProfileId: number,
 ) => Promise<string>
@@ -140,7 +146,7 @@ export type DeleteProductOptionByIdType = (
 
 export type UpdateProductProfileStatusByProductProfileIdType = (
   produceProfileId: number,
-  status:ProductProfileStatusType,
+  status: ProductProfileStatusType,
 ) => Promise<string>
 
 export type InquiryProductListByShopIdType = (
