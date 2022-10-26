@@ -36,6 +36,7 @@ import { HappyPointModule } from './modules/happy-point/happy-point.module'
 import { MasterConfigModule } from './modules/master-config/master-config.module'
 import { TaskModule } from './task/task.module'
 
+import { AppConfigModule } from './modules/config/config.modules'
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -111,6 +112,7 @@ import { TaskModule } from './task/task.module'
     BankAccountModule,
     MasterConfigModule,
     HappyPointModule,
+    AppConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService],

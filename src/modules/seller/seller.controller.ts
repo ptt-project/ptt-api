@@ -12,18 +12,19 @@ import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
 
-import { RegisterService } from './register.service'
+import { RegisterService } from './service/register.service'
 import {
-  RegisterSellerRequestDto, UpdateShopInfoRequestDto,
+  RegisterSellerRequestDto,
+  UpdateShopInfoRequestDto,
 } from './dto/seller.dto'
-import { ShopService } from './shop.service'
+import { ShopService } from './service/shop.service'
 
 @Auth()
 @Controller('v1/sellers')
 export class SellerController {
   constructor(
     private readonly registerService: RegisterService,
-    private readonly shopService: ShopService
+    private readonly shopService: ShopService,
   ) {}
 
   @Post('/register')
@@ -36,6 +37,7 @@ export class SellerController {
     return await this.registerService.registerSellerHandler(
       this.registerService.validateSellerDataFunc(etm),
       this.registerService.insertShopToDbFunc(etm),
+      this.registerService.CreateTablePartitionOfProductProfileToDbFunc(etm),
     )(member, body)
   }
 

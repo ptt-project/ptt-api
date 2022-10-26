@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { WebDAVModule } from 'nestjs-webdav'
 import { ImageController } from './image.controller'
-import { ImageService } from './image.service'
+import { ImageService } from './service/image.service'
 
 @Module({
   imports: [

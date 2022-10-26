@@ -28,6 +28,7 @@ const _memberError = 103000
 
 // member service
 export const UnableUpateProfileToDb = _memberError + 1
+export const UnableInquiryUserExistByMemberId = _memberError + 2
 
 // email service
 export const OldPassowrdInvalid = _memberError + 2
@@ -42,6 +43,7 @@ const _mobileError = 104000
 export const UnableToAddMobile = _mobileError + 1
 export const UnableToSetMainMobile = _mobileError + 2
 export const UnableToDeleteMobile = _mobileError + 3
+export const UnableToGetMobiles = _mobileError + 4
 
 // address module
 const _addressError = 105000
@@ -62,6 +64,7 @@ export const UnableInsertShopToDb = _sellerError + 2
 export const UnableUpdateShopToDb = _sellerError + 3
 export const UnableToGetShopInfo = _sellerError + 4
 export const UnableToUpdateShopInfo = _sellerError + 5
+export const UnableCreatePartitionOfProductProfile = _sellerError + 6
 
 // review module
 const _reviewError = 107000
@@ -120,10 +123,12 @@ export const UnableToUpdateReference = _walletError + 9
 
 const _bankAccountError = 115000
 export const UnableToGetBankAccount = _bankAccountError + 1
-export const unableToInqueryBankAccount = _bankAccountError + 2
+export const UnableToInqueryBankAccount = _bankAccountError + 2
 export const UnableToInsertBankAccount = _bankAccountError + 3
 export const UnableToUpdateBankAccount = _bankAccountError + 4
 export const ValidateBankAccount = _bankAccountError + 5
+export const UnableToDeleteBankAccount = _bankAccountError + 6
+export const UnableToSetMainBankAccount = _bankAccountError + 7
 
 const _happyPoint = 120000
 export const UnableInsertLookupToDb = _happyPoint + 1
@@ -150,3 +155,9 @@ export const UnableInquiryMasterConfig = _happyPoint + 21
 export const OverLimitTransferPerday = _happyPoint + 22
 export const UnableUpdateResetLimitTransfer = _happyPoint + 23
 export const UnableUpdateDebitLimitTransferToDb = _happyPoint + 24
+
+const _config = 300000
+export const UnableToGetBrandOptions = _config + 1
+export const UnableToGetPlatformCategoryOptions = _config + 2
+export const UnableToGetBankOptions = _config + 3
+export const UnableToGetAddressOptions = _config + 4
