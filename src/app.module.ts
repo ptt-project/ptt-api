@@ -15,6 +15,7 @@ import { join } from 'path'
 import { ConsoleModule } from 'nestjs-console'
 import { MailerModule } from '@nestjs-modules/mailer'
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter'
+import { BullModule } from '@nestjs/bull'
 
 import { VersionMiddleware } from './utils/middlewares/version.middleware'
 import './initialize'
@@ -27,18 +28,26 @@ import { ReviewModule } from './modules/review/review.modules'
 import { CategoryModule } from './modules/category/category.modules'
 import { AppConsoleModule } from './modules/app-console/app-console.moduel'
 import { WalletModule } from './modules/wallet/wallet.modules'
-
-console.log('__dirname', __dirname)
 import { ProductModule } from './modules/product/product.modules'
 import { EmailModule } from './modules/email/email.module'
 import { ImageModule } from './modules/image/image.module'
 import { BankAccountModule } from './modules/bankAccount/bankAccount.modules'
+import { HappyPointModule } from './modules/happy-point/happy-point.module'
+import { MasterConfigModule } from './modules/master-config/master-config.module'
+import { TaskModule } from './task/task.module'
+
 import { AppConfigModule } from './modules/config/config.modules'
 @Module({
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot(), //setting from ormconfig.ts
     ScheduleModule.forRoot(),
+    BullModule.forRoot({
+      redis: {
+        host: process.env.REDIS_HOST,
+        port: Number(process.env.REDIS_PORT),
+      },
+    }),
     MailerModule.forRootAsync({
       useFactory: () => ({
         transport: `smtps://${process.env.SMTP_FROM_EMAIL}:${process.env.STMP_PASSWORD}@${process.env.STMP_HOST}`,
@@ -86,6 +95,7 @@ import { AppConfigModule } from './modules/config/config.modules'
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),
+    TaskModule,
     ConsoleModule,
     AppConsoleModule,
     AuthModule,
@@ -100,6 +110,8 @@ import { AppConfigModule } from './modules/config/config.modules'
     ImageModule,
     EmailModule,
     BankAccountModule,
+    MasterConfigModule,
+    HappyPointModule,
     AppConfigModule,
   ],
   controllers: [AppController],

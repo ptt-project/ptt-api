@@ -16,6 +16,14 @@ import {
   InsertProductsToDbParams,
 } from '../../product/type/product.type'
 import { genUuid } from 'src/utils/helpers'
+import { MasterConfig, MasterConfigType } from 'src/db/entities/MasterConfig'
+import { OtpService } from 'src/modules/otp/service/otp.service'
+import { MobileService } from 'src/modules/mobile/service/mobile.service'
+import { HappyPointService } from 'src/modules/happy-point/service/happy-point.service'
+import { RegisterSellerRequestDto } from 'src/modules/seller/dto/seller.dto'
+import { Member } from 'src/db/entities/Member'
+import { Wallet } from 'src/db/entities/Wallet'
+import { Shop } from 'src/db/entities/Shop'
 
 @Console()
 export class MockDataConsoleService {
@@ -24,6 +32,9 @@ export class MockDataConsoleService {
     private readonly regiserSellerService: RegisterService,
     private readonly walletService: WalletService,
     private readonly productService: ProductService,
+    private readonly otpService: OtpService,
+    private readonly mobileService: MobileService,
+    private readonly happyPointService: HappyPointService,
   ) {}
 
   @Command({
@@ -37,6 +48,37 @@ export class MockDataConsoleService {
     const r = await etm.query(`
       CREATE TABLE product_profile_shop_1 PARTITION OF product_profiles FOR VALUES IN (1);
     `)
+  }
+
+  @Command({
+    command: 'create-master-config',
+    description: 'create master config for app',
+  })
+  async createMasterConfig() {
+    const connection: Connection = getConnection()
+    const etm: EntityManager = connection.createEntityManager()
+
+    const masterConfig = await etm.findOne(MasterConfig)
+
+    if (masterConfig) {
+      return
+    }
+
+    const masterConfigParams: MasterConfigType = {
+      happyPointBuyRate: 1,
+      happyPointSellRate: 1,
+      happyPointTransferRate: 1,
+      happyPointTransferPercentLimit: 50,
+      happyPointFeePercent: 10,
+      exchangeRate: 1,
+    }
+
+    const newMasterConfig = etm.create(MasterConfig, {
+      config: masterConfigParams,
+    })
+
+    await etm.save(newMasterConfig)
+    console.log('created master config', newMasterConfig.config)
   }
 
   @Command({
@@ -56,6 +98,160 @@ export class MockDataConsoleService {
   }
 
   @Command({
+    command: 'mock-member',
+    description: 'mock data for product',
+  })
+  async mockMember() {
+    const connection: Connection = getConnection()
+    const etm: EntityManager = connection.createEntityManager()
+
+    const body: RegisterRequestDto = {
+      firstName: 'firstname01',
+      lastName: 'lastname01',
+      email: 'test@gmail.com',
+      mobile: '0812345678',
+      username: 'testuser01',
+      password: '1234567890',
+      pdpaStatus: true,
+      otpCode: '',
+      refCode: '',
+    }
+
+    await this.authService.registerHandler(
+      this.otpService.InquiryVerifyOtpFunc(etm),
+      this.authService.inquiryMemberExistFunc(etm),
+      this.authService.insertMemberToDbFunc(etm),
+      this.mobileService.AddMobileFunc(etm),
+      this.walletService.InsertWalletToDbFunc(etm),
+      this.happyPointService.InsertHappyPointToDbFunc(etm),
+    )(body)
+
+    const member = await etm.findOne(Member, { order: { createdAt: 'DESC' } })
+
+    const bodyRegisterSeller: RegisterSellerRequestDto = {
+      fullName: 'นายเอ นามสมมุติ',
+      email: 'shop4@gmail.com',
+      mobile: '0052896550',
+      brandName: 'bestShop',
+      category: 'util',
+      website: 'www.myshop.com',
+      facebookPage: 'www.facebock.com/myshop',
+      instagram: '@myshop',
+      socialMedia: '@myshop',
+      note: '',
+      corperateName: 's',
+      corperateId: 'ss2',
+      type: 'Mall',
+      mallApplicantRole: 'Exclusive Distributor',
+    }
+    await this.regiserSellerService.registerSellerHandler(
+      this.regiserSellerService.validateSellerDataFunc(etm),
+      this.regiserSellerService.insertShopToDbFunc(etm),
+      this.regiserSellerService.CreateTablePartitionOfProductProfileToDbFunc(
+        etm,
+      ),
+    )(member, bodyRegisterSeller)
+  }
+
+  @Command({
+    command: 'mock-wallet-transaction',
+    description: 'mock data for product',
+  })
+  async mockWalletTransaction() {
+    const connection: Connection = getConnection()
+    const etm: EntityManager = connection.createEntityManager()
+
+    const wallet = await etm.findOne(Wallet, { order: { createdAt: 'DESC' } })
+    const walletTransactions = etm.create(WalletTransaction, [
+      {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 100000.0,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+      },
+      {
+        walletId: wallet.id,
+        status: 'fail',
+        amount: 1000.0,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+      },
+      {
+        walletId: wallet.id,
+        status: 'pending',
+        amount: 1000.0,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านธนาคาร',
+      },
+      {
+        walletId: wallet.id,
+        status: 'success',
+        amount: -1000.0,
+        type: 'withdraw',
+        detail: 'ถอนเงิน',
+      },
+      {
+        walletId: wallet.id,
+        status: 'success',
+        amount: -1000.0,
+        type: 'buy',
+        detail: 'ซื้อสินค้า',
+      },
+      {
+        walletId: wallet.id,
+        status: 'success',
+        amount: -1000.0,
+        type: 'buy',
+        detail: 'ซื้อสินค้า',
+      },
+      {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 1000.0,
+        type: 'sell',
+        detail: 'ขายสินค้า',
+      },
+      {
+        walletId: wallet.id,
+        status: 'success',
+        amount: -1000.0,
+        type: 'buy',
+        detail: 'ซื้อสินค้า',
+      },
+      {
+        walletId: wallet.id,
+        status: 'cancel',
+        amount: 1000.0,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+      },
+      {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 2000.0,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+      },
+      ,
+      {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 5000.0,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+      },
+    ])
+    await etm.save(walletTransactions)
+
+    wallet.balance = walletTransactions.reduce((balance, transaction) => {
+      if (transaction.status === 'success') return balance + +transaction.amount
+      return balance
+    }, 0.0)
+    etm.save(wallet)
+  }
+
+  @Command({
     command: 'mock-products',
     description: 'mock data for product',
   })
@@ -63,169 +259,15 @@ export class MockDataConsoleService {
     const connection: Connection = getConnection()
     const etm: EntityManager = connection.createEntityManager()
 
-    // const createUserParams: RegisterRequestDto = {
-    //   firstName: 'firstname01',
-    //   lastName: 'lastname01',
-    //   email: 'test@gmail.com',
-    //   mobile: '0812345678',
-    //   username: 'testuser01',
-    //   password: '1234567890',
-    //   pdpaStatus: true,
-    //   otpCode: '',
-    //   refCode: '',
-    // }
-    // const [member, errorCreateUser] = await (
-    //   await this.authService.insertMemberToDbFunc(etm)
-    // )(createUserParams)
-    // if (errorCreateUser != '') {
-    //   return console.log('create user error =>', errorCreateUser)
-    // }
-
-    // const [wallet, errorCreateWallet] = await (
-    //   await this.walletService.InsertWalletToDbFunc(etm)
-    // )(member.id)
-    // if (errorCreateWallet != '') {
-    //   return console.log('create wallet error =>', errorCreateWallet)
-    // }
-
-    // const walletTransactions = etm.create(WalletTransaction, [
-    //   {
-    //     walletId: wallet.id,
-    //     status: 'success',
-    //     amount: 100000.0,
-    //     type: 'deposit',
-    //     detail: 'ฝากเงินผ่านเบอร์มือถือ',
-    //   },
-    //   {
-    //     walletId: wallet.id,
-    //     status: 'fail',
-    //     amount: 1000.0,
-    //     type: 'deposit',
-    //     detail: 'ฝากเงินผ่านเบอร์มือถือ',
-    //   },
-    //   {
-    //     walletId: wallet.id,
-    //     status: 'pending',
-    //     amount: 1000.0,
-    //     type: 'deposit',
-    //     detail: 'ฝากเงินผ่านธนาคาร',
-    //   },
-    //   {
-    //     walletId: wallet.id,
-    //     status: 'success',
-    //     amount: -1000.0,
-    //     type: 'withdraw',
-    //     detail: 'ถอนเงิน',
-    //   },
-    //   {
-    //     walletId: wallet.id,
-    //     status: 'success',
-    //     amount: -1000.0,
-    //     type: 'buy',
-    //     detail: 'ซื้อสินค้า',
-    //   },
-    //   {
-    //     walletId: wallet.id,
-    //     status: 'success',
-    //     amount: -1000.0,
-    //     type: 'buy',
-    //     detail: 'ซื้อสินค้า',
-    //   },
-    //   {
-    //     walletId: wallet.id,
-    //     status: 'success',
-    //     amount: 1000.0,
-    //     type: 'sell',
-    //     detail: 'ขายสินค้า',
-    //   },
-    //   {
-    //     walletId: wallet.id,
-    //     status: 'success',
-    //     amount: -1000.0,
-    //     type: 'buy',
-    //     detail: 'ซื้อสินค้า',
-    //   },
-    //   {
-    //     walletId: wallet.id,
-    //     status: 'cancel',
-    //     amount: 1000.0,
-    //     type: 'deposit',
-    //     detail: 'ฝากเงินผ่านเบอร์มือถือ',
-    //   },
-    //   {
-    //     walletId: wallet.id,
-    //     status: 'success',
-    //     amount: 2000.0,
-    //     type: 'deposit',
-    //     detail: 'ฝากเงินผ่านเบอร์มือถือ',
-    //   },
-    //   ,
-    //   {
-    //     walletId: wallet.id,
-    //     status: 'success',
-    //     amount: 5000.0,
-    //     type: 'deposit',
-    //     detail: 'ฝากเงินผ่านเบอร์มือถือ',
-    //   },
-    // ])
-    // await etm.save(walletTransactions)
-
-    // wallet.balance = walletTransactions.reduce((balance, transaction) => {
-    //   if (transaction.status === 'success') return balance + +transaction.amount
-    //   return balance
-    // }, 0.0)
-    // etm.save(wallet)
-
-    // const createShopParams: InsertShopToDbParams = {
-    //   id: genUuid(),
-    //   memberId: member.id,
-    //   fullName: 'นายเอ นามสมมุติ',
-    //   email: 'shop2@gmail.com',
-    //   mobile: '0052896552',
-    //   brandName: 'bestShop',
-    //   category: 'util',
-    //   website: 'www.myshop.com',
-    //   facebookPage: 'www.facebock.com/myshop',
-    //   instagram: '@myshop',
-    //   socialMedia: '@myshop',
-    //   note: '',
-    //   corperateName: 's',
-    //   corperateId: 's',
-    //   type: 'Mall',
-    // }
-    // const [shop, insertShopToDbError] = await (
-    //   await this.regiserSellerService.insertShopToDbFunc(etm)
-    // )(createShopParams)
-    // if (errorCreateUser != '') {
-    //   return console.log('create shop error =>', insertShopToDbError)
-    // }
-
-    // console.log('=== debug 1 ===')
-    // console.log('shop.id',shopId)
-    // const errorInsertTablePartitionOfProductProfileToDbFunc = await (
-    //   await this.regiserSellerService.CreateTablePartitionOfProductProfileToDbFunc(
-    //     etm,
-    //   )
-    // )(shop.id)
-
-    // if (errorInsertTablePartitionOfProductProfileToDbFunc != '') {
-    //   return console.log(
-    //     'create error InsertTablePartitionOfProductProfileToDbFunc =>',
-    //     errorInsertTablePartitionOfProductProfileToDbFunc,
-    //   )
-    // }
-
-    const shopId = 'd3955847-cfac-4e67-be9c-77dacdc7bf88'
+    const shop = await etm.findOne(Shop, { order: { createdAt: 'DESC' } })
 
     const platformCategory = etm.create(PlatformCategory, {
-      id: genUuid(),
       name: 'platform-category01',
       status: 'active',
     })
     await etm.save(platformCategory)
 
     const brand = etm.create(Brand, {
-      id: genUuid(),
       name: 'brand01',
     })
     await etm.save(brand)
@@ -236,7 +278,7 @@ export class MockDataConsoleService {
     const createProductProfileParams: InsertProductProfileToDbParams = {
       name: 'product profile01',
       detail: 'product profile details',
-      shopId: shopId,
+      shopId: shop.id,
       platformCategoryId: platformCategory.id,
       brandId: brand.id,
       status: 'public',

@@ -192,6 +192,7 @@ export class RegisterService {
           mallApplicantRole: params.mallApplicantRole,
           mallOfflineShopDetail: params.mallOfflineShopDetail,
           mallShopDescription: params.mallShopDescription,
+          approvalStatus: 'approved',
         })
         await etm.save(shop)
       } catch (error) {
@@ -251,10 +252,10 @@ export class RegisterService {
         shop.note = params.note
         shop.corperateId = params.corperateId
         shop.corperateName = params.corperateName
-        ;(shop.mallApplicantRole = params.mallApplicantRole),
-          (shop.mallOfflineShopDetail = params.mallOfflineShopDetail),
-          (shop.mallShopDescription = params.mallShopDescription),
-          (shop.approvalStatus = 'requested')
+        shop.mallApplicantRole = params.mallApplicantRole
+        shop.mallOfflineShopDetail = params.mallOfflineShopDetail
+        shop.mallShopDescription = params.mallShopDescription
+        shop.approvalStatus = 'approved'
 
         await etm.save(shop)
       } catch (error) {
