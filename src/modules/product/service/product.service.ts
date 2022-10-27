@@ -985,7 +985,7 @@ export class ProductService {
             }),
           )
 
-          const [productOptions, createProductOptionsError] = await (
+          const [, createProductOptionsError] = await (
             await createProductOptions
           )(newProductOptions)
 

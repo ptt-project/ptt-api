@@ -3,7 +3,16 @@ import {
   TransactionType,
   WalletTransaction,
 } from 'src/db/entities/WalletTransaction'
+import { WalletTransactionReference } from 'src/db/entities/WalletTransactionReference'
 import { SelectQueryBuilder } from 'typeorm'
+
+export type RequestInteranlWalletTransactionServiceFuncType = (
+  walletId: string,
+  amount: number,
+  type: TransactionType,
+  thirdPtReferenceNo: string,
+  detail?: string,
+) => Promise<[Wallet, string]>
 
 export type InqueryWalletTransactionFuncType = (
   walletId: string,
@@ -27,6 +36,13 @@ export type InsertTransactionToDbFuncType = (
 export type InsertReferenceToDbFuncType = (
   walletTransaction: WalletTransaction,
 ) => Promise<[string, string]>
+
+export type UpdateReferenceToDbFuncType = (
+  referenceNo: string,
+  thirdPtReferenceNo: string,
+  amount: number,
+  detail: string,
+) => Promise<[WalletTransactionReference, string]>
 
 export type InsertWithdrawReferenceToDbFuncType = (
   walletTransaction: WalletTransaction,
@@ -53,4 +69,5 @@ export type RequestWithdrawFuncType = (
 export type AdjustWalletFuncType = (
   walletId: string,
   adjustBalance: number,
+  transactionType: TransactionType,
 ) => Promise<[Wallet, string]>

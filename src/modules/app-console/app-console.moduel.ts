@@ -8,17 +8,37 @@ import { UnitTestConsoleService } from './service/unit-test.service'
 import { CreateWalletConsoleService } from './service/create-wallet.service'
 import { ProductService } from '../product/service/product.service'
 import { EmailModule } from '../email/email.module'
+import { HappyPointModule } from '../happy-point/happy-point.module'
+import { HappyPointService } from '../happy-point/service/happy-point.service'
 import { InitialAppConsoleService } from './initial-app.service'
+import { OtpModule } from '../otp/otp.modules'
+import { MobileModule } from '../mobile/mobile.modules'
+import { OtpService } from '../otp/service/otp.service'
+import { MobileService } from '../mobile/service/mobile.service'
+import { RegisterService } from '../seller/service/register.service'
 
 @Module({
-  imports: [AuthModule, SellerModule, WalletModule, EmailModule],
+  imports: [
+    AuthModule,
+    SellerModule,
+    WalletModule,
+    EmailModule,
+    HappyPointModule,
+    OtpModule,
+    MobileModule,
+    HappyPointModule,
+  ],
   providers: [
     AppConsoleService,
     MockDataConsoleService,
     UnitTestConsoleService,
     CreateWalletConsoleService,
     ProductService,
+    HappyPointService,
     InitialAppConsoleService,
+    OtpService,
+    MobileService,
+    RegisterService,
   ],
 })
 export class AppConsoleModule {}

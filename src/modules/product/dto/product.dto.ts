@@ -2,13 +2,13 @@ import {
   ArrayNotEmpty,
   IsArray,
   IsBoolean,
+  IsBooleanString,
+  IsIn,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   MaxLength,
-  IsBooleanString,
-  IsIn,
 } from 'class-validator'
 import {
   ConditionType,
@@ -84,11 +84,11 @@ export class CreateProductProfileRequestDto {
   @MaxLength(500)
   detail: string
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
   platformCategoryId: string
 
-  @IsString()
+  @IsNumber()
   @IsOptional()
   brandId?: string
 
@@ -168,12 +168,12 @@ export class UpdateProductProfileRequestDto {
   @MaxLength(500)
   detail: string
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
   platformCategoryId: string
 
   @IsOptional()
-  @IsString()
+  @IsNumber()
   brandId?: string
 
   @IsNumber()

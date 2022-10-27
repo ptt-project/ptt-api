@@ -3,6 +3,6 @@ import { SelectQueryBuilder } from 'typeorm'
 import { GetProductListMemberDto } from '../dto/getProductList.dto'
 
 export type InquiryProductListByShopIdType = (
-  shopId: number,
+  shopId: string,
   query: GetProductListMemberDto,
 ) => Promise<[SelectQueryBuilder<ProductProfile>, string]>

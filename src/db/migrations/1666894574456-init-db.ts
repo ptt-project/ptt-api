@@ -1,23 +1,44 @@
 import { MigrationInterface, QueryRunner } from 'typeorm'
 
-export class initDb1666498335870 implements MigrationInterface {
-  name = 'initDb1666498335870'
+export class initDb1666894574456 implements MigrationInterface {
+  name = 'initDb1666894574456'
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `CREATE TYPE "public"."happy_point_transactions_type_enum" AS ENUM('BUY', 'SELL', 'TRANSFER')`,
+    )
+    await queryRunner.query(
+      `CREATE TYPE "public"."happy_point_transactions_note_enum" AS ENUM('CREDIT', 'DEBIT')`,
+    )
+    await queryRunner.query(
+      `CREATE TYPE "public"."happy_point_transactions_status_enum" AS ENUM('SUCCESS', 'CANCEL', 'FAIL', 'PENDING')`,
+    )
+    await queryRunner.query(
+      `CREATE TABLE "happy_point_transactions" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "ref_id" character varying NOT NULL, "type" "public"."happy_point_transactions_type_enum" NOT NULL, "from_happy_point_id" uuid NOT NULL, "note" "public"."happy_point_transactions_note_enum" NOT NULL, "point" numeric(12,4) NOT NULL, "to_happy_point_id" uuid, "status" "public"."happy_point_transactions_status_enum" NOT NULL, "total_amount" numeric(12,4), "exchange_rate" numeric(12,4) NOT NULL, "fee" numeric(12,4) DEFAULT '0', "amount" numeric(12,4) DEFAULT '0', "total_point" numeric(12,4), "fee_point" numeric(12,4) DEFAULT '0', CONSTRAINT "PK_2feb193a7d09b82c99f12cb164d" PRIMARY KEY ("id"))`,
+    )
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_dce6da2dbd3e9b8438274de4d7" ON "happy_point_transactions" ("from_happy_point_id", "ref_id") `,
+    )
+    await queryRunner.query(
+      `CREATE TABLE "happy_points" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "member_id" uuid NOT NULL, "balance" numeric(12,4) NOT NULL DEFAULT '0', "limtit_transfer" numeric(12,4) NOT NULL DEFAULT '0', CONSTRAINT "PK_27a0bab4989bbc6745b8855e201" PRIMARY KEY ("id"))`,
+    )
     await queryRunner.query(
       `CREATE TABLE "wallets" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "member_id" uuid NOT NULL, "balance" numeric(12,2) NOT NULL DEFAULT '0', CONSTRAINT "PK_8402e5df5a30a229380e83e4f7e" PRIMARY KEY ("id"))`,
     )
     await queryRunner.query(
-      `CREATE TABLE "wallet_transaction_references" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "transaction_id" uuid NOT NULL, "result_code" character varying, "reference_no" character varying NOT NULL, "gbp_reference_no" character varying, "amount" numeric(12,2) NOT NULL DEFAULT '0', "detail" character varying, CONSTRAINT "REL_ea00ed490bc29165edad6c0e60" UNIQUE ("transaction_id"), CONSTRAINT "PK_f4147b4a01bf01f2233eec8b732" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "wallet_transaction_references" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "transaction_id" uuid NOT NULL, "result_code" character varying, "reference_no" character varying NOT NULL, "third_pt_reference_no" character varying, "amount" numeric(12,2) NOT NULL DEFAULT '0', "detail" character varying, CONSTRAINT "REL_ea00ed490bc29165edad6c0e60" UNIQUE ("transaction_id"), CONSTRAINT "PK_f4147b4a01bf01f2233eec8b732" PRIMARY KEY ("id"))`,
     )
     await queryRunner.query(
-      `CREATE TYPE "public"."wallet_transactions_type_enum" AS ENUM('deposit', 'withdraw', 'buy', 'sell')`,
+      `CREATE TYPE "public"."wallet_transactions_type_enum" AS ENUM('deposit', 'withdraw', 'buy', 'sell', 'buy_happy_point', 'sell_happy_point')`,
     )
     await queryRunner.query(
       `CREATE TYPE "public"."wallet_transactions_status_enum" AS ENUM('success', 'fail', 'cancel', 'pending')`,
     )
     await queryRunner.query(
-      `CREATE TABLE "wallet_transactions" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "wallet_id" uuid NOT NULL, "type" "public"."wallet_transactions_type_enum" NOT NULL, "amount" numeric(12,2) NOT NULL DEFAULT '0', "detail" character varying, "status" "public"."wallet_transactions_status_enum" NOT NULL, "reference_id" uuid, "bank_account_id" uuid, CONSTRAINT "REL_fb28735205a7021d74c61d7bd2" UNIQUE ("reference_id"), CONSTRAINT "PK_5120f131bde2cda940ec1a621db" PRIMARY KEY ("id"))`,
+      `CREATE TYPE "public"."wallet_transactions_note_enum" AS ENUM('credit', 'debit')`,
+    )
+    await queryRunner.query(
+      `CREATE TABLE "wallet_transactions" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "wallet_id" uuid NOT NULL, "type" "public"."wallet_transactions_type_enum" NOT NULL, "amount" numeric(12,2) NOT NULL DEFAULT '0', "detail" character varying, "status" "public"."wallet_transactions_status_enum" NOT NULL, "note" "public"."wallet_transactions_note_enum" NOT NULL, "reference_id" uuid, "bank_account_id" uuid, CONSTRAINT "REL_fb28735205a7021d74c61d7bd2" UNIQUE ("reference_id"), CONSTRAINT "PK_5120f131bde2cda940ec1a621db" PRIMARY KEY ("id"))`,
     )
     await queryRunner.query(
       `CREATE TABLE "bank_accounts" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "member_id" uuid NOT NULL, "full_name" character varying NOT NULL, "thai_id" character varying NOT NULL, "bank_code" character varying NOT NULL, "account_number" character varying NOT NULL, "account_holder" character varying NOT NULL, "is_main" boolean NOT NULL DEFAULT false, CONSTRAINT "PK_c872de764f2038224a013ff25ed" PRIMARY KEY ("id"))`,
@@ -50,7 +71,7 @@ export class initDb1666498335870 implements MigrationInterface {
       `CREATE TABLE "platform_categories" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "name" character varying(40) NOT NULL, "status" "public"."platform_categories_status_enum" NOT NULL DEFAULT 'inactive', CONSTRAINT "PK_f6c5cd49610c2ce3e25bb6bea7b" PRIMARY KEY ("id"))`,
     )
     await queryRunner.query(
-      `CREATE TABLE "products" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "sku" character varying NOT NULL, "product_profile_id" uuid NOT NULL, "option1" character varying, "option2" character varying, "price" numeric(12,2), "stock" integer, "shop_id" uuid, "platform_category_id" uuid, CONSTRAINT "PK_0806c755e0aca124e67c0cf6d7d" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "products" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "sku" character varying NOT NULL, "product_profile_id" uuid NOT NULL, "option1" character varying, "option2" character varying, "price" numeric(12,2), "stock" integer, "sold" numeric(12,4) NOT NULL DEFAULT '0', "shop_id" uuid, "platform_category_id" uuid, CONSTRAINT "PK_0806c755e0aca124e67c0cf6d7d" PRIMARY KEY ("id"))`,
     )
     await queryRunner.query(
       `CREATE TYPE "public"."shops_type_enum" AS ENUM('Normal', 'Mall')`,
@@ -71,7 +92,7 @@ export class initDb1666498335870 implements MigrationInterface {
       `CREATE TYPE "public"."members_role_enum" AS ENUM('Buyer', 'Seller')`,
     )
     await queryRunner.query(
-      `CREATE TABLE "members" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "username" character varying(50) NOT NULL, "first_name" character varying(50) NOT NULL, "last_name" character varying(50) NOT NULL, "password" character varying NOT NULL, "mobile" character varying(20), "pdpa_status" boolean, "birthday" date, "sp_code_id" uuid, "gender" "public"."members_gender_enum", "email" character varying(50) NOT NULL, "role" "public"."members_role_enum" NOT NULL DEFAULT 'Buyer', "image_id"uuid, CONSTRAINT "REL_77d6b768f58e0a56355b35027e" UNIQUE ("sp_code_id"), CONSTRAINT "PK_28b53062261b996d9c99fa12404" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "members" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "username" character varying(50) NOT NULL, "first_name" character varying(50) NOT NULL, "last_name" character varying(50) NOT NULL, "password" character varying NOT NULL, "mobile" character varying(20), "pdpa_status" boolean, "birthday" date, "sp_code_id" uuid, "gender" "public"."members_gender_enum", "email" character varying(50) NOT NULL, "role" "public"."members_role_enum" NOT NULL DEFAULT 'Buyer', "image_id" character varying, CONSTRAINT "REL_77d6b768f58e0a56355b35027e" UNIQUE ("sp_code_id"), CONSTRAINT "PK_28b53062261b996d9c99fa12404" PRIMARY KEY ("id"))`,
     )
     await queryRunner.query(
       `CREATE TABLE "addresses" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "name" character varying NOT NULL, "mobile" character varying(20) NOT NULL, "member_id" uuid NOT NULL, "province" character varying NOT NULL, "tambon" character varying, "district" character varying NOT NULL, "postcode" character varying(5) NOT NULL, "address" character varying, "geo_name" text DEFAULT '{}', "is_main" boolean DEFAULT false, "is_home" boolean DEFAULT false, "is_work" boolean DEFAULT false, "is_pickup" boolean DEFAULT false, "is_return_item" boolean DEFAULT false, CONSTRAINT "PK_745d8f43d3af10ab8247465e450" PRIMARY KEY ("id"))`,
@@ -80,13 +101,16 @@ export class initDb1666498335870 implements MigrationInterface {
       `CREATE TABLE "address_masters" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "data" text NOT NULL, CONSTRAINT "PK_357b75ea36d3463f578c58bd607" PRIMARY KEY ("id"))`,
     )
     await queryRunner.query(
-      `CREATE TABLE "images" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, CONSTRAINT "PK_1fe148074c6a1a91b63cb9ee3c9" PRIMARY KEY ("id"))`,
-    )
-    await queryRunner.query(
       `CREATE TABLE "brands" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "name" character varying NOT NULL, CONSTRAINT "PK_b0c437120b624da1034a81fc561" PRIMARY KEY ("id"))`,
     )
     await queryRunner.query(
-      `CREATE TABLE "banks" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "bank_code" character varying NOT NULL, "name_th" character varying NOT NULL, "name_en" character varying NOT NULL, CONSTRAINT "UQ_824dd9d33e9228917f28fc6e052" UNIQUE ("bank_code"), CONSTRAINT "PK_3975b5f684ec241e3901db62d77" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "exchange_rates" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "exchange_rate" numeric(12,4) NOT NULL DEFAULT '0', CONSTRAINT "PK_33a614bad9e61956079d817ebe2" PRIMARY KEY ("id"))`,
+    )
+    await queryRunner.query(
+      `CREATE TABLE "exchange_rate_transactions" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "old_exchange_rate" numeric(12,4) NOT NULL DEFAULT '0', "new_exchange_rate" numeric(12,4) NOT NULL DEFAULT '0', CONSTRAINT "PK_bdd328c3c9426b8afd2022f19bd" PRIMARY KEY ("id"))`,
+    )
+    await queryRunner.query(
+      `CREATE TABLE "master_config" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "config" text DEFAULT '{}', CONSTRAINT "PK_4bba6d1e292c7e4f6afd7fac5e2" PRIMARY KEY ("id"))`,
     )
     await queryRunner.query(
       `CREATE TYPE "public"."otps_status_enum" AS ENUM('send', 'verified')`,
@@ -95,7 +119,19 @@ export class initDb1666498335870 implements MigrationInterface {
       `CREATE TABLE "otps" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "reference" character varying NOT NULL, "ref_code" character varying(4) NOT NULL, "otp_code" character varying(6) NOT NULL, "verify_count" integer NOT NULL DEFAULT '0', "type" character varying, "status" "public"."otps_status_enum" NOT NULL DEFAULT 'send', CONSTRAINT "PK_91fef5ed60605b854a2115d2410" PRIMARY KEY ("id"))`,
     )
     await queryRunner.query(
+      `CREATE TABLE "images" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, CONSTRAINT "PK_1fe148074c6a1a91b63cb9ee3c9" PRIMARY KEY ("id"))`,
+    )
+    await queryRunner.query(
       `CREATE TABLE "reviews" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "seller_id" uuid NOT NULL, "comment" character varying, "reply" character varying, "star" integer, "is_reply" boolean NOT NULL DEFAULT false, "is_hide" boolean NOT NULL DEFAULT false, "reviewer_id" uuid NOT NULL, "created_date" TIMESTAMP NOT NULL, CONSTRAINT "PK_231ae565c273ee700b283f15c1d" PRIMARY KEY ("id"))`,
+    )
+    await queryRunner.query(
+      `CREATE TABLE "banks" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "bank_code" character varying NOT NULL, "name_th" character varying NOT NULL, "name_en" character varying NOT NULL, CONSTRAINT "UQ_824dd9d33e9228917f28fc6e052" UNIQUE ("bank_code"), CONSTRAINT "PK_3975b5f684ec241e3901db62d77" PRIMARY KEY ("id"))`,
+    )
+    await queryRunner.query(
+      `ALTER TABLE "happy_point_transactions" ADD CONSTRAINT "FK_7386a64470b4c9f1fa8fb8b1eb7" FOREIGN KEY ("from_happy_point_id") REFERENCES "happy_points"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    )
+    await queryRunner.query(
+      `ALTER TABLE "happy_points" ADD CONSTRAINT "FK_b64b73695ff1690642811676a3c" FOREIGN KEY ("member_id") REFERENCES "members"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     )
     await queryRunner.query(
       `ALTER TABLE "wallets" ADD CONSTRAINT "FK_2ffeef1faa59259246b070f626a" FOREIGN KEY ("member_id") REFERENCES "members"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -208,12 +244,21 @@ export class initDb1666498335870 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "wallets" DROP CONSTRAINT "FK_2ffeef1faa59259246b070f626a"`,
     )
+    await queryRunner.query(
+      `ALTER TABLE "happy_points" DROP CONSTRAINT "FK_b64b73695ff1690642811676a3c"`,
+    )
+    await queryRunner.query(
+      `ALTER TABLE "happy_point_transactions" DROP CONSTRAINT "FK_7386a64470b4c9f1fa8fb8b1eb7"`,
+    )
+    await queryRunner.query(`DROP TABLE "banks"`)
     await queryRunner.query(`DROP TABLE "reviews"`)
+    await queryRunner.query(`DROP TABLE "images"`)
     await queryRunner.query(`DROP TABLE "otps"`)
     await queryRunner.query(`DROP TYPE "public"."otps_status_enum"`)
-    await queryRunner.query(`DROP TABLE "banks"`)
+    await queryRunner.query(`DROP TABLE "master_config"`)
+    await queryRunner.query(`DROP TABLE "exchange_rate_transactions"`)
+    await queryRunner.query(`DROP TABLE "exchange_rates"`)
     await queryRunner.query(`DROP TABLE "brands"`)
-    await queryRunner.query(`DROP TABLE "images"`)
     await queryRunner.query(`DROP TABLE "address_masters"`)
     await queryRunner.query(`DROP TABLE "addresses"`)
     await queryRunner.query(`DROP TABLE "members"`)
@@ -240,6 +285,9 @@ export class initDb1666498335870 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE "bank_accounts"`)
     await queryRunner.query(`DROP TABLE "wallet_transactions"`)
     await queryRunner.query(
+      `DROP TYPE "public"."wallet_transactions_note_enum"`,
+    )
+    await queryRunner.query(
       `DROP TYPE "public"."wallet_transactions_status_enum"`,
     )
     await queryRunner.query(
@@ -247,5 +295,19 @@ export class initDb1666498335870 implements MigrationInterface {
     )
     await queryRunner.query(`DROP TABLE "wallet_transaction_references"`)
     await queryRunner.query(`DROP TABLE "wallets"`)
+    await queryRunner.query(`DROP TABLE "happy_points"`)
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_dce6da2dbd3e9b8438274de4d7"`,
+    )
+    await queryRunner.query(`DROP TABLE "happy_point_transactions"`)
+    await queryRunner.query(
+      `DROP TYPE "public"."happy_point_transactions_status_enum"`,
+    )
+    await queryRunner.query(
+      `DROP TYPE "public"."happy_point_transactions_note_enum"`,
+    )
+    await queryRunner.query(
+      `DROP TYPE "public"."happy_point_transactions_type_enum"`,
+    )
   }
 }

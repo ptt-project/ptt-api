@@ -52,7 +52,7 @@ export class WalletController {
   ) {
     return await this.walletService.RequestDepositQrCodeHandler(
       this.walletService.InsertTransactionToDbFunc(etm),
-      this.walletService.InsertDepositReferenceToDbFunc(etm),
+      this.walletService.InsertReferenceToDbFunc(etm),
       this.walletService.RequestDepositQrCodeFunc(etm),
       this.walletService.AdjustWalletInDbFunc(etm),
     )(wallet, body)
