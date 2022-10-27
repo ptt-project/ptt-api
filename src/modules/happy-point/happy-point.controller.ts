@@ -1,19 +1,23 @@
-import { Controller, Post, Body, Get } from '@nestjs/common'
+import { Controller, Post, Body, Get, Query } from '@nestjs/common'
 import { HappyPointService } from './service/happy-point.service'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqHappyPoint, ReqUser, ReqWallet } from '../auth/auth.decorator'
-import { BuyHappyPointRequestDto } from './dto/buy.dto'
 import { MasterConfigService } from '../master-config/service/master-config.service'
 import { LookupService } from './service/lookup.service'
 import { OtpService } from '../otp/service/otp.service'
 import { HappyPoint } from 'src/db/entities/HappyPoint'
-import { TransferHappyPointDto } from './dto/transfer.dto'
 import { WalletService } from '../wallet/service/wallet.service'
 import { Wallet } from 'src/db/entities/Wallet'
-import { SellHappyPointRequestDto } from './dto/sell.dto'
+import {
+  SellHappyPointRequestDto,
+  TransferHappyPointDto,
+  BuyHappyPointRequestDto,
+} from './dto/happy-point.dto'
 import { RedisService } from 'nestjs-redis'
 import { Member } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
+import { GetHappyPointHistoryDto } from './dto/happy-point-transaction'
+import { HappyPointTransactionService } from './service/happy-point-transction.service'
 
 @Auth()
 @Controller('v1/happy-points')
@@ -25,6 +29,7 @@ export class HappyPointContoller {
     private readonly otpService: OtpService,
     private readonly walletService: WalletService,
     private readonly redisService: RedisService,
+    private readonly happyPointTransactionService: HappyPointTransactionService,
   ) {}
 
   @Post('lookup')
@@ -126,5 +131,20 @@ export class HappyPointContoller {
   @Transaction()
   async getBalanceHappyPoint(@ReqHappyPoint() happyPoint: HappyPoint) {
     return response({ balance: happyPoint.balance })
+  }
+
+  @Get('history')
+  @Transaction()
+  async getHappyPotintHistory(
+    @ReqHappyPoint() happyPoint: HappyPoint,
+    @Query() query: GetHappyPointHistoryDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.happyPointTransactionService.GetHappyPointHistory(
+      this.happyPointTransactionService.InquiryHappyPointTransactionToDbFunc(
+        etm,
+      ),
+      this.happyPointTransactionService.ResponseHappyPointTransctionToHistoryFunc(),
+    )(happyPoint, query)
   }
 }

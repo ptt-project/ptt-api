@@ -33,9 +33,11 @@ import { EntityManager } from 'typeorm'
 import { verifyOtpRequestDto } from '../../otp/dto/otp.dto'
 import { InquiryVerifyOtpType } from '../../otp/type/otp.type'
 import { RequestInteranlWalletTransactionServiceFuncType } from '../../wallet/type/wallet.type'
-import { BuyHappyPointRequestDto } from '../dto/buy.dto'
-import { SellHappyPointRequestDto } from '../dto/sell.dto'
-import { TransferHappyPointDto } from '../dto/transfer.dto'
+import {
+  BuyHappyPointRequestDto,
+  SellHappyPointRequestDto,
+  TransferHappyPointDto,
+} from '../dto/happy-point.dto'
 import {
   InsertHappyPointTypeBuyToDbType,
   InsertHappyPointToDbParams,

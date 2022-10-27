@@ -9,6 +9,7 @@ import { HappyPointContoller } from './happy-point.controller'
 import { HappyPointService } from './service/happy-point.service'
 import { LookupService } from './service/lookup.service'
 import { RedisModule } from 'nestjs-redis'
+import { HappyPointTransactionService } from './service/happy-point-transction.service'
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { RedisModule } from 'nestjs-redis'
     LookupService,
     OtpService,
     WalletService,
+    HappyPointTransactionService,
   ],
   exports: [HappyPointService],
 })

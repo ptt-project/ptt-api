@@ -128,4 +128,12 @@ export class HappyPointTransaction extends AppEntity {
   )
   @JoinColumn({ name: 'from_happy_point_id', referencedColumnName: 'id' })
   fromHappyPoint: HappyPoint
+
+  @ManyToOne(
+    () => HappyPoint,
+    HappyPoint => HappyPoint.transactions,
+    { createForeignKeyConstraints: false },
+  )
+  @JoinColumn({ name: 'to_happy_point_id', referencedColumnName: 'id' })
+  toHappyPoint: HappyPoint
 }
