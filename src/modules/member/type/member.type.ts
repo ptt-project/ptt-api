@@ -1,4 +1,5 @@
 import { Member, MemberGenderType } from 'src/db/entities/Member'
+import { SelectQueryBuilder } from 'typeorm'
 
 export type getProfileType = (member: Member) => Promise<any>
 
@@ -17,3 +18,7 @@ export type UpdateProfileToMemberType = (
 export type InquiryUserExistByMemberIdType = (
   id: number,
 ) => Promise<[Member, string]>
+
+export type InquiryMemberByUsernameType = (
+  q: string,
+) => [SelectQueryBuilder<Member>, string]

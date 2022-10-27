@@ -29,6 +29,7 @@ const _memberError = 103000
 // member service
 export const UnableUpateProfileToDb = _memberError + 1
 export const UnableInquiryUserExistByMemberId = _memberError + 2
+export const UnableInquiryMemberByUsername = _memberError + 3
 
 // email service
 export const OldPassowrdInvalid = _memberError + 2
@@ -155,6 +156,7 @@ export const UnableInquiryMasterConfig = _happyPoint + 21
 export const OverLimitTransferPerday = _happyPoint + 22
 export const UnableUpdateResetLimitTransfer = _happyPoint + 23
 export const UnableUpdateDebitLimitTransferToDb = _happyPoint + 24
+export const UnableInquiryHappyPointTransactionToDb = _happyPoint + 25
 
 const _config = 300000
 export const UnableToGetBrandOptions = _config + 1
