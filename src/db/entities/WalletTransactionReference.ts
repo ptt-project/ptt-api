@@ -5,16 +5,16 @@ import { WalletTransaction } from './WalletTransaction'
 @Entity({ name: 'wallet_transaction_references' })
 export class WalletTransactionReference extends AppEntity {
   @Column({ name: 'transaction_id', nullable: false })
-  transactionId: number
+  transactionId: string
 
-  @Column({ name: 'result_code', nullable: true})
+  @Column({ name: 'result_code', nullable: true })
   resultCode: string
 
-  @Column({ name: 'reference_no', nullable: false})
+  @Column({ name: 'reference_no', nullable: false })
   referenceNo: string
 
-  @Column({ name: 'gbp_reference_no', nullable: true})
-  gbpReferenceNo: string
+  @Column({ name: 'third_pt_reference_no', nullable: true})
+  thirdPtReferenceNo: string
 
   @Column({
     name: 'amount',

@@ -18,7 +18,7 @@ export type ProductPrice = {
 }
 
 export type InquiryProductListByShopIdType = (
-  shopId: number,
+  shopId: string,
   query: GetProductListMemberDto,
 ) => Promise<[SelectQueryBuilder<ProductProfile>, string]>
 

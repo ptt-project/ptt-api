@@ -24,7 +24,6 @@ import {
 } from '../type/otp.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
-import e from 'express'
 
 @Injectable()
 export class OtpService {
@@ -51,10 +50,7 @@ export class OtpService {
             'Unable to send Otp with in 90 sec',
           )
         else {
-          return validateBadRequest(
-            UnableToSendOtp,
-            'Unable to send Otp',
-          )
+          return validateBadRequest(UnableToSendOtp, 'Unable to send Otp')
         }
       }
 
@@ -71,7 +67,7 @@ export class OtpService {
       }
 
       const responseObj: any = { refCode: otpData.refCode, reference }
-      
+
       if (process.env.NODE_ENV !== 'PROD' && process.env.NODE_ENV !== 'UAT') {
         responseObj.otpCode = otpData.otpCode
       }

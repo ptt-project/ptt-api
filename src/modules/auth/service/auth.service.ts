@@ -19,6 +19,7 @@ import {
   UnableInsertMemberToDbError,
   UnableToAddMobile,
   UnableToInsertWallet,
+  UnableToInsertHappyPoint,
 } from 'src/utils/response-code'
 
 import { verifyOtpRequestDto } from '../../otp/dto/otp.dto'
@@ -38,6 +39,7 @@ import {
 } from '../type/auth.type'
 import { PinoLogger } from 'nestjs-pino'
 import { InsertWalletToDbFuncType } from '../../wallet/type/wallet.type'
+import { InsertHappyPointToDbType } from '../../happy-point/type/happy-point.type'
 
 @Injectable()
 export class AuthService {
@@ -68,7 +70,8 @@ export class AuthService {
     inquiryMemberEixst: Promise<InquiryMemberExistType>,
     insertMemberToDb: Promise<InsertMemberToDbTye>,
     addMobileFunc: Promise<AddMobileFuncType>,
-    insertWalletToDb: Promise<InsertWalletToDbFuncType>
+    insertWalletToDb: Promise<InsertWalletToDbFuncType>,
+    insertHappyPointToDb: Promise<InsertHappyPointToDbType>,
   ) {
     return async (body: RegisterRequestDto) => {
       const start = dayjs()
@@ -114,6 +117,17 @@ export class AuthService {
       )
       if (insertWalletToDbError != '') {
         return response(undefined, UnableToInsertWallet, insertWalletToDbError)
+      }
+
+      const [, insertHappyPointToDbError] = await (await insertHappyPointToDb)(
+        member.id,
+      )
+      if (insertHappyPointToDbError != '') {
+        return response(
+          undefined,
+          UnableToInsertHappyPoint,
+          insertHappyPointToDbError,
+        )
       }
 
       this.logger.info(`Done RegisterHandler ${dayjs().diff(start)} ms`)
@@ -202,7 +216,7 @@ export class AuthService {
     return async (
       accessToken: string,
       refreshToken: string,
-      id: number,
+      id: string,
     ): Promise<[ValidateTokenResponse, boolean]> => {
       const start = dayjs()
       const isExiredAccessToken = await (await exiredToken)(accessToken)
@@ -248,7 +262,7 @@ export class AuthService {
   async inquiryUserExistByIdFunc(
     etm: EntityManager,
   ): Promise<InquiryUserExistByIdType> {
-    return async (id: number): Promise<[Member, string]> => {
+    return async (id: string): Promise<[Member, string]> => {
       const start = dayjs()
       let member: Member
       try {
@@ -256,6 +270,7 @@ export class AuthService {
           .createQueryBuilder(Member, 'members')
           .leftJoinAndSelect('members.shop', 'shops')
           .leftJoinAndSelect('members.wallets', 'wallets')
+          .leftJoinAndSelect('members.happyPoints', 'happyPoints')
           .where('members.deletedAt IS NULL')
           .andWhere('members.id = :id', { id })
           .getOne()

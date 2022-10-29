@@ -4,7 +4,7 @@ import { SelectQueryBuilder } from 'typeorm'
 
 export type InsertCategoryToDbParams = {
   name: string
-  shopId: number
+  shopId: string
   createdBy: CreatedByType
   priority: number
 }
@@ -14,7 +14,7 @@ export type UpdateStatusCategoryToDbParams = {
 }
 
 export type InquiryCategoryToDbType = (
-  shopId: number,
+  shopId: string,
 ) => Promise<[Category[], string]>
 
 export type InsertCategoryToDbType = (
@@ -22,23 +22,23 @@ export type InsertCategoryToDbType = (
 ) => Promise<[Category, string]>
 
 export type InquiryCategoryByIdType = (
-  categoryId: number,
+  categoryId: string,
 ) => Promise<[Category, string]>
 
 export type UpdateStatusCategoryToDbType = (
-  categoryId: number,
+  categoryId: string,
   params: UpdateStatusCategoryToDbParams,
 ) => Promise<string>
 
 export type UpdatePriorityCategoryToDbType = (
-  categoryId: number,
+  categoryId: string,
   priority: number,
 ) => Promise<string>
 
 export type DeleteCategoryToDbType = (category: Category) => Promise<string>
 
 export type DeleteCategoryProductToDbByCategoryIdType = (
-  categoryId: number,
+  categoryId: string,
 ) => Promise<string>
 
 export type UpdateCategoryParams = {
@@ -47,26 +47,26 @@ export type UpdateCategoryParams = {
 }
 
 export type UpdateCategoryToDbType = (
-  categoryId: number,
+  categoryId: string,
   params: UpdateCategoryParams,
 ) => Promise<string>
 
 export type InsertCategoryProductToDbType = (
-  categoryId: number,
-  productIds: number[],
+  categoryId: string,
+  productIds: string[],
 ) => Promise<string>
 
 export type DeleteCategoryProductToDbType = (
-  categoryId: number,
-  productIds: number[],
+  categoryId: string,
+  productIds: string[],
 ) => Promise<string>
 
 export type inquiryProductProfileIdsByCategoryIdType = (
-  categoryId: number,
-) => Promise<[number[], string]>
+  categoryId: string,
+) => Promise<[string[], string]>
 
 export type InquiryProductByCatgoryIdType = (
-  categoryId: number,
+  categoryId: string,
 ) => Promise<[SelectQueryBuilder<ProductProfile>, string]>
 
 export type InquiryCategoryByNameType = (

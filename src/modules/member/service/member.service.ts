@@ -1,13 +1,20 @@
 import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
+import { paginate } from 'nestjs-typeorm-paginate'
+import { async } from 'rxjs'
 import { Member } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
-import { UnableInquiryUserExistByMemberId, UnableUpateProfileToDb } from 'src/utils/response-code'
-import { EntityManager } from 'typeorm'
+import {
+  UnableInquiryUserExistByMemberId,
+  UnableUpateProfileToDb,
+} from 'src/utils/response-code'
+import { EntityManager, SelectQueryBuilder } from 'typeorm'
+import { SearchMemberByUsernameDto } from '../dto/search.dto'
 import { UpdateProfiledRequestDto } from '../dto/updateProfile.dto'
 import {
   getProfileType,
+  InquiryMemberByUsernameType,
   InquiryUserExistByMemberIdType,
   UpdateProfileToDbParams,
   UpdateProfileToMemberType,
@@ -65,9 +72,9 @@ export class MemberService {
         )
       }
 
-      const [memberResult, inquiryUserExistByMemberIdError] = await (await inquiryUserExistByMemberId)(
-        memberId,
-      )
+      const [memberResult, inquiryUserExistByMemberIdError] = await (
+        await inquiryUserExistByMemberId
+      )(memberId)
 
       if (inquiryUserExistByMemberIdError !== '') {
         return response(
@@ -95,7 +102,7 @@ export class MemberService {
     etm: EntityManager,
   ): Promise<UpdateProfileToMemberType> {
     return async (
-      memberId: number,
+      memberId: string,
       params: UpdateProfileToDbParams,
     ): Promise<string> => {
       const start = dayjs()
@@ -115,7 +122,7 @@ export class MemberService {
   async InquiryUserExistByMemberIdFunc(
     etm: EntityManager,
   ): Promise<InquiryUserExistByMemberIdType> {
-    return async (id: number): Promise<[Member, string]> => {
+    return async (id: string): Promise<[Member, string]> => {
       const start = dayjs()
       let member: Member
       try {
@@ -136,6 +143,49 @@ export class MemberService {
       this.logger.info(
         `Done InquiryUserExistByMemberIdFunc ${dayjs().diff(start)} ms`,
       )
+      return [member, '']
+    }
+  }
+
+  SearchUserByUsernameHandler(
+    inquiryMemberByUsername: InquiryMemberByUsernameType,
+  ) {
+    return async (body: SearchMemberByUsernameDto) => {
+      const { q, limit = 7, page = 1 } = body
+      const [member, errorInquiryMemberByUsername] = inquiryMemberByUsername(q)
+      if (errorInquiryMemberByUsername != '') {
+        return response(
+          undefined,
+          UnableUpateProfileToDb,
+          errorInquiryMemberByUsername,
+        )
+      }
+
+      const result = await paginate<Member>(member, {
+        limit,
+        page,
+      })
+
+      return response(result)
+    }
+  }
+
+  InquiryMemberByUsernameFunc(etm: EntityManager): InquiryMemberByUsernameType {
+    return (q: string): [SelectQueryBuilder<Member>, string] => {
+      let member: SelectQueryBuilder<Member>
+
+      try {
+        member = etm
+          .createQueryBuilder(Member, 'members')
+          .where('members.username ILIKE :q', {
+            q: `%${q}%`,
+          })
+          .andWhere('members.deletedAt IS NULL')
+          .orderBy('members.username', 'ASC')
+      } catch (error) {
+        return [member, error.message]
+      }
+
       return [member, '']
     }
   }

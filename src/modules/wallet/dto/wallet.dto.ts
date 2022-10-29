@@ -1,7 +1,12 @@
-import {  IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
+import {
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator'
 import { TransactionType } from 'src/db/entities/WalletTransaction'
 import { Transform } from 'class-transformer'
-
 
 export class getWalletTransactionQueryDTO {
   @IsOptional()
@@ -54,10 +59,10 @@ export class WithdrawRequestDTO {
   @IsString()
   @IsNotEmpty()
   refCode: string
-  
+
   @IsNumber()
   @IsNotEmpty()
-  bankAccountId: number
+  bankAccountId: string
 
   @IsNumber()
   @IsNotEmpty()
