@@ -264,7 +264,7 @@ export class MockDataConsoleService {
     // }
     // console.log('shop', shop)
 
-    const shopId = 3
+    const shopId = '3'
 
     const platformCategory = etm.create(PlatformCategory, {
       name: 'platform-category01',

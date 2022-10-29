@@ -31,7 +31,7 @@ export class ProductService {
       InquiryProductByCatgoryIdType
     >,
   ) {
-    return async (categoryId: number, query: getProductQueryDTO) => {
+    return async (categoryId: string, query: getProductQueryDTO) => {
       const start = dayjs()
       const { limit = 10, page = 1 } = query
 
@@ -62,7 +62,7 @@ export class ProductService {
   async inquiryProductProfileByCatgoryIdFunc(
     etm: EntityManager,
   ): Promise<InquiryProductByCatgoryIdType> {
-    return async (categoryId: number) => {
+    return async (categoryId: string) => {
       let productProfiles: SelectQueryBuilder<ProductProfile>
 
       try {
@@ -87,11 +87,11 @@ export class ProductService {
   async insertCategoryProductToDbFunc(
     etm: EntityManager,
   ): Promise<InsertCategoryProductToDbType> {
-    return async (categoryId: number, productProfileIds: number[]) => {
+    return async (categoryId: string, productProfileIds: string[]) => {
       const start = dayjs()
       try {
         const categoryProductProfiles = productProfileIds.map(
-          (productProfileId: number) => {
+          (productProfileId: string) => {
             return etm.create(CategoryProductProfile, {
               categoryId,
               productProfileId,
@@ -114,9 +114,9 @@ export class ProductService {
   async inquiryProductProfileIdsByCategoryIdFunc(
     etm: EntityManager,
   ): Promise<inquiryProductProfileIdsByCategoryIdType> {
-    return async (categoryId: number) => {
+    return async (categoryId: string) => {
       const start = dayjs()
-      let productIds: number[]
+      let productIds: string[]
       try {
         const categoryProductProfiles = await etm.find(CategoryProductProfile, {
           where: { categoryId },
@@ -143,7 +143,7 @@ export class ProductService {
   async deleteCategoryProductToDb(
     etm: EntityManager,
   ): Promise<DeleteCategoryProductToDbType> {
-    return async (categoryId: number, productProfileIds: number[]) => {
+    return async (categoryId: string, productProfileIds: string[]) => {
       const start = dayjs()
       try {
         const categoryProductProfiles = await etm.find(CategoryProductProfile, {
@@ -168,7 +168,7 @@ export class ProductService {
   async deleteCategoryProductToDbByCategoryIdFunc(
     etm: EntityManager,
   ): Promise<DeleteCategoryProductToDbByCategoryIdType> {
-    return async (categoryId: number) => {
+    return async (categoryId: string) => {
       const start = dayjs()
       try {
         const categoryProductProfiles = await etm.find(CategoryProductProfile, {

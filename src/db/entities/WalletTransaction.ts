@@ -12,10 +12,10 @@ export type TransactionNote = 'credit' | 'debit'
 @Entity({ name: 'wallet_transactions' })
 export class WalletTransaction extends AppEntity {
   @Column({ name: 'wallet_id', nullable: false })
-  walletId: number
+  walletId: string
 
   @Column({
-    name: 'type', 
+    name: 'type',
     type: 'enum',
     enum: ['deposit', 'withdraw', 'buy', 'sell', 'buy_happy_point', 'sell_happy_point'],
     nullable: false,
@@ -70,7 +70,7 @@ export class WalletTransaction extends AppEntity {
   detail: string
 
   @Column({
-    name: 'status', 
+    name: 'status',
     type: 'enum',
     enum: ['success', 'fail', 'cancel', 'pending'],
     nullable: false,
@@ -86,10 +86,10 @@ export class WalletTransaction extends AppEntity {
   note: TransactionNote
 
   @Column({ name: 'reference_id', nullable: true })
-  referenceId: number
+  referenceId: string
 
   @Column({ name: 'bank_account_id', nullable: true })
-  bankAccountId: number
+  bankAccountId: string
 
   @ManyToOne(
     () => Wallet,

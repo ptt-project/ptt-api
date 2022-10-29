@@ -1,11 +1,11 @@
 import { BankAccount } from 'src/db/entities/BankAccount'
 
 export type InqueryBankAccountsFormDbFuncType = (
-  memberId: number,
+  memberId: string,
 ) => Promise<[BankAccount[], string]>
 
 export type InsertBankAccountFormDbFuncType = (
-  memberId: number,
+  memberId: string,
   fullName: string,
   thaiId: string,
   bankCode: string,
@@ -23,15 +23,15 @@ export type UpdateBankAccountFuncType = (
 ) => Promise<[BankAccount, string]>
 
 export type InqueryBankAccountFormDbFuncType = (
-  memberId: number,
-  bankAccountId: number,
+  memberId: string,
+  bankAccountId: string,
 ) => Promise<[BankAccount, string]>
 
 export type ValidateBankAccountFuncType = (
-  memberId: number,
+  memberId: string,
   bankCode: string,
   accountNumber: string,
-  bankAccountId?: number,
+  bankAccountId?: string,
 ) => Promise<[string]>
 
 export type DeleteBankAccountFormDbFuncType = (
@@ -41,4 +41,3 @@ export type DeleteBankAccountFormDbFuncType = (
 export type SetMainBankAccountFuncType = (
   bankAccount: BankAccount,
 ) => Promise<[string]>
-

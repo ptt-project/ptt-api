@@ -41,7 +41,7 @@ export class AddressController {
   @Put(':addressId')
   @Transaction()
   async updateAddress(
-    @Param('addressId') addressId: number,
+    @Param('addressId') addressId: string,
     @ReqUser() member: Member,
     @Body() body: MemberUpdateAddressRequestDto,
     @TransactionManager() etm: EntityManager,
@@ -58,7 +58,7 @@ export class AddressController {
   @Patch(':addressId/set-main')
   @Transaction()
   async setMainToAddress(
-    @Param('addressId') addressId: number,
+    @Param('addressId') addressId: string,
     @ReqUser() member: Member,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -71,7 +71,7 @@ export class AddressController {
   @Delete(':addressId')
   @Transaction()
   async deleteAddress(
-    @Param('addressId') addressId: number,
+    @Param('addressId') addressId: string,
     @ReqUser() member: Member,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -84,7 +84,7 @@ export class AddressController {
   @Get(':addressId')
   @Transaction()
   async getAdress(
-    @Param('addressId') addressId: number,
+    @Param('addressId') addressId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.memberService.getAddressHandler(

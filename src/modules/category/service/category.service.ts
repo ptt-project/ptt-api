@@ -109,7 +109,7 @@ export class CategoryService {
   async inquiryCategoriesFunc(
     etm: EntityManager,
   ): Promise<InquiryCategoryToDbType> {
-    return async (shopId: number): Promise<[Category[], string]> => {
+    return async (shopId: string): Promise<[Category[], string]> => {
       const start = dayjs()
       let categories: Category[]
       try {
@@ -154,12 +154,12 @@ export class CategoryService {
     updateActiveCategory: Promise<UpdateStatusCategoryToDbType>,
   ) {
     return async (
-      categoryId: number,
+      categoryId: string,
       params: UpdateStatusCategoryRequestDto,
     ) => {
       const start = dayjs()
 
-      const [category, getCategoryByCategoryIdError] = await (
+      const [, getCategoryByCategoryIdError] = await (
         await inquiryCategoryByCategoryId
       )(categoryId)
 
@@ -206,7 +206,7 @@ export class CategoryService {
   async inquiryCategoryByCategoryIdFunc(
     etm: EntityManager,
   ): Promise<InquiryCategoryByIdType> {
-    return async (categoryId: number): Promise<[Category, string]> => {
+    return async (categoryId: string): Promise<[Category, string]> => {
       const start = dayjs()
       let category: Category
 
@@ -233,7 +233,7 @@ export class CategoryService {
     etm: EntityManager,
   ): Promise<UpdateStatusCategoryToDbType> {
     return async (
-      categoryId: number,
+      categoryId: string,
       params: UpdateStatusCategoryToDbParams,
     ): Promise<string> => {
       const start = dayjs()
@@ -304,7 +304,7 @@ export class CategoryService {
   async updatePriorityCategoryFunc(
     etm: EntityManager,
   ): Promise<UpdatePriorityCategoryToDbType> {
-    return async (categoryId: number, priority: number): Promise<string> => {
+    return async (categoryId: string, priority: number): Promise<string> => {
       const start = dayjs()
       let updateResult: UpdateResult
 
@@ -332,7 +332,7 @@ export class CategoryService {
       DeleteCategoryProductToDbByCategoryIdType
     >,
   ) {
-    return async (categoryId: number) => {
+    return async (categoryId: string) => {
       const start = dayjs()
       const [category, errorInquiryCategory] = await (
         await inquiryCategoryById
@@ -401,7 +401,7 @@ export class CategoryService {
     updateCategoryToDb: Promise<UpdateCategoryToDbType>,
     inquiryCategoryById: Promise<InquiryCategoryByIdType>,
   ) {
-    return async (categoryId: number, body: UpdateCategoryRequestDto) => {
+    return async (categoryId: string, body: UpdateCategoryRequestDto) => {
       const start = dayjs()
       const { name, productProfileIds } = body
       const [
@@ -524,7 +524,7 @@ export class CategoryService {
   async updateCategoryToDbFunc(
     etm: EntityManager,
   ): Promise<UpdateCategoryToDbType> {
-    return async (categoryId: number, params: UpdateCategoryParams) => {
+    return async (categoryId: string, params: UpdateCategoryParams) => {
       const start = dayjs()
       try {
         const result = await etm.update(Category, categoryId, { ...params })
@@ -547,7 +547,7 @@ export class CategoryService {
       inquiryProductProfileIdsByCategoryIdType
     >,
   ) {
-    return async (categoryId: number) => {
+    return async (categoryId: string) => {
       const start = dayjs()
       const [category, getCategoryByCategoryIdError] = await (
         await inquiryCategoryById
