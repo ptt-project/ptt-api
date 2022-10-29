@@ -106,6 +106,8 @@ export const UnableRemoveProductOptionByProductOptionId = _productError + 14
 export const UnableUpdateProductOption = _productError + 15
 export const UnableRemoveProductsById = _productError + 16
 export const UnableUpdateProduct = _productError + 17
+export const UnableInquiryProductByProductIds = _productError + 18
+export const UnableToGetProductPrice = _productError + 19
 
 const _image = 110000
 export const UnableResizeImage = _image + 1
