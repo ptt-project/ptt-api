@@ -13,7 +13,10 @@ import { ValidationError } from 'class-validator'
 import { InvalidJSONString } from './utils/response-code'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import cookieParser from 'cookie-parser'
+import cookieSession from 'cookie-session'
 import { Logger } from 'nestjs-pino'
+import basicAuth from 'express-basic-auth'
+import { bullServerAdapter } from './task/bull-board.provider'
 
 const loggerDebug: LogLevel[] = ['debug', 'warn', 'error', 'log']
 const loggerProduction: LogLevel[] = ['warn', 'error', 'log']
@@ -24,16 +27,62 @@ const logger =
     ? { logger: loggerProduction }
     : {}
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(
-    AppModule,
-    logger,
-  )
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    ...logger,
+  })
 
   app.useLogger(app.get(Logger))
+  app.use(
+    cookieSession({
+      name: '__session',
+      keys: ['key1'],
+      maxAge: 24 * 60 * 60 * 100,
+      secure: true,
+      httpOnly: true,
+      sameSite: 'none',
+    }),
+  )
+  const whitelist = [
+    'http://happyshoppingexpress.com:3000',
+    'https://happyshoppingexpress.com',
+    'http://happyshoppingexpress.com',
+    'http://localhost:3000',
+    'http://localhost:3008',
+    'http://124.109.2.49:3000',
+  ]
   app.enableCors({
-    origin: '*',
-    methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE'],
-    exposedHeaders: ['Content-Disposition'],
+    // origin: function(origin, callback) {
+    //   if (whitelist.indexOf(origin) !== -1) {
+    //     console.log('allowed cors for:', origin)
+    //     callback(null, true)
+    //   } else {
+    //     console.log('blocked cors for:', origin)
+    //     callback(new Error('Not allowed by CORS'))
+    //   }
+    // },
+    origin: whitelist,
+    methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    exposedHeaders: [
+      'Content-Disposition',
+      'AccessToken',
+      'RefreshToken',
+      'Set-Cookie',
+    ],
+    allowedHeaders: [
+      'Content-Type',
+      'Content-Length',
+      'Accept-Encoding',
+      'X-CSRF-Token',
+      'Authorization',
+      'accept',
+      'origin',
+      'Cache-Control',
+      'X-Requested-With',
+      'AccessToken',
+      'RefreshToken',
+      'Set-Cookie',
+      'Cookie',
+    ],
     credentials: true,
   })
   app.setGlobalPrefix('/api')
@@ -59,6 +108,18 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }))
   app.use(urlencoded({ limit: '50mb', extended: true }))
   app.use(cookieParser())
+
+  bullServerAdapter.setBasePath('/bull-board')
+  app.use(
+    '/bull-board',
+    basicAuth({
+      users: {
+        admin: 'P@ssw0rd',
+      },
+      challenge: true,
+    }),
+    bullServerAdapter.getRouter(),
+  )
 
   await app.listen(3000)
 }

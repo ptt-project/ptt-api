@@ -2,16 +2,12 @@ import { Injectable } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
 import { jwtConstants } from './auth.constants'
-import { AuthService } from './auth.service'
-import { TokenType } from './auth.type'
+import { AuthService } from './service/auth.service'
+import { TokenType } from './type/auth.type'
 import { Request } from 'express'
 import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
-import {
-  Connection,
-  EntityManager,
-  getConnection,
-} from 'typeorm'
+import { Connection, EntityManager, getConnection } from 'typeorm'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -47,13 +43,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (isError) {
       return false
     } else {
-      const accessToken = `AccessToken=${
-        response.accessToken
-      }; HttpOnly; Path=/; Max-Age=${dayjs().add(10, 'second')}`
+      const accessToken = `${response.accessToken}; HttpOnly; Domain=${
+        process.env.SET_COOKIES_DOMAIN
+      }; Path=/; Max-Age=${dayjs().add(1, 'day')};`
 
-      const refreshToken = `RefreshToken=${
-        response.refreshToken
-      }; HttpOnly; Path=/; Max-Age=${dayjs().add(20, 'second')}`
+      const refreshToken = `${response.refreshToken}; HttpOnly; Domain=${
+        process.env.SET_COOKIES_DOMAIN
+      }; Path=/; Max-Age=${dayjs().add(7, 'day')};`
+
       request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
     }
 

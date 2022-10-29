@@ -12,7 +12,7 @@ import {
 import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqShop, Seller } from '../auth/auth.decorator'
-import { CategoryService } from './category.service'
+import { CategoryService } from './service/category.service'
 
 import {
   UpdateStatusCategoryRequestDto,
@@ -21,7 +21,7 @@ import {
   UpdateCategoryRequestDto,
 } from './dto/category.dto'
 import { getProductQueryDTO } from './dto/product.dto'
-import { ProductService } from './product.service'
+import { ProductService } from './service/product.service'
 
 @Auth()
 @Seller()
@@ -59,7 +59,7 @@ export class CategoryController {
   @Patch(':categoryId/status')
   @Transaction()
   async updateStatusCategory(
-    @Param('categoryId') categoryId: number,
+    @Param('categoryId') categoryId: string,
     @Body() body: UpdateStatusCategoryRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -85,7 +85,7 @@ export class CategoryController {
   @Put(':categoryId')
   @Transaction()
   async updateCategory(
-    @Param('categoryId') categoryId: number,
+    @Param('categoryId') categoryId: string,
     @Body() body: UpdateCategoryRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -102,7 +102,7 @@ export class CategoryController {
   @Get(':categoryId')
   @Transaction()
   async getCategory(
-    @Param('categoryId') categoryId: number,
+    @Param('categoryId') categoryId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.categoryService.inquiryCategoryHandler(
@@ -114,7 +114,7 @@ export class CategoryController {
   @Delete(':categoryId')
   @Transaction()
   async deleteCategory(
-    @Param('categoryId') categoryId: number,
+    @Param('categoryId') categoryId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.categoryService.deleteCategoryHandler(
@@ -127,7 +127,7 @@ export class CategoryController {
   @Get(':categoryId/products')
   @Transaction()
   async getProducts(
-    @Param('categoryId') categoryId: number,
+    @Param('categoryId') categoryId: string,
     @Query() query: getProductQueryDTO,
     @TransactionManager() etm: EntityManager,
   ) {

@@ -1,5 +1,5 @@
 import { Condition } from "src/db/entities/Condition";
 
 export type InquiryConditionByShopIdType = (
-    shopId: number,
+    shopId: string,
   ) => Promise<[Condition, string]>

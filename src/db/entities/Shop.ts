@@ -7,6 +7,13 @@ import { ProductProfile } from './ProductProfile'
 
 export type ShopType = 'Normal' | 'Mall'
 export type ApprovalType = 'requested' | 'rejected' | 'approved'
+export type MallApplicantRoleType =
+  | 'Brand Owner'
+  | 'Exclusive Distributor'
+  | 'Non-Exclusive Distributor'
+  | 'Retailer'
+  | 'Other'
+
 @Entity({ name: 'shops' })
 export class Shop extends AppEntity {
   @Column({
@@ -105,6 +112,26 @@ export class Shop extends AppEntity {
   })
   cancelRate: number
 
+  @Column({
+    name: 'mall_applicant_role',
+    type: 'enum',
+    enum: [
+      'Brand Owner',
+      'Exclusive Distributor',
+      'Non-Exclusive Distributor',
+      'Retailer',
+      'Other',
+    ],
+    nullable: true,
+  })
+  mallApplicantRole: MallApplicantRoleType
+
+  @Column({ name: 'mall_offline_shop_detail', nullable: true })
+  mallOfflineShopDetail: string
+
+  @Column({ name: 'mall_shop_description', nullable: true })
+  mallShopDescription: string
+
   @Column({ name: 'profile_image_path', nullable: true })
   profileImagePath: string
 
@@ -112,7 +139,10 @@ export class Shop extends AppEntity {
   coverImagePath: string
 
   @Column({ name: 'member_id', nullable: true })
-  memberId: number
+  memberId: string
+
+  @Column({ name: 'is_recommended', nullable: false, default: false })
+  isRecommended: boolean
 
   @OneToOne(
     () => Member,
@@ -139,6 +169,6 @@ export class Shop extends AppEntity {
     () => Condition,
     condition => condition.shop,
   )
-  @JoinColumn({ name: 'shop_id', referencedColumnName: 'id' })
+  @JoinColumn({ name: 'condition_id', referencedColumnName: 'id' })
   condition: Condition
 }

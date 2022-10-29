@@ -2,8 +2,11 @@ import { transformerDayjsToDate } from 'src/utils/entity-transform'
 import { Column, Entity, OneToOne, OneToMany, JoinColumn } from 'typeorm'
 import { Address } from './Address'
 import { AppEntity } from './AppEntity'
+import { HappyPoint } from './HappyPoint'
+import { BankAccount } from './BankAccount'
 import { Mobile } from './Mobile'
 import { Shop } from './Shop'
+import { Wallet } from './Wallet'
 
 export type MemberGenderType = 'F' | 'M' | 'O'
 export type MemberRoleType = 'Buyer' | 'Seller'
@@ -12,11 +15,11 @@ export class Member extends AppEntity {
   @Column({ name: 'username', nullable: false, length: 50 })
   username: string
 
-  @Column({ name: 'firstname', nullable: false, length: 50 })
-  firstname: string
+  @Column({ name: 'first_name', nullable: false, length: 50 })
+  firstName: string
 
-  @Column({ name: 'lastname', nullable: false, length: 50 })
-  lastname: string
+  @Column({ name: 'last_name', nullable: false, length: 50 })
+  lastName: string
 
   @Column({ name: 'password', nullable: false })
   password: string
@@ -29,6 +32,7 @@ export class Member extends AppEntity {
 
   @Column({
     name: 'birthday',
+    type: 'date',
     nullable: true,
     transformer: transformerDayjsToDate,
   })
@@ -61,6 +65,9 @@ export class Member extends AppEntity {
   })
   role: MemberRoleType
 
+  @Column({ name: 'image_id', nullable: true })
+  imageId: string
+
   @OneToMany(
     () => Mobile,
     mobile => mobile.member,
@@ -79,4 +86,22 @@ export class Member extends AppEntity {
     shop => shop.member,
   )
   shop: Shop
+
+  @OneToMany(
+    () => Wallet,
+    wallet => wallet.member,
+  )
+  wallets: Wallet[]
+
+  @OneToMany(
+    () => HappyPoint,
+    happyPoint => happyPoint.member,
+  )
+  happyPoints: HappyPoint[]
+
+  @OneToMany(
+    () => BankAccount,
+    bankAccount => bankAccount.member,
+  )
+  bankAccounts: BankAccount[]
 }

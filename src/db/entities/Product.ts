@@ -1,13 +1,6 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  ManyToMany,
-} from 'typeorm'
+import { transformerDecimalToNumber } from 'src/utils/entity-transform'
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { AppEntity } from './AppEntity'
-import { Category } from './Category'
 import { PlatformCategory } from './PlatformCategory'
 import { ProductProfile } from './ProductProfile'
 import { Shop } from './Shop'
@@ -18,16 +11,7 @@ export class Product extends AppEntity {
   sku: string
 
   @Column({ name: 'product_profile_id' })
-  productProfileId: number
-
-  @Column({ name: 'shop_id' })
-  shopId: number
-
-  @Column({ name: 'platform_category_id' })
-  platformCategoryId: number
-
-  @Column({ name: 'brand_id' })
-  brandId: number
+  productProfileId: string
 
   @Column({ name: 'option1', nullable: true })
   option1: string
@@ -38,20 +22,36 @@ export class Product extends AppEntity {
   @Column({
     name: 'price',
     type: 'decimal',
-    precision: 5,
+    precision: 12,
     scale: 2,
     nullable: true,
+    transformer: transformerDecimalToNumber,
   })
   price: number
 
   @Column({ name: 'stock', nullable: true })
   stock: number
 
+  @Column({
+    name: 'sold',
+    type: 'decimal',
+    default: 0,
+    precision: 12,
+    scale: 4,
+    nullable: false,
+    transformer: transformerDecimalToNumber,
+  })
+  sold: number
+
+  @Column({ name: 'amount_sold', nullable: false, default: 0 })
+  amountSold: number
+
   @ManyToOne(
     () => ProductProfile,
     productProfile => productProfile.products,
+    { createForeignKeyConstraints: false },
   )
-  @JoinColumn({ name: 'product_profile_id', referencedColumnName: 'id' })
+  @JoinColumn({ name: 'product_profile_id' })
   productProfile: ProductProfile
 
   @ManyToOne(

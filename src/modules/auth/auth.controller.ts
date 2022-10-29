@@ -1,15 +1,18 @@
 import { Body, Controller, Post, Req } from '@nestjs/common'
-import { AuthService } from './auth.service'
+import { AuthService } from './service/auth.service'
 import {
   RegisterRequestDto,
   ValidateRegisterRequestDto,
 } from './dto/register.dto'
-import { LoginService } from './login.service'
+import { LoginService } from './service/login.service'
 import { LoginRequestDto } from './dto/login.dto'
-import { OtpService } from '../otp/otp.service'
+import { OtpService } from '../otp/service/otp.service'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
-import { MobileService } from '../mobile/mobile.service'
+import { MobileService } from '../mobile/service/mobile.service'
 import dayjs from 'dayjs'
+import { WalletService } from '../wallet/service/wallet.service'
+import { ShopService } from '../seller/service/shop.service'
+import { HappyPointService } from '../happy-point/service/happy-point.service'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -18,6 +21,9 @@ export class AuthController {
     private readonly otpService: OtpService,
     private readonly loginService: LoginService,
     private readonly mobileService: MobileService,
+    private readonly walletService: WalletService,
+    private readonly shopService: ShopService,
+    private readonly happyPointService: HappyPointService,
   ) {}
 
   @Post('register')
@@ -27,10 +33,12 @@ export class AuthController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.authService.registerHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
       this.authService.inquiryMemberExistFunc(etm),
       this.authService.insertMemberToDbFunc(etm),
-      this.mobileService.addMobileFunc(etm),
+      this.mobileService.AddMobileFunc(etm),
+      this.walletService.InsertWalletToDbFunc(etm),
+      this.happyPointService.InsertHappyPointToDbFunc(etm),
     )(body)
   }
 
@@ -54,6 +62,7 @@ export class AuthController {
   ) {
     const longinResponse = await this.loginService.loginHandler(
       this.loginService.inquiryUserExistByUsernameFunc(etm),
+      this.shopService.InquiryShopByMemberIdFunc(etm),
       this.loginService.validatePasswordFunc(),
       this.authService.genAccessTokenFunc(),
       this.authService.genRefreshTokenFunc(),
@@ -61,13 +70,18 @@ export class AuthController {
 
     const accessToken = `AccessToken=${
       longinResponse.data.accessToken
-    }; HttpOnly; Path=/; Max-Age=${dayjs().add(1, 'day')}`
+    }; Path=/; Max-Age=${dayjs().add(1, 'day')}; HttpOnly; Domain=${
+      process.env.SET_COOKIES_DOMAIN
+    };`
 
     const refreshToken = `RefreshToken=${
       longinResponse.data.refreshToken
-    }; HttpOnly; Path=/; Max-Age=${dayjs().add(7, 'day')}`
+    }; Path=/; Max-Age=${dayjs().add(7, 'day')}; HttpOnly; Domain=${
+      process.env.SET_COOKIES_DOMAIN
+    };`
 
     request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
+
     return longinResponse
   }
 }

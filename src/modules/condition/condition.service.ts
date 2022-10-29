@@ -14,11 +14,11 @@ export class ConditionService {
     this.logger.setContext(ConditionService.name)
   }
 
-  GetConditionsHandler(inquiryConditionByShopIdFunc: Promise<InquiryConditionByShopIdType>) {
+  GetConditionsHandler(inquiryConditionByShopId: Promise<InquiryConditionByShopIdType>) {
     return async (shop: Shop) => {
       const start = dayjs()
 
-      const [condition, InquiryConditionByShopIdError] = await (await inquiryConditionByShopIdFunc)(
+      const [condition, InquiryConditionByShopIdError] = await (await inquiryConditionByShopId)(
         shop.id,
       )
 
@@ -34,7 +34,7 @@ export class ConditionService {
   async InquiryConditionByShopIdFunc(
     etm: EntityManager,
   ): Promise<InquiryConditionByShopIdType> {
-    return async (shopId: number): Promise<[Condition, string]> => {
+    return async (shopId: string): Promise<[Condition, string]> => {
       const start = dayjs()
       let condition: Condition
       try {
