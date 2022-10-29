@@ -11,4 +11,7 @@ export class Bank extends AppEntity {
 
   @Column({ name: 'name_en', nullable: false })
   nameEn: string
+
+  @Column({ name: 'icon', nullable: false })
+  icon: string
 }
