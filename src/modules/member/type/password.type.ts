@@ -1,7 +1,7 @@
 import { Member } from 'src/db/entities/Member'
 
 export type InquiryMemberByIdType = (
-  memberId: number,
+  memberId: string,
 ) => Promise<[Member, string]>
 
 export type UpdatePasswordToMemberType = (

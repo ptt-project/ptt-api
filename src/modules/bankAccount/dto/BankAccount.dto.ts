@@ -1,6 +1,4 @@
-import {  IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator'
-import { TransactionType } from 'src/db/entities/WalletTransaction'
-import { Transform } from 'class-transformer'
+import { IsNotEmpty, IsString } from 'class-validator'
 
 export class GetBankAccoutRequestDTO {
   @IsString()

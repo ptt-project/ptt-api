@@ -1,3 +1,3 @@
 export type CreateTablePartitionOfProductProfileToDbType = (
-  id: number,
+  id: string,
 ) => Promise<string>

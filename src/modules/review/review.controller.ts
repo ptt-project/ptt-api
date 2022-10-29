@@ -26,7 +26,7 @@ export class ReviewController {
   @Get('reviews/:reviewId')
   @Transaction()
   async getReviewsByReviewId(
-    @Param('reviewId') reviewId: number,
+    @Param('reviewId') reviewId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.reviewService.getReviewsByReviewIdHandler(
@@ -37,7 +37,7 @@ export class ReviewController {
   @Put('reviews/:reviewId/reply')
   @Transaction()
   async replyReviewByReviewId(
-    @Param('reviewId') reviewId: number,
+    @Param('reviewId') reviewId: string,
     @Body() body: replyCommentRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {

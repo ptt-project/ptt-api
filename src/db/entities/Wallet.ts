@@ -7,7 +7,7 @@ import { transformerDecimalToNumber } from 'src/utils/entity-transform'
 @Entity({ name: 'wallets' })
 export class Wallet extends AppEntity {
   @Column({ name: 'member_id', nullable: false })
-  memberId: number
+  memberId: string
 
   @Column({
     name: 'balance',

@@ -29,6 +29,7 @@ const _memberError = 103000
 // member service
 export const UnableUpateProfileToDb = _memberError + 1
 export const UnableInquiryUserExistByMemberId = _memberError + 2
+export const UnableInquiryMemberByUsername = _memberError + 3
 
 // email service
 export const OldPassowrdInvalid = _memberError + 2
@@ -106,6 +107,7 @@ export const UnableRemoveProductOptionByProductOptionId = _productError + 14
 export const UnableUpdateProductOption = _productError + 15
 export const UnableRemoveProductsById = _productError + 16
 export const UnableUpdateProduct = _productError + 17
+export const UnableInquiryProductProfileFromDb = _productError + 18
 
 const _image = 110000
 export const UnableResizeImage = _image + 1
@@ -114,12 +116,12 @@ const _walletError = 114000
 export const UnableToInsertWallet = _walletError + 1
 export const UnableToGetWalletTransaction = _walletError + 2
 export const UnableToInsertTransaction = _walletError + 3
-export const UnableToInsertDepositReference = _walletError + 4
+export const UnableToInsertReference = _walletError + 4
 export const UnableToRequestDepositQrCode = _walletError + 5
 export const UnableToAdjustWallet = _walletError + 6
 export const UnableToInsertWithdrawReference = _walletError + 7
 export const UnableToRequestWithdraw = _walletError + 8
-
+export const UnableToUpdateReference = _walletError + 9
 
 const _bankAccountError = 115000
 export const UnableToGetBankAccount = _bankAccountError + 1
@@ -130,6 +132,32 @@ export const ValidateBankAccount = _bankAccountError + 5
 export const UnableToDeleteBankAccount = _bankAccountError + 6
 export const UnableToSetMainBankAccount = _bankAccountError + 7
 
+const _happyPoint = 120000
+export const UnableInsertLookupToDb = _happyPoint + 1
+export const UnableLookupExchangeRate = _happyPoint + 2
+export const WrongCalculatePoint = _happyPoint + 3
+export const UnableInserttHappyPointTypeBuyToDb = _happyPoint + 4
+export const UnableUpdateCreditBalanceMemberToDb = _happyPoint + 5
+export const UnableToInsertHappyPoint = _happyPoint + 6
+export const UnableInquiryWalletIdFromUsername = _happyPoint + 7
+export const UnableFromHappyPointInserttHappyPointTypeBuyToDb = _happyPoint + 8
+export const UnableToHappyPointInserttHappyPointTypeBuyToDb = _happyPoint + 9
+export const UnableUpdatHappyPointCreditTransferToDb = _happyPoint + 10
+export const UnableUpdatHappyPointDebitTransferToDb = _happyPoint + 11
+export const UnableTransferToMySelf = _happyPoint + 12
+export const UpdateWalletWithBuyHappyPoint = _happyPoint + 13
+export const UpdateWalletWithSellHappyPoint = _happyPoint + 14
+export const WrongCalculateAmount = _happyPoint + 15
+export const ComplicatedFeePoint = _happyPoint + 16
+export const ComplicatedFeeAmount = _happyPoint + 17
+export const UnableUpdateDebitBalanceMemberToDb = _happyPoint + 18
+export const UnableDuplicateRefId = _happyPoint + 19
+export const UnableInquiryRefIdExistTransactions = _happyPoint + 20
+export const UnableInquiryMasterConfig = _happyPoint + 21
+export const OverLimitTransferPerday = _happyPoint + 22
+export const UnableUpdateResetLimitTransfer = _happyPoint + 23
+export const UnableUpdateDebitLimitTransferToDb = _happyPoint + 24
+export const UnableInquiryHappyPointTransactionToDb = _happyPoint + 25
 
 const _config = 300000
 export const UnableToGetBrandOptions = _config + 1

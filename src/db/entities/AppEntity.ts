@@ -10,8 +10,8 @@ import {
 } from 'typeorm'
 
 export abstract class AppEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('increment')
-  id: number
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
   @CreateDateColumn({
     name: 'created_at',
