@@ -10,7 +10,6 @@ export class updateMemberForRelation1667058318346 implements MigrationInterface 
         await queryRunner.query(`ALTER TABLE "category_product_profiles" ADD "product_profile_id" character varying NOT NULL`);
         await queryRunner.query(`ALTER TABLE "product_options" DROP COLUMN "product_profile_id"`);
         await queryRunner.query(`ALTER TABLE "product_options" ADD "product_profile_id" character varying NOT NULL`);
-        await queryRunner.query(`ALTER TABLE "product_profiles" ADD CONSTRAINT "PK_bb8fba1cc1611d5c1b15aaf471f" PRIMARY KEY ("id")`);
         await queryRunner.query(`ALTER TABLE "product_profiles" DROP COLUMN "brand_id"`);
         await queryRunner.query(`ALTER TABLE "product_profiles" ADD "brand_id" character varying`);
         await queryRunner.query(`ALTER TABLE "products" DROP COLUMN "product_profile_id"`);
@@ -28,7 +27,6 @@ export class updateMemberForRelation1667058318346 implements MigrationInterface 
         await queryRunner.query(`ALTER TABLE "products" ADD "product_profile_id" uuid NOT NULL`);
         await queryRunner.query(`ALTER TABLE "product_profiles" DROP COLUMN "brand_id"`);
         await queryRunner.query(`ALTER TABLE "product_profiles" ADD "brand_id" uuid`);
-        await queryRunner.query(`ALTER TABLE "product_profiles" DROP CONSTRAINT "PK_bb8fba1cc1611d5c1b15aaf471f"`);
         await queryRunner.query(`ALTER TABLE "product_options" DROP COLUMN "product_profile_id"`);
         await queryRunner.query(`ALTER TABLE "product_options" ADD "product_profile_id" uuid NOT NULL`);
         await queryRunner.query(`ALTER TABLE "category_product_profiles" DROP COLUMN "product_profile_id"`);
