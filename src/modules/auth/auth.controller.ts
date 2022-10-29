@@ -13,6 +13,7 @@ import dayjs from 'dayjs'
 import { Request } from 'express'
 import { WalletService } from '../wallet/service/wallet.service'
 import { ShopService } from '../seller/service/shop.service'
+import { HappyPointService } from '../happy-point/service/happy-point.service'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -23,6 +24,7 @@ export class AuthController {
     private readonly mobileService: MobileService,
     private readonly walletService: WalletService,
     private readonly shopService: ShopService,
+    private readonly happyPointService: HappyPointService,
   ) {}
 
   @Post('register')
@@ -39,6 +41,7 @@ export class AuthController {
       this.authService.insertMemberToDbFunc(etm),
       this.mobileService.AddMobileFunc(etm),
       this.walletService.InsertWalletToDbFunc(etm),
+      this.happyPointService.InsertHappyPointToDbFunc(etm),
     )(body, request.cookies)
   }
 

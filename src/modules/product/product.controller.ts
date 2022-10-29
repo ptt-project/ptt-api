@@ -12,16 +12,19 @@ import {
 import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqShop, Seller } from '../auth/auth.decorator'
-import { CreateProductProfileRequestDto, GetProductListDto, UpdateProductProfileRequestDto } from './dto/product.dto'
+import {
+  CreateProductProfileRequestDto,
+  GetProductListDto,
+  GetProductsDTO,
+  UpdateProductProfileRequestDto,
+} from './dto/product.dto'
 import { ProductService } from './service/product.service'
 
 @Auth()
 @Seller()
 @Controller('v1/shops')
-export class ProductController {
-  constructor(
-    private readonly productService: ProductService,
-  ) {}
+export class ProductWithAuthController {
+  constructor(private readonly productService: ProductService) {}
 
   @Post('products')
   @Transaction()
@@ -35,7 +38,7 @@ export class ProductController {
       this.productService.InsertProductProfileToDbFunc(etm),
       this.productService.InsertProductOptionsToDbFunc(etm),
       this.productService.InsertProductsToDbFunc(etm),
-      this.productService.InquiryProductProfileFromDbFunc(etm),
+      this.productService.InquiryProductProfileByIdFromDbFunc(etm),
     )(shop, body)
   }
 
@@ -54,7 +57,7 @@ export class ProductController {
   @Get('products-profile/:productProfileId')
   @Transaction()
   async getProductByProductId(
-    @Param('productProfileId') productProfileId: number,
+    @Param('productProfileId') productProfileId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.productService.GetProductByProductIdHandler(
@@ -67,7 +70,7 @@ export class ProductController {
   @Delete('products-profile/:productProfileId')
   @Transaction()
   async deleteProduct(
-    @Param('productProfileId') productProfileId: number,
+    @Param('productProfileId') productProfileId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.productService.DeleteProductByProductIdHandler(
@@ -81,7 +84,7 @@ export class ProductController {
   @Patch('products-profile/:productProfileId/hidden/toggle')
   @Transaction()
   async hiddenToggleProduct(
-    @Param('productProfileId') productProfileId: number,
+    @Param('productProfileId') productProfileId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.productService.HiddenToggleProductHandler(
@@ -94,7 +97,7 @@ export class ProductController {
   @Transaction()
   async updateProduct(
     @ReqShop() shop: Shop,
-    @Param('productProfileId') productProfileId: number,
+    @Param('productProfileId') productProfileId: string,
     @Body() body: UpdateProductProfileRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -113,5 +116,22 @@ export class ProductController {
       this.productService.RemoveProductByProductIdFunc(etm),
       this.productService.RemoveProductOptionByProductOptionIdFunc(etm),
     )(shop, productProfileId, body)
+  }
+}
+
+@Controller('v1/products')
+export class ProductController {
+  constructor(private readonly productService: ProductService) {}
+
+  @Get('')
+  @Transaction()
+  async getProducts(
+    @Query() query: GetProductsDTO,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.productService.InquiryProductProfileHandler(
+      this.productService.InquiryProductProfileFromDbFunc(etm),
+      this.productService.ConvertDataToProductProfileLandingPageFunc(),
+    )(query)
   }
 }

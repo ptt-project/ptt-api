@@ -1,5 +1,5 @@
 
 export type InquiryMemberRelationType = (
-  memberId: number,
+  memberId: string,
   level: number,
 ) => Promise<[any, string]>

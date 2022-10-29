@@ -114,7 +114,7 @@ export class RegisterService {
     etm: EntityManager,
   ): Promise<ValidateSellerRegisterType> {
     return async (
-      memberId: number,
+      memberId: string,
       params: InsertShopToDbParams,
       isResubmit: boolean,
     ): Promise<string> => {
@@ -207,12 +207,12 @@ export class RegisterService {
   CreateTablePartitionOfProductProfileToDbFunc(
     etm: EntityManager,
   ): CreateTablePartitionOfProductProfileToDbType {
-    return async (id: number): Promise<string> => {
-      const tablePartiionName = `product_profile_shop_${id}`
+    return async (id: string): Promise<string> => {
+      const tablePartiionName = `"product_profile_shop_${id}"`
 
       try {
         await etm.query(
-          `CREATE TABLE ${tablePartiionName} PARTITION OF product_profiles FOR VALUES IN (${id});`,
+          `CREATE TABLE ${tablePartiionName} PARTITION OF product_profiles FOR VALUES IN ('${id}');`,
         )
       } catch (error) {
         return error.message

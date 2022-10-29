@@ -1,5 +1,5 @@
 import { Dayjs } from 'dayjs'
-import { EntityManager } from 'typeorm'
+
 import { Member } from '../../../db/entities/Member'
 
 import {
@@ -24,18 +24,18 @@ export type GenAccessTokenType = (member: Member) => Promise<string>
 
 export type GenRefreshTokenType = (member: Member) => Promise<string>
 
-export type InquiryUserExistByIdType = (id: number) => Promise<[Member, string]>
+export type InquiryUserExistByIdType = (id: string) => Promise<[Member, string]>
 
 export type ValidateTokenType = (
   accessToken: string,
   refreshToken: string,
-  id: number,
+  id: string,
 ) => Promise<[ValidateTokenResponse, boolean]>
 
 export type ExiredTokenType = (token: string) => Promise<boolean>
 
 export type TokenType = {
-  id: number
+  id: string
   expiredAt: Dayjs
 }
 

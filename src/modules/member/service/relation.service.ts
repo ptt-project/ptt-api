@@ -48,7 +48,7 @@ export class RelationService {
   async InquiryMemberRelationFunc(
     etm: EntityManager
   ): Promise<InquiryMemberRelationType> {
-    return async (memberId: number, level: number): Promise<[any, string]> => {
+    return async (memberId: string, level: number): Promise<[any, string]> => {
       const start = dayjs()
       let relationTree: any = {}
       const relationTable: any = []
@@ -67,19 +67,19 @@ export class RelationService {
 
         relationTree = this.getMemberRelation(memberMapping, memberId, 0, level)
 
-        const travelTrack = [[memberId, 0]]
+        const travelTrack = [{memberId, memberLevel: 0}]
         while (travelTrack.length) {
-          const [currentMemberId, memberlevel] = travelTrack.shift()
-          if (memberlevel > 0) {
+          const {memberId: currentMemberId, memberLevel} = travelTrack.shift()
+          if (memberLevel > 0) {
             relationTable.push({
               username: memberMapping[currentMemberId].name,
-              level: memberlevel
+              level: memberLevel
             })
           }
-          if (memberlevel < level) {
+          if (memberLevel < level) {
             travelTrack.push(
               ...memberMapping[currentMemberId].children.map(
-                r => ([r, memberlevel + 1])
+                r => ({memberId: r, memberLevel: memberLevel + 1})
               )
             )
           }

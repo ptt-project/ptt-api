@@ -7,12 +7,14 @@ import { EditEmailRequestDto } from './dto/editEmail.dto'
 import { GetRelationRequestDto } from './dto/relation.dto'
 import { RelationService } from './service/relation.service'
 import { GetProductListMemberDto } from './dto/getProductList.dto'
+import { SearchMemberByUsernameDto } from './dto/search.dto'
 import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
 import { EmailService } from './service/email.service'
 import { MemberService } from './service/member.service'
 import { PasswordService } from './service/password.service'
 import { ProductService } from './service/product.service'
 
+@Auth()
 @Controller('v1/members')
 export class MemberController {
   constructor(
@@ -23,7 +25,6 @@ export class MemberController {
     private readonly productService: ProductService,
   ) {}
 
-  @Auth()
   @Patch('change-password')
   async changePassword(
     @ReqUser() member: Member,
@@ -35,7 +36,6 @@ export class MemberController {
     )(member, body)
   }
 
-  @Auth()
   @Get('profile')
   async getProfile(@ReqUser() member: Member) {
     return this.memberService.getProfileHandler(
@@ -43,7 +43,6 @@ export class MemberController {
     )(member)
   }
 
-  @Auth()
   @Patch('edit-email')
   @Transaction()
   async editEmail(
@@ -59,7 +58,6 @@ export class MemberController {
     )(member, body, manager)
   }
 
-  @Auth()
   @Put('profile')
   @Transaction()
   async updateProfile(
@@ -73,7 +71,6 @@ export class MemberController {
     )(member, body)
   }
 
-  @Auth()
   @Get('relations')
   @Transaction()
   async getRelation(
@@ -86,16 +83,26 @@ export class MemberController {
     )(member, query)
   }
 
-  @Auth()
   @Get('products/:shopId')
   @Transaction()
   async getProductListByShopId(
-    @Param('shopId') shopId: number,
+    @Param('shopId') shopId: string,
     @Query() query: GetProductListMemberDto,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.productService.GetProductBuyerByShopIdHandler(
       this.productService.InquiryProductListByShopIdFunc(etm),
     )(shopId, query)
+  }
+
+  @Get('search')
+  @Transaction()
+  async searchMemberByUsername(
+    @Query() query: SearchMemberByUsernameDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.memberService.SearchUserByUsernameHandler(
+      this.memberService.InquiryMemberByUsernameFunc(etm),
+    )(query)
   }
 }
