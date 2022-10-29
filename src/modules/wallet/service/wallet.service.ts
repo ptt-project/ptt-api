@@ -18,7 +18,6 @@ import {
 import {
   AdjustWalletFuncType,
   InqueryWalletTransactionFuncType,
-  InqueryWithdrawFeeRateFormDbFuncType,
   RequestInteranlWalletTransactionServiceFuncType,
   UpdateReferenceToDbFuncType,
   InsertReferenceToDbFuncType,
@@ -50,6 +49,7 @@ import { InquiryVerifyOtpType } from '../../otp/type/otp.type'
 import { verifyOtpRequestDto } from '../../otp/dto/otp.dto'
 import { Member } from 'src/db/entities/Member'
 import { InqueryBankAccountFormDbFuncType } from '../../bankAccount/type/bankAccount.type'
+import { InquiryMasterConfigType } from 'src/modules/master-config/type/master-config.type'
 
 @Injectable()
 export class WalletService {
@@ -224,7 +224,7 @@ export class WalletService {
   WithdrawHandler(
     verifyOtp: Promise<InquiryVerifyOtpType>,
     inqueryBankAccount: Promise<InqueryBankAccountFormDbFuncType>,
-    inqueryFeeRate: Promise<InqueryWithdrawFeeRateFormDbFuncType>,
+    inqueryMasterConfig: Promise<InquiryMasterConfigType>,
     insertTransaction: Promise<InsertTransactionToDbFuncType>,
     insertWithdrawReference: Promise<InsertReferenceToDbFuncType>,
     requestWithdraw: Promise<RequestWithdrawFuncType>,
@@ -260,13 +260,15 @@ export class WalletService {
         )
       }
 
-      const [feeRate, inqueryFeeRatetError] = await (
-        await inqueryFeeRate
+      const [masterConfig, inqueryMasterConfigtError] = await (
+        await inqueryMasterConfig
       )()
 
-      if (inqueryFeeRatetError != '') {
-        return response(undefined, UnableToInqueryFeeRate, inqueryFeeRatetError)
+      if (inqueryMasterConfigtError != '') {
+        return response(undefined, UnableToInqueryFeeRate, inqueryMasterConfigtError)
       }
+
+      const {eWalletWithdrawFeeRate: feeRate} = masterConfig.config
 
       const fee = amount * feeRate
       const newAmount = amount - fee
@@ -581,17 +583,6 @@ export class WalletService {
 
       this.logger.info(`Done RequestWithdrawFunc ${dayjs().diff(start)} ms`)
       return [ref, '']
-    }
-  }
-
-  async InqueryWithdrawFeeRateFormDbFunc(etm: EntityManager): Promise<InqueryWithdrawFeeRateFormDbFuncType> {
-    return async (): Promise<[number, string]> => {
-      const start = dayjs()
-
-      // Todo: inquery withdraw fee rate form db.
-
-      this.logger.info(`Done InqueryWithdrawFeeRateFormDbFunc ${dayjs().diff(start)} ms`)
-      return [0.3, '']
     }
   }
 

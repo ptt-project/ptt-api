@@ -73,5 +73,3 @@ export type AdjustWalletFuncType = (
   transactionType: TransactionType,
 ) => Promise<[Wallet, string]>
 
-export type InqueryWithdrawFeeRateFormDbFuncType = (
-) => Promise<[number, string]>

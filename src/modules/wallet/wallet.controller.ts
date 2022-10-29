@@ -14,6 +14,7 @@ import { Wallet } from 'src/db/entities/Wallet'
 import { OtpService } from '../otp/service/otp.service'
 import { Member } from 'src/db/entities/Member'
 import { BankAccountService } from '../bankAccount/service/bankAccount.service'
+import { MasterConfigService } from '../master-config/service/master-config.service'
 
 @Auth()
 @Controller('v1/wallets')
@@ -22,6 +23,7 @@ export class WalletController {
     private readonly walletService: WalletService,
     private readonly otpService: OtpService,
     private readonly bankAccountService: BankAccountService,
+    private readonly masterConfigService: MasterConfigService,
   ) {}
 
   @Get('/')
@@ -69,7 +71,7 @@ export class WalletController {
     return await this.walletService.WithdrawHandler(
       this.otpService.InquiryVerifyOtpFunc(etm),
       this.bankAccountService.InqueryBankAccountFormDbFunc(etm),
-      this.walletService.InqueryWithdrawFeeRateFormDbFunc(etm),
+      this.masterConfigService.InquiryMasterConfigFunc(etm),
       this.walletService.InsertTransactionToDbFunc(etm),
       this.walletService.InsertWithdrawReferenceToDbFunc(etm),
       this.walletService.RequestWithdrawFunc(etm),
