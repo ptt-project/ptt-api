@@ -1,5 +1,19 @@
-import { ArrayNotEmpty, IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator'
-import { ConditionType } from 'src/db/entities/ProductProfile'
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsBoolean,
+  IsBooleanString,
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator'
+import {
+  ConditionType,
+  ProductProfileStatusType,
+} from 'src/db/entities/ProductProfile'
 
 export class CreateProductOptionDto {
   @IsString()
@@ -33,6 +47,32 @@ export class CreateProductDto {
   sku?: string
 }
 
+export class GetProductListDto {
+  @IsOptional()
+  limit?: number
+
+  @IsOptional()
+  page?: number
+
+  @IsOptional()
+  @IsBooleanString()
+  approval?: string
+
+  @IsOptional()
+  @IsIn(['public', 'hidden', 'out of stock'])
+  status: ProductProfileStatusType
+
+  @IsOptional()
+  categoryId?: number
+
+  @IsOptional()
+  @IsIn(['product name', 'sku', 'product option'])
+  groupSearch: string
+
+  @IsOptional()
+  keyword: string
+}
+
 export class CreateProductProfileRequestDto {
   @IsString()
   @IsNotEmpty()
@@ -46,11 +86,11 @@ export class CreateProductProfileRequestDto {
 
   @IsNumber()
   @IsNotEmpty()
-  platformCategoryId: number
+  platformCategoryId: string
 
   @IsNumber()
   @IsOptional()
-  brandId?: number
+  brandId?: string
 
   @IsNumber()
   @IsNotEmpty()
@@ -130,16 +170,16 @@ export class UpdateProductProfileRequestDto {
 
   @IsNumber()
   @IsNotEmpty()
-  platformCategoryId: number
+  platformCategoryId: string
 
   @IsOptional()
   @IsNumber()
-  brandId?: number
+  brandId?: string
 
   @IsNumber()
   @IsNotEmpty()
   weight: number
-  
+
   @IsOptional()
   @IsNumber()
   exp?: number
@@ -202,9 +242,9 @@ export class UpdateProductProfileRequestDto {
 }
 
 export class UpdateProductOptionDto {
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  id: number
+  id: string
 
   @IsString()
   @IsNotEmpty()
@@ -216,9 +256,9 @@ export class UpdateProductOptionDto {
 }
 
 export class UpdateProductDto {
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  id: number
+  id: string
 
   @IsString()
   @IsNotEmpty()
@@ -239,4 +279,12 @@ export class UpdateProductDto {
   @IsString()
   @IsOptional()
   sku?: string
+}
+
+export class GetProductsDTO {
+  @IsOptional()
+  limit?: number
+
+  @IsOptional()
+  page?: number
 }

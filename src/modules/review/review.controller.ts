@@ -4,7 +4,7 @@ import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
 import { getReviewQueryDTO, replyCommentRequestDto } from './dto/review.dto'
-import { ReviewService } from './review.service'
+import { ReviewService } from './service/review.service'
 
 @Auth()
 @Controller('v1/sellers')
@@ -26,7 +26,7 @@ export class ReviewController {
   @Get('reviews/:reviewId')
   @Transaction()
   async getReviewsByReviewId(
-    @Param('reviewId') reviewId: number,
+    @Param('reviewId') reviewId: string,
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.reviewService.getReviewsByReviewIdHandler(
@@ -37,7 +37,7 @@ export class ReviewController {
   @Put('reviews/:reviewId/reply')
   @Transaction()
   async replyReviewByReviewId(
-    @Param('reviewId') reviewId: number,
+    @Param('reviewId') reviewId: string,
     @Body() body: replyCommentRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {

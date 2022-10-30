@@ -9,7 +9,7 @@ export type StatusType = 'active' | 'inactive'
 @Entity({ name: 'categories' })
 export class Category extends AppEntity {
   @Column({ name: 'shop_id', nullable: false })
-  shopId: number
+  shopId: string
 
   @Column({ name: 'name', nullable: false, length: 40 })
   name: string

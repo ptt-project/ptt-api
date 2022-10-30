@@ -1,15 +1,30 @@
-import { Column, Entity, JoinColumn, OneToMany, ManyToOne } from 'typeorm'
-import { AppEntity } from './AppEntity'
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+  PrimaryColumn,
+  Generated,
+} from 'typeorm'
 import { CategoryProductProfile } from './CategoryProductProfile'
 import { PlatformCategory } from './PlatformCategory'
 import { Product } from './Product'
 import { ProductOption } from './ProductOption'
 import { Shop } from './Shop'
+import { transformerDayjsToDate } from 'src/utils/entity-transform'
 
 export type ConditionType = 'old' | 'new'
 export type ProductProfileStatusType = 'public' | 'hidden' | 'out of stock'
 @Entity({ name: 'product_profiles' })
-export class ProductProfile extends AppEntity {
+export class ProductProfile {
+  @PrimaryColumn({ primary: false })
+  @Generated('uuid')
+  id: string
+
   @Column({ name: 'name' })
   name: string
 
@@ -17,13 +32,13 @@ export class ProductProfile extends AppEntity {
   detail: string
 
   @Column({ name: 'shop_id' })
-  shopId: number
+  shopId: string
 
   @Column({ name: 'platform_category_id' })
-  platformCategoryId: number
+  platformCategoryId: string
 
   @Column({ name: 'brand_id', nullable: true })
-  brandId: number
+  brandId: string
 
   @Column({ name: 'status' })
   status: ProductProfileStatusType
@@ -39,7 +54,7 @@ export class ProductProfile extends AppEntity {
 
   @Column({ name: 'length', nullable: false })
   length: number
-  
+
   @Column({ name: 'height', nullable: false })
   height: number
 
@@ -101,4 +116,23 @@ export class ProductProfile extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'product_profile_id' })
   categoryProductProfiles: CategoryProductProfile[]
+
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    nullable: false,
+    transformer: transformerDayjsToDate,
+  })
+  createdAt: Date
+
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp',
+    nullable: false,
+    transformer: transformerDayjsToDate,
+  })
+  updatedAt: Date
+
+  @DeleteDateColumn({ name: 'deleted_at', transformer: transformerDayjsToDate })
+  deletedAt: Date
 }

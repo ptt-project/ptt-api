@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { OtpController } from './otp.controller'
-import { OtpService } from './otp.service'
+import { OtpService } from './service/otp.service'
 
 @Module({
   controllers: [OtpController],

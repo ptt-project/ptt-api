@@ -24,8 +24,8 @@ export class UpdateStatusCategoryRequestDto {
 
 export class OrderingCategoryRequestDto {
   @ArrayNotEmpty()
-  @IsNumber({}, { each: true })
-  orders: number[]
+  @IsString()
+  orders: string[]
 }
 
 export class UpdateCategoryRequestDto {
@@ -35,5 +35,5 @@ export class UpdateCategoryRequestDto {
   name: string
 
   @IsNotEmpty()
-  productProfileIds: number[]
+  productProfileIds: string[]
 }

@@ -2,8 +2,11 @@ import { transformerDayjsToDate } from 'src/utils/entity-transform'
 import { Column, Entity, OneToOne, OneToMany, JoinColumn } from 'typeorm'
 import { Address } from './Address'
 import { AppEntity } from './AppEntity'
+import { HappyPoint } from './HappyPoint'
+import { BankAccount } from './BankAccount'
 import { Mobile } from './Mobile'
 import { Shop } from './Shop'
+import { Wallet } from './Wallet'
 
 export type MemberGenderType = 'F' | 'M' | 'O'
 export type MemberRoleType = 'Buyer' | 'Seller'
@@ -29,6 +32,7 @@ export class Member extends AppEntity {
 
   @Column({
     name: 'birthday',
+    type: 'date',
     nullable: true,
     transformer: transformerDayjsToDate,
   })
@@ -85,4 +89,22 @@ export class Member extends AppEntity {
     shop => shop.member,
   )
   shop: Shop
+
+  @OneToMany(
+    () => Wallet,
+    wallet => wallet.member,
+  )
+  wallets: Wallet[]
+
+  @OneToMany(
+    () => HappyPoint,
+    happyPoint => happyPoint.member,
+  )
+  happyPoints: HappyPoint[]
+
+  @OneToMany(
+    () => BankAccount,
+    bankAccount => bankAccount.member,
+  )
+  bankAccounts: BankAccount[]
 }
