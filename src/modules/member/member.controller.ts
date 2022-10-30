@@ -4,7 +4,7 @@ import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
 import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
-import { GetProductListMemberDto } from './dto/getProductList.dto'
+import { GetProductInfoMemberDto, GetProductListMemberDto } from './dto/getProductList.dto'
 import { SearchMemberByUsernameDto } from './dto/search.dto'
 import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
 import { MemberEmailService } from './service/email.service'
@@ -68,6 +68,21 @@ export class MemberController {
     )(member, body)
   }
 
+  @Auth()
+  @Get('products/infos')
+  @Transaction()
+  async getProductInfos(
+    @ReqUser() member: Member,
+    @Query() query: GetProductInfoMemberDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.productService.GetProductBuyerByProductIdsHandler(
+      this.productService.InquiryProductInfoByProductIdsFunc(etm),
+      this.productService.InquiryMemberProductCurrentPriceFunc(etm),
+    )(member, query)
+  }
+
+  @Auth()
   @Get('products/:shopId')
   @Transaction()
   async getProductListByShopId(
