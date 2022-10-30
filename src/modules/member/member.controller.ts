@@ -7,7 +7,7 @@ import { EditEmailRequestDto } from './dto/editEmail.dto'
 import { GetProductListMemberDto } from './dto/getProductList.dto'
 import { SearchMemberByUsernameDto } from './dto/search.dto'
 import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
-import { EmailService } from './service/email.service'
+import { MemberEmailService } from './service/email.service'
 import { MemberService } from './service/member.service'
 import { PasswordService } from './service/password.service'
 import { ProductService } from './service/product.service'
@@ -18,7 +18,7 @@ export class MemberController {
   constructor(
     private readonly passwordService: PasswordService,
     private readonly memberService: MemberService,
-    private readonly emailService: EmailService,
+    private readonly emailService: MemberEmailService,
     private readonly productService: ProductService,
   ) {}
 
