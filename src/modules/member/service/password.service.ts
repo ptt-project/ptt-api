@@ -6,7 +6,6 @@ import { Member } from 'src/db/entities/Member'
 import { checkPassword, hashPassword } from 'src/utils/helpers'
 import { internalSeverError } from 'src/utils/response-error'
 
-import { ChagnePasswordRequestDto } from '../dto/changePassword.dto'
 import {
   UnableUpatePasswordToDb,
   OldPassowrdInvalid,
@@ -29,12 +28,10 @@ import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 import { EntityManager } from 'typeorm'
 import { GenAccessTokenType } from 'src/modules/auth/type/auth.type'
-import { ForgotPasswordRequestDto } from '../dto/forgotPasswordEmail.dto'
-import { ResetPasswordEmailRequestDto } from '../dto/resetPasswordEmail.dto'
 import { verifyOtpRequestDto } from 'src/modules/otp/dto/otp.dto'
-import { ResetPasswordMobileRequestDto } from '../dto/resetPasswordMobile.dto'
 import { InquiryVerifyOtpType } from 'src/modules/otp/type/otp.type'
 import { EmailService } from 'src/modules/email/service/email.service'
+import { ChagnePasswordRequestDto, ForgotPasswordRequestDto, ResetPasswordEmailRequestDto, ResetPasswordMobileRequestDto } from '../dto/password.dto'
 
 @Injectable()
 export class PasswordService {
@@ -141,8 +138,8 @@ export class PasswordService {
 
   ForgotPasswordHandler(
     inquiryEmailExistByEmail: Promise<InquiryEmailExistByEmailType>,
-    updateLoginTokenToMember: Promise<UpdateLoginTokenToMemberType>,
     genAccessToken: Promise<GenAccessTokenType>,
+    updateLoginTokenToMember: Promise<UpdateLoginTokenToMemberType>,
   ) {
     return async (body: ForgotPasswordRequestDto) => {
       const start = dayjs()
@@ -315,32 +312,31 @@ export class PasswordService {
     return async (body: ResetPasswordMobileRequestDto) => {
       const start = dayjs()
 
+      const verifyOtpData: verifyOtpRequestDto = {
+        reference: body.mobile,
+        refCode: body.refCode,
+        otpCode: body.otpCode,
+      }
 
-        const [member, inquiryMemberExistByMobileError] = await (await inquiryMemberExistByMobile)(
-          body.mobile,
+      const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
+        await inquiryVerifyOtp
+      )(verifyOtpData)
+
+      if (verifyOtpErrorCode != 0) {
+        return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
+      }
+
+      const [member, inquiryMemberExistByMobileError] = await (await inquiryMemberExistByMobile)(
+        body.mobile,
+      )
+
+      if (inquiryMemberExistByMobileError !== '') {
+        return response(
+          undefined,
+          UnableInquiryMemberExistByMobileError,
+          inquiryMemberExistByMobileError,
         )
-
-        if (inquiryMemberExistByMobileError !== '') {
-          return response(
-            undefined,
-            UnableInquiryMemberExistByMobileError,
-            inquiryMemberExistByMobileError,
-          )
-        }
-
-        const verifyOtpData: verifyOtpRequestDto = {
-          reference: body.mobile,
-          refCode: body.refCode,
-          otpCode: body.otpCode,
-        }
-
-        const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
-          await inquiryVerifyOtp
-        )(verifyOtpData)
-  
-        if (verifyOtpErrorCode != 0) {
-          return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
-        }
+      }
 
       const updatePasswordToMemberError = await (await updatePasswordToMember)(
         member,

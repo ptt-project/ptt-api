@@ -10,13 +10,11 @@ import { OtpService } from '../otp/service/otp.service'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { MobileService } from '../mobile/service/mobile.service'
 import dayjs from 'dayjs'
-import { ForgotPasswordRequestDto } from '../member/dto/forgotPasswordEmail.dto'
-import { ResetPasswordEmailRequestDto } from '../member/dto/resetPasswordEmail.dto'
-import { ResetPasswordMobileRequestDto } from '../member/dto/resetPasswordMobile.dto'
 import { WalletService } from '../wallet/service/wallet.service'
 import { ShopService } from '../seller/service/shop.service'
 import { HappyPointService } from '../happy-point/service/happy-point.service'
 import { PasswordService } from '../member/service/password.service'
+import { ForgotPasswordRequestDto, ResetPasswordEmailRequestDto, ResetPasswordMobileRequestDto } from '../member/dto/password.dto'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -55,8 +53,8 @@ export class AuthController {
   ) {
     return this.passwordService.ForgotPasswordHandler(
       this.passwordService.InquiryMemberExistByEmailFunc(etm),
-      this.passwordService.UpdateLoginTokenToMemberFunc(),
       this.authService.genAccessTokenFunc(),
+      this.passwordService.UpdateLoginTokenToMemberFunc(),
     )(body)
   }
 
