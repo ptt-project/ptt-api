@@ -4,20 +4,22 @@ import { Between, EntityManager, SelectQueryBuilder } from 'typeorm'
 
 import {
   UnableToAdjustWallet,
-  UnableToInsertReference,
   UnableToGetWalletTransaction,
-  UnableToInqueryBankAccount,
+  UnableToInqueryFeeRate,
+  UnableToInsertReference,
   UnableToInsertTransaction,
   UnableToInsertWithdrawReference,
   UnableToRequestDepositQrCode,
   UnableToRequestWithdraw,
+  UnableToUpdateReference,
+  UnableToInqueryBankAccount,
 } from 'src/utils/response-code'
 
 import {
   AdjustWalletFuncType,
+  InqueryWalletTransactionFuncType,
   RequestInteranlWalletTransactionServiceFuncType,
   UpdateReferenceToDbFuncType,
-  InqueryWalletTransactionFuncType,
   InsertReferenceToDbFuncType,
   InsertTransactionToDbFuncType,
   InsertWalletToDbFuncType,
@@ -47,6 +49,7 @@ import { InquiryVerifyOtpType } from '../../otp/type/otp.type'
 import { verifyOtpRequestDto } from '../../otp/dto/otp.dto'
 import { Member } from 'src/db/entities/Member'
 import { InqueryBankAccountFormDbFuncType } from '../../bankAccount/type/bankAccount.type'
+import { InquiryMasterConfigType } from 'src/modules/master-config/type/master-config.type'
 
 @Injectable()
 export class WalletService {
@@ -71,7 +74,7 @@ export class WalletService {
 
       const [walletTransaction, insertTransactionError] = await (
         await insertTransaction
-      )(walletId, amount, detail, type)
+      )(walletId, amount, 0, detail, type)
 
       if (insertTransactionError != '') {
         return [undefined, insertTransactionError]
@@ -167,7 +170,7 @@ export class WalletService {
 
       const [walletTransaction, insertTransactionError] = await (
         await insertTransaction
-      )(walletId, amount, detail, 'deposit')
+      )(walletId, amount, 0, detail, 'deposit')
 
       if (insertTransactionError != '') {
         return response(
@@ -221,6 +224,7 @@ export class WalletService {
   WithdrawHandler(
     verifyOtp: Promise<InquiryVerifyOtpType>,
     inqueryBankAccount: Promise<InqueryBankAccountFormDbFuncType>,
+    inqueryMasterConfig: Promise<InquiryMasterConfigType>,
     insertTransaction: Promise<InsertTransactionToDbFuncType>,
     insertWithdrawReference: Promise<InsertReferenceToDbFuncType>,
     requestWithdraw: Promise<RequestWithdrawFuncType>,
@@ -254,14 +258,22 @@ export class WalletService {
           UnableToInqueryBankAccount,
           inqueryBankAccountError,
         )
-        return response(
-          undefined,
-          UnableToInqueryBankAccount,
-          inqueryBankAccountError,
-        )
       }
 
-      const detail = `Withdraw ${amount} baht with ${
+      const [masterConfig, inqueryMasterConfigtError] = await (
+        await inqueryMasterConfig
+      )()
+
+      if (inqueryMasterConfigtError != '') {
+        return response(undefined, UnableToInqueryFeeRate, inqueryMasterConfigtError)
+      }
+
+      const {eWalletWithdrawFeeRate: feeRate} = masterConfig.config
+
+      const fee = amount * feeRate
+      const newAmount = amount - fee
+
+      const detail = `Withdraw ${amount} baht fee ${fee} baht with ${
         bankAccount.bankCode
       } **${bankAccount.accountNumber.slice(
         bankAccount.accountNumber.length - 4,
@@ -270,7 +282,7 @@ export class WalletService {
 
       const [walletTransaction, insertTransactionError] = await (
         await insertTransaction
-      )(walletId, amount, detail, 'withdraw', bankAccountId)
+      )(walletId, amount, feeRate, detail, 'withdraw', bankAccountId)
 
       if (insertTransactionError != '') {
         return response(
@@ -294,7 +306,7 @@ export class WalletService {
 
       const [qrCode, requestWithdrawQrCodeError] = await (
         await requestWithdraw
-      )(amount, referenceNo, detail)
+      )(newAmount, referenceNo, detail)
 
       if (requestWithdrawQrCodeError != '') {
         return response(
@@ -303,7 +315,7 @@ export class WalletService {
           requestWithdrawQrCodeError,
         )
       }
-
+      
       const [adjestedWallet, adjustWalletError] = await (await adjustWallet)(
         walletId,
         amount,
@@ -422,6 +434,7 @@ export class WalletService {
     return async (
       walletId: string,
       amount: number,
+      feeRate: number,
       detail: string,
       type: TransactionType,
       bankAccountId?: string,
@@ -429,11 +442,18 @@ export class WalletService {
       const start = dayjs()
       let walletTransaction: WalletTransaction
 
+      const fee = amount * feeRate
+      const newAmount = amount - fee
+      const total = amount
+      
       try {
         walletTransaction = etm.create(WalletTransaction, {
           walletId,
           type,
-          amount,
+          amount: newAmount,
+          fee,
+          feeRate,
+          total,
           detail,
           bankAccountId,
           note:
