@@ -15,6 +15,7 @@ import { EditEmailRequestDto } from '../dto/editEmail.dto'
 import { EntityManager } from 'typeorm'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
+import { EmailService } from 'src/modules/email/service/email.service'
 
 export type UpdateEmailToMemberType = (
   member: Member,
@@ -39,9 +40,12 @@ export type ValidateEmailType = (
 ) => Promise<string>
 
 @Injectable()
-export class EmailService {
-  constructor(private readonly logger: PinoLogger) {
-    this.logger.setContext(EmailService.name)
+export class MemberEmailService {
+  constructor(
+    private readonly emailService: EmailService,
+    private readonly logger: PinoLogger
+  ) {
+    this.logger.setContext(MemberEmailService.name)
   }
 
   editEmailHandler(
@@ -62,7 +66,6 @@ export class EmailService {
         member.password,
         password,
       )
-
       if (vadlidatePasswordError !== '') {
         return response(undefined, OldPassowrdInvalid, vadlidatePasswordError)
       }
@@ -171,7 +174,13 @@ export class EmailService {
   async notifyNewEmailFunc(): Promise<NotifyNewEmailType> {
     return async (member: Member, newEmail: string): Promise<string> => {
       const start = dayjs()
-      // send email // Failed to send email
+      
+      this.emailService.sendEmail({
+        templateName: 'changeEmail',
+        to: newEmail,
+        context: member,
+        subject: "เปลี่ยนอีเมลใหม่บน Happy Shopping Express",
+      })
 
       this.logger.info(`Done NotifyNewEmailFunc ${dayjs().diff(start)} ms`)
       return ''

@@ -8,6 +8,7 @@ export type MasterConfigType = {
   happyPointTransferPercentLimit: number
   happyPointFeePercent: number
   exchangeRate: number
+  eWalletWithdrawFeeRate: number
 }
 
 @Entity({ name: 'master_config' })
