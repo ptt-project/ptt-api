@@ -244,7 +244,7 @@ export class AuthService {
         })
 
         member = await etm.save(member)
-        // member.memberCode = `${member.id}`.padStart(7, '0')
+        member.memberCode = `${member.no}`.padStart(7, '0')
         member = await etm.save(member)
 
         if (inviter) {

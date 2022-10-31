@@ -1,5 +1,5 @@
 import { transformerDayjsToDate } from 'src/utils/entity-transform'
-import { Column, Entity, OneToOne, OneToMany, JoinColumn, ManyToOne } from 'typeorm'
+import { Column, Entity, OneToOne, OneToMany, JoinColumn, ManyToOne, Generated } from 'typeorm'
 import { Address } from './Address'
 import { AppEntity } from './AppEntity'
 import { HappyPoint } from './HappyPoint'
@@ -40,6 +40,10 @@ export class Member extends AppEntity {
 
   @Column({ name: 'member_code', nullable: false, length: 7 })
   memberCode: string
+
+  @Column()
+  @Generated('increment')
+  no: number
 
   @Column({ name: 'sp_code_id', nullable: true })
   spCodeId: string
