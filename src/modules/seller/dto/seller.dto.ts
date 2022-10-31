@@ -72,23 +72,3 @@ export class RegisterSellerRequestDto {
   @MaxLength(1000)
   mallShopDescription?: string
 }
-
-export class UpdateShopInfoRequestDto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(30)
-  shopName: string
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(500)
-  shopDescription: string
-
-  @IsOptional()
-  @IsString()
-  profileImagePath?: string
-
-  @IsOptional()
-  @IsString()
-  coverImagePath?: string
-}

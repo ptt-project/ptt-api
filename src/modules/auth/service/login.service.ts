@@ -19,7 +19,7 @@ import {
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 import { EntityManager } from 'typeorm'
-import { GetShopInfoType } from '../../seller/type/seller.type'
+import { GetShopInfoType } from 'src/modules/shop/type/shop.type'
 
 @Injectable()
 export class LoginService {

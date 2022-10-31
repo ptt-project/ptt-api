@@ -144,9 +144,9 @@ export class MockDataConsoleService {
       type: 'Mall',
       mallApplicantRole: 'Exclusive Distributor',
     }
-    await this.regiserSellerService.registerSellerHandler(
-      this.regiserSellerService.validateSellerDataFunc(etm),
-      this.regiserSellerService.insertShopToDbFunc(etm),
+    await this.regiserSellerService.RegisterSellerHandler(
+      this.regiserSellerService.ValidateSellerDataFunc(etm),
+      this.regiserSellerService.InsertShopToDbFunc(etm),
       this.regiserSellerService.CreateTablePartitionOfProductProfileToDbFunc(
         etm,
       ),
