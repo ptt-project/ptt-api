@@ -40,7 +40,6 @@ import {
   ValidateInviteTokenFuncType,
 } from '../type/auth.type'
 import { PinoLogger } from 'nestjs-pino'
-import { CookieOptions } from 'express'
 import { InsertWalletToDbFuncType } from '../../wallet/type/wallet.type'
 import { InsertHappyPointToDbType } from '../../happy-point/type/happy-point.type'
 
@@ -53,7 +52,7 @@ export class AuthService {
     this.logger.setContext(AuthService.name)
   }
 
-  validateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
+  ValidateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
     return async (body: ValidateRegisterRequestDto) => {
       const start = dayjs()
       const [validateErrorCode, validateErrorMessage] = await (
@@ -68,7 +67,7 @@ export class AuthService {
     }
   }
 
-  registerHandler(
+  RegisterHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     inquiryMemberEixst: Promise<InquiryMemberExistType>,
     validateInviteToken: Promise<ValidateInviteTokenFuncType>,
@@ -155,7 +154,7 @@ export class AuthService {
     }
   }
 
-  async inquiryMemberExistFunc(
+  async InquiryMemberExistFunc(
     etm: EntityManager,
   ): Promise<InquiryMemberExistType> {
     return async (
@@ -206,7 +205,7 @@ export class AuthService {
           where: { memberCode }
         })
         if (!member) {
-          return [undefined, InvalideInviteToken, 'Invalide invite token']
+          return [undefined, 0, '']
         }
       } catch (error) {
         return [undefined, InternalSeverError, error]
@@ -217,7 +216,7 @@ export class AuthService {
     }
   }
 
-  async insertMemberToDbFunc(etm: EntityManager): Promise<InsertMemberToDbTye> {
+  async InsertMemberToDbFunc(etm: EntityManager): Promise<InsertMemberToDbTye> {
     return async (params: RegisterRequestDto, inviter?: Member): Promise<[Member, string]> => {
       const start = dayjs()
       const {
@@ -261,7 +260,7 @@ export class AuthService {
     }
   }
 
-  async validateTokenHandler(
+  async ValidateTokenHandler(
     exiredToken: Promise<ExiredTokenType>,
     inquiryUserExistById: Promise<InquiryUserExistByIdType>,
     genAccessToken: Promise<GenAccessTokenType>,
@@ -301,7 +300,7 @@ export class AuthService {
     }
   }
 
-  async exiredTokenFunc(): Promise<ExiredTokenType> {
+  async ExiredTokenFunc(): Promise<ExiredTokenType> {
     return async (token: string): Promise<boolean> => {
       // const start = dayjs()
       const decodedTokenFromJwt = this.jwtService.decode(token) as TokenType
@@ -313,7 +312,7 @@ export class AuthService {
     }
   }
 
-  async inquiryUserExistByIdFunc(
+  async InquiryUserExistByIdFunc(
     etm: EntityManager,
   ): Promise<InquiryUserExistByIdType> {
     return async (id: string): Promise<[Member, string]> => {
@@ -343,7 +342,7 @@ export class AuthService {
     }
   }
 
-  async genAccessTokenFunc(): Promise<GenAccessTokenType> {
+  async GenAccessTokenFunc(): Promise<GenAccessTokenType> {
     return async (member: Member): Promise<string> => {
       // const start = dayjs()
       const payload: TokenType = {
@@ -356,7 +355,7 @@ export class AuthService {
     }
   }
 
-  async genRefreshTokenFunc(): Promise<GenRefreshTokenType> {
+  async GenRefreshTokenFunc(): Promise<GenRefreshTokenType> {
     return async (member: Member): Promise<string> => {
       // const start = dayjs()
       const payload: TokenType = {

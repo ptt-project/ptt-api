@@ -117,11 +117,11 @@ export class MockDataConsoleService {
       refCode: '',
     }
 
-    await this.authService.registerHandler(
+    await this.authService.RegisterHandler(
       this.otpService.InquiryVerifyOtpFunc(etm),
-      this.authService.inquiryMemberExistFunc(etm),
+      this.authService.InquiryMemberExistFunc(etm),
       this.authService.ValidateInviteTokenFunc(etm),
-      this.authService.insertMemberToDbFunc(etm),
+      this.authService.InsertMemberToDbFunc(etm),
       this.mobileService.AddMobileFunc(etm),
       this.walletService.InsertWalletToDbFunc(etm),
       this.happyPointService.InsertHappyPointToDbFunc(etm),

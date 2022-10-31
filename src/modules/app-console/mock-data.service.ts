@@ -306,7 +306,7 @@ export class MockDataConsoleService {
     }
     const insertMember = async (memberParams) => {
       const [member, errorCreateUser] = await (
-        await this.authService.insertMemberToDbFunc(etm)
+        await this.authService.InsertMemberToDbFunc(etm)
       )({
           ...createUserTemplateParams,
           username: memberParams.username,

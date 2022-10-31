@@ -14,7 +14,7 @@ export class RelationService {
     this.logger.setContext(RelationService.name)
   }
 
-  getRelationHandler(getRelation: Promise<InquiryMemberRelationType>) {
+  GetRelationHandler(getRelation: Promise<InquiryMemberRelationType>) {
     return async (member: Member, query: GetRelationRequestDto) => {
       const start = dayjs()
       const {level = 3} = query
@@ -29,7 +29,7 @@ export class RelationService {
     }
   }
 
-  getMemberRelation(memberMapping, memberId, currentLevel, maxLevel) {
+  GetMemberRelation(memberMapping, memberId, currentLevel, maxLevel) {
     if (currentLevel == maxLevel) {
       return { ...memberMapping[memberId], level: currentLevel, children: [] } || {}
     }
@@ -40,7 +40,7 @@ export class RelationService {
       level: currentLevel,
       children: 
         memberData.children.map(
-          (child) => this.getMemberRelation(memberMapping, child, currentLevel + 1, maxLevel)
+          (child) => this.GetMemberRelation(memberMapping, child, currentLevel + 1, maxLevel)
         ),
     }
   }
@@ -54,7 +54,6 @@ export class RelationService {
       const relationTable: any = []
       try {
         const memberMapping = {}
-        console.log(etm)
         const members = await etm.find(Member, { where: {
           deletedAt: null
         }})
@@ -65,7 +64,7 @@ export class RelationService {
           }
         })
 
-        relationTree = this.getMemberRelation(memberMapping, memberId, 0, level)
+        relationTree = this.GetMemberRelation(memberMapping, memberId, 0, level)
 
         const travelTrack = [{memberId, memberLevel: 0}]
         while (travelTrack.length) {

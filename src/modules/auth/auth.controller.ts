@@ -34,11 +34,11 @@ export class AuthController {
     @Body() body: RegisterRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.authService.registerHandler(
+    return await this.authService.RegisterHandler(
       this.otpService.InquiryVerifyOtpFunc(etm),
-      this.authService.inquiryMemberExistFunc(etm),
+      this.authService.InquiryMemberExistFunc(etm),
       this.authService.ValidateInviteTokenFunc(etm),
-      this.authService.insertMemberToDbFunc(etm),
+      this.authService.InsertMemberToDbFunc(etm),
       this.mobileService.AddMobileFunc(etm),
       this.walletService.InsertWalletToDbFunc(etm),
       this.happyPointService.InsertHappyPointToDbFunc(etm),
@@ -51,8 +51,8 @@ export class AuthController {
     @Body() body: ValidateRegisterRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.authService.validateRegisterHandler(
-      this.authService.inquiryMemberExistFunc(etm),
+    return await this.authService.ValidateRegisterHandler(
+      this.authService.InquiryMemberExistFunc(etm),
     )(body)
   }
 
@@ -63,12 +63,12 @@ export class AuthController {
     @Body() body: LoginRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    const longinResponse = await this.loginService.loginHandler(
-      this.loginService.inquiryUserExistByUsernameFunc(etm),
+    const longinResponse = await this.loginService.LoginHandler(
+      this.loginService.InquiryUserExistByUsernameFunc(etm),
       this.shopService.InquiryShopByMemberIdFunc(etm),
-      this.loginService.validatePasswordFunc(),
-      this.authService.genAccessTokenFunc(),
-      this.authService.genRefreshTokenFunc(),
+      this.loginService.ValidatePasswordFunc(),
+      this.authService.GenAccessTokenFunc(),
+      this.authService.GenRefreshTokenFunc(),
     )(body)
 
     const accessToken = `AccessToken=${

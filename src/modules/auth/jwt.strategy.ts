@@ -32,11 +32,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const connection: Connection = getConnection()
     const etm: EntityManager = connection.createEntityManager()
     const [response, isError] = await (
-      await this.authService.validateTokenHandler(
-        this.authService.exiredTokenFunc(),
-        this.authService.inquiryUserExistByIdFunc(etm),
-        this.authService.genAccessTokenFunc(),
-        this.authService.genRefreshTokenFunc(),
+      await this.authService.ValidateTokenHandler(
+        this.authService.ExiredTokenFunc(),
+        this.authService.InquiryUserExistByIdFunc(etm),
+        this.authService.GenAccessTokenFunc(),
+        this.authService.GenRefreshTokenFunc(),
       )
     )(request?.cookies?.AccessToken, request?.cookies?.RefreshToken, payload.id)
 

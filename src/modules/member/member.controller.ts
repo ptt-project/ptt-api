@@ -78,7 +78,7 @@ export class MemberController {
     @Query() query: GetRelationRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.relationService.getRelationHandler(
+    return await this.relationService.GetRelationHandler(
       this.relationService.InquiryMemberRelationFunc(etm),
     )(member, query)
   }
