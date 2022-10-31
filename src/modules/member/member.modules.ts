@@ -3,7 +3,8 @@ import { JwtModule } from '@nestjs/jwt'
 import { jwtConstants } from '../auth/auth.constants'
 
 import { RelationService } from './service/relation.service'
-import { EmailService } from './service/email.service'
+import { EmailService } from '../email/service/email.service'
+import { MemberEmailService } from './service/email.service'
 
 import { MemberController } from './member.controller'
 import { MemberService } from './service/member.service'
@@ -23,6 +24,7 @@ import { ProductService } from './service/product.service'
     EmailService,
     RelationService,
     ProductService,
+    MemberEmailService,
   ],
   exports: [],
 })

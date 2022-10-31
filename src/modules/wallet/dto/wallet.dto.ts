@@ -60,7 +60,7 @@ export class WithdrawRequestDTO {
   @IsNotEmpty()
   refCode: string
 
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
   bankAccountId: string
 

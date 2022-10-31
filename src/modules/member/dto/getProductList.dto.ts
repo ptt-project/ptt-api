@@ -1,4 +1,4 @@
-import { IsOptional } from "class-validator"
+import { IsArray, IsNotEmpty, IsOptional } from "class-validator"
 
 export class GetProductListMemberDto {
   @IsOptional()
@@ -12,4 +12,9 @@ export class GetProductListMemberDto {
 
   @IsOptional() 
   keyword: string
+}
+export class GetProductInfoMemberDto {
+  @IsNotEmpty()
+  @IsArray()
+  productIds: number[]
 }

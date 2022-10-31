@@ -71,6 +71,7 @@ export class MockDataConsoleService {
       happyPointTransferPercentLimit: 50,
       happyPointFeePercent: 10,
       exchangeRate: 1,
+      eWalletWithdrawFeeRate: 0.1,
     }
 
     const newMasterConfig = etm.create(MasterConfig, {

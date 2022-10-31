@@ -14,6 +14,8 @@ import {
 } from '../product/type/product.type'
 import { ProductProfile } from 'src/db/entities/ProductProfile'
 import { AuthService } from '../auth/service/auth.service'
+import { WalletService } from '../wallet/service/wallet.service'
+import { WalletTransaction } from 'src/db/entities/WalletTransaction'
 
 @Console()
 export class MockDataConsoleService {
@@ -21,6 +23,7 @@ export class MockDataConsoleService {
     private readonly authService: AuthService,
     private readonly regiserSellerService: RegisterService,
     private readonly productService: ProductService,
+    private readonly walletService: WalletService,
   ) {}
 
   @Command({
@@ -80,6 +83,144 @@ export class MockDataConsoleService {
     const connection: Connection = getConnection()
     const etm: EntityManager = connection.createEntityManager()
 
+    const createUserParams: RegisterRequestDto = {
+      firstName: 'firstname01',
+      lastName: 'lastname01',
+      email: 'test@gmail.com',
+      mobile: '0812345678',
+      username: 'testuser01',
+      password: '1234567890',
+      pdpaStatus: true,
+      otpCode: '',
+      refCode: '',
+    }
+    const [member, errorCreateUser] = await (
+      await this.authService.InsertMemberToDbFunc(etm)
+    )(createUserParams)
+    if (errorCreateUser != '') {
+      return console.log('create user error =>', errorCreateUser)
+    }
+
+    const [wallet, errorCreateWallet] = await (
+      await this.walletService.InsertWalletToDbFunc(etm)
+    )(member.id)
+    if (errorCreateWallet != '') {
+      return console.log('create wallet error =>', errorCreateWallet)
+    }
+
+    let walletTransactions = etm.create(WalletTransaction, [
+      {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 100000.00,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+        note: 'credit',
+      }, {
+        walletId: wallet.id,
+        status: 'fail',
+        amount: 1000.00,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+        note: 'credit',
+      }, {
+        walletId: wallet.id,
+        status: 'pending',
+        amount: 1000.00,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านธนาคาร',
+        note: 'credit',
+      }, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 1000.00,
+        type: 'withdraw',
+        detail: 'ถอนเงิน',
+        note: 'debit',
+      }, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 1000.00,
+        type: 'buy',
+        detail: 'ซื้อสินค้า',
+        note: 'debit',
+      }, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 1000.00,
+        type: 'buy',
+        detail: 'ซื้อสินค้า',
+        note: 'debit',
+      }, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 1000.00,
+        type: 'sell',
+        detail: 'ขายสินค้า',
+        note: 'credit',
+      }, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 1000.00,
+        type: 'buy',
+        detail: 'ซื้อสินค้า',
+        note: 'debit',
+      }, {
+        walletId: wallet.id,
+        status: 'cancel',
+        amount: 1000.00,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+        note: 'credit',
+      }, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 2000.00,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+        note: 'credit',
+      },, {
+        walletId: wallet.id,
+        status: 'success',
+        amount: 5000.00,
+        type: 'deposit',
+        detail: 'ฝากเงินผ่านเบอร์มือถือ',
+        note: 'credit',
+      },
+    ])
+    walletTransactions = await etm.save(walletTransactions)
+
+    wallet.balance = walletTransactions.reduce((balance, transaction) => {
+      if (transaction.status === 'success')
+        return (transaction.note === 'credit'
+          ? balance + +transaction.amount
+          : balance - +transaction.amount)
+      return balance
+    }, 0.0)
+    etm.save(wallet)
+
+    const createShopParams: InsertShopToDbParams = {
+      memberId: member.id,
+      fullName: 'นายเอ นามสมมุติ',
+      email: 'shop2@gmail.com',
+      mobile: '0052896552',
+      brandName: 'bestShop',
+      category: 'util',
+      website: 'www.myshop.com',
+      facebookPage: 'www.facebock.com/myshop',
+      instagram: '@myshop',
+      socialMedia: '@myshop',
+      note: '',
+      corperateName: 's',
+      corperateId: 's',
+      type: 'Mall',
+    }
+    const [shop, insertShopToDbError] = await (
+      await this.regiserSellerService.insertShopToDbFunc(etm)
+    )(createShopParams)
+    if (errorCreateUser != '') {
+      return console.log('create shop error =>', insertShopToDbError)
+    }
     // const createUserParams: RegisterRequestDto = {
     //   firstName: 'firstname02',
     //   lastName: 'lastname01',
