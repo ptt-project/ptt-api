@@ -55,6 +55,7 @@ export class AuthController {
       this.passwordService.InquiryMemberExistByEmailFunc(etm),
       this.authService.genAccessTokenFunc(),
       this.passwordService.UpdateLoginTokenToMemberFunc(),
+      this.passwordService.SendMessageToEmailFunc(),
     )(body)
   }
 
@@ -67,7 +68,7 @@ export class AuthController {
     return this.passwordService.ResetPasswordEmailHandler(
       this.passwordService.InquiryMemberExistByLoginTokenAndEmailFunc(etm),
       this.passwordService.UpdateLoginTokenToMemberFunc(),
-      this.passwordService.updatePasswordToMemberFunc(),
+      this.passwordService.UpdatePasswordToMemberFunc(),
     )(body)
   }
 
@@ -78,9 +79,9 @@ export class AuthController {
     @TransactionManager() etm: EntityManager,
   ) {
     return this.passwordService.ResetPasswordMobileHandler(
-      this.passwordService.InquiryMemberExistByMobileFunc(etm),
       this.otpService.InquiryVerifyOtpFunc(etm),
-      this.passwordService.updatePasswordToMemberFunc(),
+      this.passwordService.InquiryMemberExistByMobileFunc(etm),
+      this.passwordService.UpdatePasswordToMemberFunc(),
     )(body)
   }
 

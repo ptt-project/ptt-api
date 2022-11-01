@@ -1,4 +1,5 @@
 import { Member } from 'src/db/entities/Member'
+import { SendEmailType } from 'src/modules/email/service/email.service'
 
 export type InquiryMemberByIdType = (
   memberId: string,
@@ -30,4 +31,8 @@ export type InquiryMemberExistByLoginTokenAndEmailType = (
 export type UpdateLoginTokenToMemberType = (
   member: Member,
   loginToken: string,
+) => Promise<string>
+
+export type SendMessageToEmailType = (
+  params: SendEmailType
 ) => Promise<string>

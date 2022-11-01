@@ -27,9 +27,9 @@ export class MemberController {
     @ReqUser() member: Member,
     @Body() body: ChagnePasswordRequestDto,
   ) {
-    return await this.passwordService.changePasswordHandler(
-      this.passwordService.vadlidateOldPasswordFunc(),
-      this.passwordService.updatePasswordToMemberFunc(),
+    return await this.passwordService.ChangePasswordHandler(
+      this.passwordService.VadlidateOldPasswordFunc(),
+      this.passwordService.UpdatePasswordToMemberFunc(),
     )(member, body)
   }
 

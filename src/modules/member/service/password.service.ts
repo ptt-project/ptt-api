@@ -13,6 +13,7 @@ import {
   UnableUpateLoginTokenToDb,
   UnableInquiryMemberExistByMobileError,
   UnableInquiryMemberExistByLoginTokenAndEmailError,
+  UnableSendMessageToEmailError,
 } from 'src/utils/response-code'
 
 import {
@@ -20,6 +21,7 @@ import {
   InquiryMemberByIdType,
   InquiryMemberExistByLoginTokenAndEmailType,
   InquiryMemberExistByMobileType,
+  SendMessageToEmailType,
   UpdateLoginTokenToMemberType,
   UpdatePasswordToMemberType,
   VadlidateOldPasswordType,
@@ -30,7 +32,7 @@ import { EntityManager } from 'typeorm'
 import { GenAccessTokenType } from 'src/modules/auth/type/auth.type'
 import { verifyOtpRequestDto } from 'src/modules/otp/dto/otp.dto'
 import { InquiryVerifyOtpType } from 'src/modules/otp/type/otp.type'
-import { EmailService } from 'src/modules/email/service/email.service'
+import { EmailService, SendEmailType } from 'src/modules/email/service/email.service'
 import { ChagnePasswordRequestDto, ForgotPasswordRequestDto, ResetPasswordEmailRequestDto, ResetPasswordMobileRequestDto } from '../dto/password.dto'
 
 @Injectable()
@@ -42,7 +44,7 @@ export class PasswordService {
     this.logger.setContext(PasswordService.name)
   }
 
-  changePasswordHandler(
+  ChangePasswordHandler(
     vadlidateOldPassword: Promise<VadlidateOldPasswordType>,
     updatePasswordToMember: Promise<UpdatePasswordToMemberType>,
   ) {
@@ -79,7 +81,7 @@ export class PasswordService {
     }
   }
 
-  async inquiryMemberByIdFunc(): Promise<InquiryMemberByIdType> {
+  async InquiryMemberByIdFunc(): Promise<InquiryMemberByIdType> {
     return async (memberId: string): Promise<[Member, string]> => {
       const start = dayjs()
       let member: Member
@@ -98,7 +100,7 @@ export class PasswordService {
     }
   }
 
-  async vadlidateOldPasswordFunc(): Promise<VadlidateOldPasswordType> {
+  async VadlidateOldPasswordFunc(): Promise<VadlidateOldPasswordType> {
     return async (
       oldPassword: string,
       oldPasswordParams: string,
@@ -119,7 +121,7 @@ export class PasswordService {
     }
   }
 
-  async updatePasswordToMemberFunc(): Promise<UpdatePasswordToMemberType> {
+  async UpdatePasswordToMemberFunc(): Promise<UpdatePasswordToMemberType> {
     return async (member: Member, newPassword: string): Promise<string> => {
       const start = dayjs()
       try {
@@ -140,47 +142,69 @@ export class PasswordService {
     inquiryEmailExistByEmail: Promise<InquiryEmailExistByEmailType>,
     genAccessToken: Promise<GenAccessTokenType>,
     updateLoginTokenToMember: Promise<UpdateLoginTokenToMemberType>,
+    sendMessageToEmail: Promise<SendMessageToEmailType>
   ) {
     return async (body: ForgotPasswordRequestDto) => {
       const start = dayjs()
+      const { email } = body
+      
+      const [member, inquiryEmailExistByEmailError] = await (await inquiryEmailExistByEmail)(
+        email,
+      )
 
-      let accessToken
-        const { email } = body
-
-        const [member, inquiryEmailExistByEmailError] = await (await inquiryEmailExistByEmail)(
-          email,
+      if (inquiryEmailExistByEmailError !== '') {
+        return response(
+          undefined,
+          UnableInquiryEmailExistByEmailError,
+          inquiryEmailExistByEmailError,
         )
+      }
 
-        if (inquiryEmailExistByEmailError !== '') {
-          return response(
-            undefined,
-            UnableInquiryEmailExistByEmailError,
-            inquiryEmailExistByEmailError,
-          )
-        }
+      const accessToken = await (await genAccessToken)(member)
 
-        accessToken = await (await genAccessToken)(member)
-
-        const updateLoginTokenToMemberError = await (await updateLoginTokenToMember)(
-          member,
-          accessToken,
+      const updateLoginTokenToMemberError = await (await updateLoginTokenToMember)(
+        member,
+        accessToken,
+      )
+      if (updateLoginTokenToMemberError !== '') {
+        return internalSeverError(
+          UnableUpateLoginTokenToDb,
+          updateLoginTokenToMemberError,
         )
-        if (updateLoginTokenToMemberError !== '') {
-          return internalSeverError(
-            UnableUpateLoginTokenToDb,
-            updateLoginTokenToMemberError,
-          )
-        }
+      }
 
-        this.emailService.sendEmail({
-          to: member.email,
-          subject: 'เปลี่ยนรหัสผ่านใหม่บน Happy Shopping Express',
-          templateName: 'forgot-password',
-          context: { username: member.username, accessToken, email: member.email },
-        })
+      const parmasSendEmailType: SendEmailType = {
+        to: member.email,
+        subject: 'เปลี่ยนรหัสผ่านใหม่บน Happy Shopping Express',
+        templateName: 'forgot-password',
+        context: { username: member.username, accessToken, email: member.email },
+      }
 
-      this.logger.info(`Done forgotPasswordHandler ${dayjs().diff(start)} ms`)
+      const sendMessageToEmailError = await (await sendMessageToEmail)(
+        parmasSendEmailType,
+      )
+      if (sendMessageToEmailError !== '') {
+        return internalSeverError(
+          UnableSendMessageToEmailError,
+          sendMessageToEmailError,
+        )
+      }
+
+      this.logger.info(`Done ForgotPasswordHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
+    }
+  }
+
+  async SendMessageToEmailFunc(
+  ): Promise<SendMessageToEmailType> {
+    return async (params: SendEmailType)
+    : Promise<string> => {
+      const start = dayjs()
+      const { to, subject, templateName, context } = params
+      this.emailService.sendEmail({ to, subject, templateName, context })
+
+      this.logger.info(`Done SendMessageToEmailFunc ${dayjs().diff(start)} ms`)
+      return ''
     }
   }
 
@@ -199,7 +223,7 @@ export class PasswordService {
           ],
         })
         if (!member) {
-          return [member, 'Email is not already used']
+          return [member, 'Email isn\'t already used']
         }
       } catch (error) {
         return [member, error]
@@ -221,7 +245,7 @@ export class PasswordService {
       }
 
       this.logger.info(
-        `Done updateLoginTokenToMemberFunc ${dayjs().diff(start)} ms`,
+        `Done UpdateLoginTokenToMemberFunc ${dayjs().diff(start)} ms`,
       )
       return ''
     }
@@ -272,7 +296,7 @@ export class PasswordService {
         )
       }
 
-      this.logger.info(`Done forgotPasswordHandler ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done ResetPasswordEmailHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
@@ -293,20 +317,20 @@ export class PasswordService {
           ],
         })
         if (!member) {
-          return [member, 'Can not reset password']
+          return [member, 'Can\'t reset password beacase member not found']
         }
       } catch (error) {
         return [member, error]
       }
 
-      this.logger.info(`Done InquiryEmailExistByLoginTokenFunc ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done InquiryMemberExistByLoginTokenAndEmailFunc ${dayjs().diff(start)} ms`)
       return [member, '']
     }
   }
 
   ResetPasswordMobileHandler(
-    inquiryMemberExistByMobile: Promise<InquiryMemberExistByMobileType>,
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
+    inquiryMemberExistByMobile: Promise<InquiryMemberExistByMobileType>,
     updatePasswordToMember: Promise<UpdatePasswordToMemberType>,
   ) {
     return async (body: ResetPasswordMobileRequestDto) => {
