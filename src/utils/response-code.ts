@@ -124,6 +124,9 @@ export const UnableToAdjustWallet = _walletError + 6
 export const UnableToInsertWithdrawReference = _walletError + 7
 export const UnableToRequestWithdraw = _walletError + 8
 export const UnableToUpdateReference = _walletError + 9
+export const UnableInsertLookupToDbForWallet = _walletError + 1
+export const UnableLookupWithdrawFeeRate = _walletError + 2
+export const WrongCalculateAmountAndFee = _walletError + 3
 
 const _bankAccountError = 115000
 export const UnableToGetBankAccount = _bankAccountError + 1
