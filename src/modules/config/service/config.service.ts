@@ -129,6 +129,7 @@ export class AppConfigService {
         value: bank.bankCode,
         labelTh: bank.nameTh,
         labelEn: bank.nameEn,
+        icon: bank.icon,
       })), '' ]
     }
   }

@@ -28,6 +28,7 @@ export type InsertWalletToDbFuncType = (
 export type InsertTransactionToDbFuncType = (
   walletId: string,
   amount: number,
+  feeRate: number,
   detail: string,
   type: TransactionType,
   bankAccountId?: string,
@@ -71,3 +72,4 @@ export type AdjustWalletFuncType = (
   adjustBalance: number,
   transactionType: TransactionType,
 ) => Promise<[Wallet, string]>
+
