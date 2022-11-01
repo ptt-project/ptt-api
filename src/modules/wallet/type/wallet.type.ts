@@ -36,6 +36,7 @@ export type InsertTransactionToDbFuncType = (
 
 export type InsertReferenceToDbFuncType = (
   walletTransaction: WalletTransaction,
+  refId?: string,
 ) => Promise<[string, string]>
 
 export type UpdateReferenceToDbFuncType = (
@@ -44,10 +45,6 @@ export type UpdateReferenceToDbFuncType = (
   amount: number,
   detail: string,
 ) => Promise<[WalletTransactionReference, string]>
-
-export type InsertWithdrawReferenceToDbFuncType = (
-  walletTransaction: WalletTransaction,
-) => Promise<[string, string]>
 
 export type RequestDepositQrCodeFuncType = (
   amount: number,
@@ -73,3 +70,13 @@ export type AdjustWalletFuncType = (
   transactionType: TransactionType,
 ) => Promise<[Wallet, string]>
 
+export type InquiryRefIdExistInTransactionType = (
+  refId: string,
+) => Promise<[number, string]>
+
+export type ValidateCalculateWithdrawAndFeeFuncType = (
+  total: number,
+  amount: number,
+  feeRate: number,
+  fee: number,
+) => Promise<string>
