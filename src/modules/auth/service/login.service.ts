@@ -19,7 +19,7 @@ import {
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 import { EntityManager } from 'typeorm'
-import { GetShopInfoType } from '../../seller/type/seller.type'
+import { GetShopInfoType } from 'src/modules/shop/type/shop.type'
 
 @Injectable()
 export class LoginService {
@@ -27,7 +27,7 @@ export class LoginService {
     this.logger.setContext(LoginService.name)
   }
 
-  loginHandler(
+  LoginHandler(
     inquiryUserExistByUsername: Promise<InquiryUserExistByUsernameType>,
     inquiryShopByMemberIdFunc: Promise<GetShopInfoType>,
     validatePassword: Promise<ValidatePasswordType>,
@@ -80,12 +80,12 @@ export class LoginService {
         result['approvelStatus'] = shop.approvalStatus
       }
 
-      this.logger.info(`Done loginHandler ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done LoginHandler ${dayjs().diff(start)} ms`)
       return response(result)
     }
   }
 
-  async inquiryUserExistByUsernameFunc(
+  async InquiryUserExistByUsernameFunc(
     etm: EntityManager,
   ): Promise<InquiryUserExistByUsernameType> {
     return async (username: string): Promise<[Member, string]> => {
@@ -113,7 +113,7 @@ export class LoginService {
     }
   }
 
-  async validatePasswordFunc(): Promise<ValidatePasswordType> {
+  async ValidatePasswordFunc(): Promise<ValidatePasswordType> {
     return async (
       password: string,
       passwordMember: string,

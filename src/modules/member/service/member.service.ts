@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
 import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
 import { paginate } from 'nestjs-typeorm-paginate'
@@ -22,7 +23,10 @@ import {
 
 @Injectable()
 export class MemberService {
-  constructor(private readonly logger: PinoLogger) {
+  constructor(
+    private readonly logger: PinoLogger,
+    private readonly jwtService: JwtService,
+  ) {
     this.logger.setContext(MemberService.name)
   }
 
@@ -47,6 +51,7 @@ export class MemberService {
         gender: member.gender,
         email: member.email,
         imageId: member.imageId,
+        invitationToken: this.jwtService.sign(member.memberCode),
       }
     }
   }

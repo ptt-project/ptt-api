@@ -20,6 +20,9 @@ export const UnableSendMessageToEmailError= _authError + 8
 export const UnableLoginUsernameDoNotAlreayExist = _authError + 4
 export const PasswordIsInvalid = _authError + 5
 
+// register with relation
+export const InvalideInviteToken = _authError + 6
+
 // otp module
 const _otpError = 102000
 export const UnableVerifyOtpIncorrect = _otpError + 1
@@ -46,6 +49,9 @@ export const UnableToSendEmail = _memberError + 4
 
 // password service
 export const UnableUpatePasswordToDb = _memberError + 5
+
+// relation service
+export const UnableToGetMemberRelations = _memberError + 6
 
 // mobile module
 const _mobileError = 104000
@@ -96,6 +102,10 @@ export const UnableDeleteCategoryProductToDb = _categoryError + 11
 export const UnableinquiryProductProfileIdsByCategoryId = _categoryError + 12
 export const UnableinquiryProductProfileByCatgoryIdFunc = _categoryError + 13
 export const UnableInquiryCategoryByName = _categoryError + 14
+
+// condition module
+const _conditionError = 111000
+export const UnableToGetConditions = _conditionError + 1
 
 const _productError = 109000
 export const CreateProductValidationFailed = _productError + 1

@@ -39,7 +39,7 @@ export class UnitTestConsoleService {
           refCode: '',
         }
         const [newMember, errorCreateUser] = await (
-          await this.authService.insertMemberToDbFunc(etm)
+          await this.authService.InsertMemberToDbFunc(etm)
         )(createUserParams)
         if (errorCreateUser != '') {
           return console.log('create user error =>', errorCreateUser)
