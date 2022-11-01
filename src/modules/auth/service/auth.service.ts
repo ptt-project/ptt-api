@@ -208,7 +208,7 @@ export class AuthService {
           return [undefined, 0, '']
         }
       } catch (error) {
-        return [undefined, InternalSeverError, error]
+        return [undefined, InternalSeverError, error.message]
       }
 
       this.logger.info(`Done ValidateInviteTokenFunc ${dayjs().diff(start)} ms`)

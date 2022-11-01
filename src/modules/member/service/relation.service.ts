@@ -21,7 +21,7 @@ export class RelationService {
       const [relations, getRelationError] = await (await getRelation)(member.id, level)
 
       if (getRelationError != '') {
-        return response(undefined, UnableToGetMemberRelations, 'Unable to get member relations')
+        return response(undefined, UnableToGetMemberRelations, getRelationError)
       }
 
       this.logger.info(`Done getRelationHandler ${dayjs().diff(start)} ms`)
@@ -85,7 +85,7 @@ export class RelationService {
         }
 
       } catch (error) {
-        return [null,  error]
+        return [null,  error.message]
       }
 
       this.logger.info(`Done InquiryMemberRelationFunc ${dayjs().diff(start)} ms`)
