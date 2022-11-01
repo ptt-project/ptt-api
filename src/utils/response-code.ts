@@ -27,6 +27,9 @@ export const UnableVerifyOtpDataNotfound = _otpError + 2
 export const UnableVerifyOtpLimitExceeded = _otpError + 3
 export const UnableVerifyOtpIsAreadyVerified = _otpError + 4
 export const UnableToSendOtp = _otpError + 5
+export const UnableInquiryValidateSendOtpType = _otpError + 6
+export const UnableRequestValidateOtpToSmsMkt = _otpError + 7
+export const OtpTokenExpiredInSmsMkt = _otpError + 7
 
 // member module
 const _memberError = 103000
@@ -113,6 +116,8 @@ export const UnableUpdateProductOption = _productError + 15
 export const UnableRemoveProductsById = _productError + 16
 export const UnableUpdateProduct = _productError + 17
 export const UnableInquiryProductProfileFromDb = _productError + 18
+export const UnableInquiryProductByProductIds = _productError + 19
+export const UnableToGetProductPrice = _productError + 20
 
 const _image = 110000
 export const UnableResizeImage = _image + 1
@@ -134,8 +139,9 @@ export const UnableToInqueryBankAccount = _bankAccountError + 2
 export const UnableToInsertBankAccount = _bankAccountError + 3
 export const UnableToUpdateBankAccount = _bankAccountError + 4
 export const ValidateBankAccount = _bankAccountError + 5
-export const UnableToDeleteBankAccount = _bankAccountError + 6
-export const UnableToSetMainBankAccount = _bankAccountError + 7
+export const UnableToInqueryFeeRate = _bankAccountError + 6
+export const UnableToDeleteBankAccount = _bankAccountError + 7
+export const UnableToSetMainBankAccount = _bankAccountError + 8
 
 const _happyPoint = 120000
 export const UnableInsertLookupToDb = _happyPoint + 1

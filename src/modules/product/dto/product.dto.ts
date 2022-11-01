@@ -84,7 +84,7 @@ export class CreateProductProfileRequestDto {
   @MaxLength(500)
   detail: string
 
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
   platformCategoryId: string
 
