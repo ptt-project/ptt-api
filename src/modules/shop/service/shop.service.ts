@@ -15,34 +15,34 @@ export class ShopService {
     this.logger.setContext(ShopService.name)
   }
 
-  GetShopInfoHandler(getShopInfo: Promise<GetShopInfoType>) {
+  GetShopInfoHandler(inquiryShopByMemberId: Promise<GetShopInfoType>) {
     return async (member: Member) => {
       const start = dayjs()
       const { id: memberId } = member
 
-      const [shop, getShopInfoError] = await (await getShopInfo)(memberId)
+      const [shop, getShopInfoError] = await (await inquiryShopByMemberId)(memberId)
 
       if (getShopInfoError != '') {
         return response(undefined, UnableToGetShopInfo, getShopInfoError)
       }
 
-      this.logger.info(`Done getShopInfoHandler ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done GetShopInfoHandler ${dayjs().diff(start)} ms`)
       return response(shop)
     }
   }
 
-  UpdateShopInfoHandler(updateShopInfo: Promise<UpdateShopTobDbByIdType>) {
+  UpdateShopInfoHandler(updateShopByMemberId: Promise<UpdateShopTobDbByIdType>) {
     return async (member: Member, params: UpdateShopInfoToDbParams) => {
       const start = dayjs()
       const { id: memberId } = member
 
-      const updateShopInfoError = await (await updateShopInfo)(memberId, params)
+      const updateShopInfoError = await (await updateShopByMemberId)(memberId, params)
 
       if (updateShopInfoError != '') {
         return response(undefined, UnableToUpdateShopInfo, updateShopInfoError)
       }
 
-      this.logger.info(`Done updateShopInfoHandler ${dayjs().diff(start)} ms`)
+      this.logger.info(`Done UpdateShopInfoHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
     }
   }
@@ -90,7 +90,7 @@ export class ShopService {
     }
   }
 
-  async InquiryUpdateShopByMemberIdFunc(
+  async UpdateShopByMemberIdFunc(
     etm: EntityManager,
   ): Promise<UpdateShopTobDbByIdType> {
     return async (
@@ -112,7 +112,7 @@ export class ShopService {
       }
 
       this.logger.info(
-        `Done InquiryUpdateShopByMemberIdFunc ${dayjs().diff(start)} ms`,
+        `Done UpdateShopByMemberIdFunc ${dayjs().diff(start)} ms`,
       )
       return ''
     }
@@ -132,7 +132,7 @@ export class ShopService {
           return [condition, 'Unable to get conditions for this shop']
         }
       } catch (error) {
-        return [condition, error]
+        return [condition, error.message]
       }
 
       this.logger.info(`Done InquiryConditionByShopIdFunc ${dayjs().diff(start)} ms`)

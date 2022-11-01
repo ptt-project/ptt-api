@@ -33,7 +33,7 @@ export class ShopController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.shopService.UpdateShopInfoHandler(
-      this.shopService.InquiryUpdateShopByMemberIdFunc(etm),
+      this.shopService.UpdateShopByMemberIdFunc(etm),
     )(member, body)
   }
   
