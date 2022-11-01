@@ -7,17 +7,17 @@ export class Otp extends AppEntity {
   @Column({ name: 'reference', nullable: false })
   reference: string
 
-  @Column({ name: 'ref_code', nullable: false, length: 4 })
+  @Column({ name: 'ref_code', nullable: false, length: 6 })
   refCode: string
-
-  @Column({ name: 'otp_code', nullable: false, length: 6 })
-  otpCode: string
 
   @Column({ name: 'verify_count', nullable: false, default: 0 })
   verifyCount: number
 
   @Column({ name: 'type', nullable: true })
-  type: string
+  type?: string
+
+  @Column({ name: 'token', nullable: true })
+  token?: string
 
   @Column({
     name: 'status',

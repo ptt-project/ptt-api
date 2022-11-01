@@ -22,6 +22,9 @@ export const UnableVerifyOtpDataNotfound = _otpError + 2
 export const UnableVerifyOtpLimitExceeded = _otpError + 3
 export const UnableVerifyOtpIsAreadyVerified = _otpError + 4
 export const UnableToSendOtp = _otpError + 5
+export const UnableInquiryValidateSendOtpType = _otpError + 6
+export const UnableRequestValidateOtpToSmsMkt = _otpError + 7
+export const OtpTokenExpiredInSmsMkt = _otpError + 7
 
 // member module
 const _memberError = 103000
