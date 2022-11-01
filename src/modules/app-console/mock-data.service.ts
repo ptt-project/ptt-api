@@ -95,7 +95,7 @@ export class MockDataConsoleService {
       refCode: '',
     }
     const [member, errorCreateUser] = await (
-      await this.authService.insertMemberToDbFunc(etm)
+      await this.authService.InsertMemberToDbFunc(etm)
     )(createUserParams)
     if (errorCreateUser != '') {
       return console.log('create user error =>', errorCreateUser)
@@ -369,5 +369,126 @@ export class MockDataConsoleService {
     console.log('productProfile', productProfile)
     console.log('productOptons', productOptons)
     console.log('products', products)
+  }
+
+  @Command({
+    command: 'mock-relations',
+    description: 'mock data for relation',
+  })
+  async mockRelations() {
+    const connection: Connection = getConnection()
+    const etm: EntityManager = connection.createEntityManager()
+
+    const createUserTemplateParams: RegisterRequestDto = {
+      firstName: 'firstname',
+      lastName: 'lastname',
+      email: 'test@gmail.com',
+      mobile: '0812345678',
+      username: 'testuser01',
+      password: '1234567890',
+      pdpaStatus: true,
+      otpCode: '',
+      refCode: '',
+    }
+    const members = {
+      username: 'test01', relations: [
+        {
+          username: 'test02', relations: [
+            {
+              username: 'test05', relations: [
+                {
+                  username: 'test11', relations: [],
+                },
+                {
+                  username: 'test12', relations: [],
+                },
+              ],
+            },
+            {
+              username: 'test06', relations: [],
+            },
+            {
+              username: 'test07', relations: [],
+            },
+          ],
+        },
+        {
+          username: 'test03', relations: [
+            {
+              username: 'test08', relations: [],
+            },
+            {
+              username: 'test09', relations: [],
+            },
+          ],
+        },
+        {
+          username: 'test04', relations: [
+            {
+              username: 'test10', relations: [
+                {
+                  username: 'test13', relations: [
+                    {
+                      username: 'test15', relations: [],
+                    },
+                    {
+                      username: 'test16', relations: [],
+                    },
+                  ],
+                },
+                {
+                  username: 'test14', relations: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }
+    const insertMember = async (memberParams) => {
+      const [member, errorCreateUser] = await (
+        await this.authService.InsertMemberToDbFunc(etm)
+      )({
+          ...createUserTemplateParams,
+          username: memberParams.username,
+          email: memberParams.username + 'gmail.com',
+          firstName: memberParams.username + '_firstName',
+          lastName: memberParams.username + '_lasstName'
+        })
+      if (errorCreateUser != '') {
+        console.log('create user error =>', errorCreateUser)
+      }
+      return member
+    }
+
+    const createMember = async (memberData) => {
+      if (memberData.relations.length === 0) {
+        const member = await insertMember(memberData)
+        if (member) {
+          return member.id
+        }
+        
+        return null
+      }
+
+      const relationIds = []
+      for(const memberD of memberData.relations) {
+        const memberId = await createMember(memberD)
+        if (memberId) {
+          relationIds.push(memberId)
+        }
+      }
+
+      const member = await insertMember(memberData)
+      if (member) {
+        member.relationIds = relationIds
+        await etm.save(member)
+        return member.id
+      }
+
+      return null
+    }
+
+    console.log(await createMember(members))
   }
 }

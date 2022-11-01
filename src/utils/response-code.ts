@@ -15,6 +15,9 @@ export const UnableInsertMemberToDbError = _authError + 3
 export const UnableLoginUsernameDoNotAlreayExist = _authError + 4
 export const PasswordIsInvalid = _authError + 5
 
+// register with relation
+export const InvalideInviteToken = _authError + 6
+
 // otp module
 const _otpError = 102000
 export const UnableVerifyOtpIncorrect = _otpError + 1
@@ -41,6 +44,9 @@ export const UnableToSendEmail = _memberError + 4
 
 // password service
 export const UnableUpatePasswordToDb = _memberError + 5
+
+// relation service
+export const UnableToGetMemberRelations = _memberError + 6
 
 // mobile module
 const _mobileError = 104000

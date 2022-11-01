@@ -11,8 +11,13 @@ export type InquiryMemberExistType = (
   params: RegisterRequestDto | ValidateRegisterRequestDto,
 ) => Promise<[number, string]>
 
+export type ValidateInviteTokenFuncType = (
+  inviteToken: string,
+) => Promise<[Member, number, string]>
+
 export type InsertMemberToDbTye = (
   params: RegisterRequestDto,
+  inviter?: Member,
 ) => Promise<[Member, string]>
 
 export type GenAccessTokenType = (member: Member) => Promise<string>

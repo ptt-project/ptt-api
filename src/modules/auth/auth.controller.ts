@@ -10,6 +10,7 @@ import { OtpService } from '../otp/service/otp.service'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { MobileService } from '../mobile/service/mobile.service'
 import dayjs from 'dayjs'
+import { Request } from 'express'
 import { WalletService } from '../wallet/service/wallet.service'
 import { ShopService } from '../seller/service/shop.service'
 import { HappyPointService } from '../happy-point/service/happy-point.service'
@@ -29,17 +30,19 @@ export class AuthController {
   @Post('register')
   @Transaction()
   async register(
+    @Req() request: Request,
     @Body() body: RegisterRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.authService.registerHandler(
+    return await this.authService.RegisterHandler(
       this.otpService.InquiryVerifyOtpFunc(etm),
-      this.authService.inquiryMemberExistFunc(etm),
-      this.authService.insertMemberToDbFunc(etm),
+      this.authService.InquiryMemberExistFunc(etm),
+      this.authService.ValidateInviteTokenFunc(etm),
+      this.authService.InsertMemberToDbFunc(etm),
       this.mobileService.AddMobileFunc(etm),
       this.walletService.InsertWalletToDbFunc(etm),
       this.happyPointService.InsertHappyPointToDbFunc(etm),
-    )(body)
+    )(body, request.cookies)
   }
 
   @Post('register/validate')
@@ -48,8 +51,8 @@ export class AuthController {
     @Body() body: ValidateRegisterRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.authService.validateRegisterHandler(
-      this.authService.inquiryMemberExistFunc(etm),
+    return await this.authService.ValidateRegisterHandler(
+      this.authService.InquiryMemberExistFunc(etm),
     )(body)
   }
 
@@ -60,12 +63,12 @@ export class AuthController {
     @Body() body: LoginRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    const longinResponse = await this.loginService.loginHandler(
-      this.loginService.inquiryUserExistByUsernameFunc(etm),
+    const longinResponse = await this.loginService.LoginHandler(
+      this.loginService.InquiryUserExistByUsernameFunc(etm),
       this.shopService.InquiryShopByMemberIdFunc(etm),
-      this.loginService.validatePasswordFunc(),
-      this.authService.genAccessTokenFunc(),
-      this.authService.genRefreshTokenFunc(),
+      this.loginService.ValidatePasswordFunc(),
+      this.authService.GenAccessTokenFunc(),
+      this.authService.GenRefreshTokenFunc(),
     )(body)
 
     const accessToken = `AccessToken=${
