@@ -98,6 +98,10 @@ export const UnableinquiryProductProfileIdsByCategoryId = _categoryError + 12
 export const UnableinquiryProductProfileByCatgoryIdFunc = _categoryError + 13
 export const UnableInquiryCategoryByName = _categoryError + 14
 
+// condition module
+const _conditionError = 111000
+export const UnableToGetConditions = _conditionError + 1
+
 const _productError = 109000
 export const CreateProductValidationFailed = _productError + 1
 export const UnableToCreateProductProfile = _productError + 2

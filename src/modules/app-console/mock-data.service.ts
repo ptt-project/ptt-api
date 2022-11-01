@@ -216,7 +216,7 @@ export class MockDataConsoleService {
       type: 'Mall',
     }
     const [shop, insertShopToDbError] = await (
-      await this.regiserSellerService.insertShopToDbFunc(etm)
+      await this.regiserSellerService.InsertShopToDbFunc(etm)
     )(createShopParams)
     if (errorCreateUser != '') {
       return console.log('create shop error =>', insertShopToDbError)

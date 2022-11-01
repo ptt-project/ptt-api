@@ -12,8 +12,8 @@ import { MobileService } from '../mobile/service/mobile.service'
 import dayjs from 'dayjs'
 import { Request } from 'express'
 import { WalletService } from '../wallet/service/wallet.service'
-import { ShopService } from '../seller/service/shop.service'
 import { HappyPointService } from '../happy-point/service/happy-point.service'
+import { ShopService } from '../shop/service/shop.service'
 
 @Controller('v1/auth')
 export class AuthController {

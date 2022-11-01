@@ -1,5 +1,6 @@
 import { MallApplicantRoleType, Shop, ShopType } from 'src/db/entities/Shop'
-import { RegisterSellerRequestDto } from '../dto/seller.dto'
+import { Condition } from "src/db/entities/Condition";
+import { UpdateShopInfoRequestDto } from '../dto/shop.dto'
 
 export type InsertShopToDbParams = {
   type: ShopType
@@ -49,9 +50,13 @@ export type InsertShopToDbType = (
   params: InsertShopToDbParams,
 ) => Promise<[Shop, string]>
 
-export type ValidateSellerRegisterType = (
+export type GetShopInfoType = (memberId: string) => Promise<[Shop, string]>
+
+export type UpdateShopTobDbByIdType = (
   memberId: string,
-  params: RegisterSellerRequestDto,
-  isResubmit: boolean,
+  params: UpdateShopInfoRequestDto,
 ) => Promise<string>
 
+export type InquiryConditionByShopIdType = (
+  shopId: string,
+) => Promise<[Condition, string]>
