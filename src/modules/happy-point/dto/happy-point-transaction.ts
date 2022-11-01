@@ -1,5 +1,8 @@
-import { IsIn, IsOptional } from 'class-validator'
+import { IsIn, IsOptional, Validate } from 'class-validator'
 import { HappyPointTransactionType } from 'src/db/entities/HappyPointTransaction'
+import { Transform } from 'class-transformer'
+import dayjs, { Dayjs } from 'dayjs'
+import { ValidateDayjs } from 'src/utils/validate-dto'
 
 export class GetHappyPointHistoryDto {
   @IsOptional()
@@ -11,4 +14,18 @@ export class GetHappyPointHistoryDto {
 
   @IsOptional()
   page?: number
+
+  @IsOptional()
+  @Validate(ValidateDayjs)
+  @Transform(({ value }) => {
+    return dayjs(value)
+  })
+  startDate?: Dayjs
+
+  @IsOptional()
+  @Validate(ValidateDayjs)
+  @Transform(({ value }) => {
+    return dayjs(value)
+  })
+  endDate?: Dayjs
 }
