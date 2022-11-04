@@ -1,9 +1,10 @@
 import { AppEntity } from './AppEntity'
-import { Column, Entity, ManyToOne, JoinColumn, OneToOne } from 'typeorm'
+import { Column, Entity, ManyToOne, JoinColumn, OneToOne, OneToMany } from 'typeorm'
 import { Wallet } from './Wallet'
 import { WalletTransactionReference } from './WalletTransactionReference'
 import { BankAccount } from './BankAccount'
 import { transformerDecimalToNumber } from 'src/utils/entity-transform'
+import { Payment } from './Payment'
 
 export type TransactionType = 'deposit' | 'withdraw' | 'buy' | 'sell' | 'buy_happy_point' | 'sell_happy_point'
 export type TransactionStatus = 'success' | 'fail' | 'cancel' | 'pending'
@@ -111,4 +112,11 @@ export class WalletTransaction extends AppEntity {
   )
   @JoinColumn({ name: 'bank_account_id', referencedColumnName: 'id' })
   bankAccount: BankAccount
+
+  @OneToMany(
+    () => Payment,
+    payment => payment.walletTransaction,
+  )
+  @JoinColumn({ referencedColumnName: 'wallet_transaction_id' })
+  payment: Payment[]
 }

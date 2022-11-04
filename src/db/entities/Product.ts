@@ -1,6 +1,7 @@
 import { transformerDecimalToNumber } from 'src/utils/entity-transform'
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
+import { OrderShopProduct } from './OrderShopProduct'
 import { PlatformCategory } from './PlatformCategory'
 import { ProductProfile } from './ProductProfile'
 import { Shop } from './Shop'
@@ -67,4 +68,11 @@ export class Product extends AppEntity {
   )
   @JoinColumn({ name: 'platform_category_id', referencedColumnName: 'id' })
   platformCategory: PlatformCategory
+
+  @OneToMany(
+    () => OrderShopProduct,
+    orderShopProduct => orderShopProduct.product,
+  )
+  @JoinColumn({ referencedColumnName: 'product_id' })
+  orderShopProduct: OrderShopProduct[]
 }

@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
-import { Auth, ReqUser } from '../auth/auth.decorator'
+import { Auth, ReqUser, Seller } from '../auth/auth.decorator'
 
 import { RegisterService } from './service/register.service'
 import {
@@ -54,6 +54,7 @@ export class SellerController {
     )(member, body)
   }
 
+  @Seller()
   @Get('/shop-info')
   @Transaction()
   async getShopoInfo(
@@ -65,6 +66,7 @@ export class SellerController {
     )(member)
   }
 
+  @Seller()
   @Patch('/shop-info')
   @Transaction()
   async updateShopoInfo(

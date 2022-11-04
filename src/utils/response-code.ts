@@ -162,6 +162,21 @@ export const UnableUpdateResetLimitTransfer = _happyPoint + 23
 export const UnableUpdateDebitLimitTransferToDb = _happyPoint + 24
 export const UnableInquiryHappyPointTransactionToDb = _happyPoint + 25
 
+
+const _orderError = 116000
+export const UnableToInsertOrder = _orderError + 1
+export const UnableToInsertOrderShop = _orderError + 2
+export const UnableToInsertOrderShopProduct = _orderError + 3
+export const UnableToInsertPayment = _orderError + 4
+export const UnableToUpdatePaymentIdToOrder = _orderError + 5
+export const UnableToInquiryShopByIdError = _orderError + 6
+export const UnableToInquiryProductByIdError = _orderError + 7
+export const UnableToInquiryProductProfileByIdError = _orderError + 8
+export const UnableToUpdateStockToProductError = _orderError + 9
+
+
+
+
 const _config = 300000
 export const UnableToGetBrandOptions = _config + 1
 export const UnableToGetPlatformCategoryOptions = _config + 2
