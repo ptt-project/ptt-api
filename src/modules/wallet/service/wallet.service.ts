@@ -69,12 +69,13 @@ export class WalletService {
       type: TransactionType,
       thirdPtReferenceNo: string,
       detail: string,
+      orderShopId?: string,
     ) => {
       const start = dayjs()
 
       const [walletTransaction, insertTransactionError] = await (
         await insertTransaction
-      )(walletId, amount, 0, detail, type)
+      )(walletId, amount, 0, detail, type, undefined, orderShopId)
 
       if (insertTransactionError != '') {
         return [undefined, insertTransactionError]
@@ -438,6 +439,7 @@ export class WalletService {
       detail: string,
       type: TransactionType,
       bankAccountId?: string,
+      orderShopId?: string,
     ): Promise<[WalletTransaction, string]> => {
       const start = dayjs()
       let walletTransaction: WalletTransaction
@@ -456,6 +458,7 @@ export class WalletService {
           total,
           detail,
           bankAccountId,
+          orderShopId,
           note:
             type == 'buy' || type == 'buy_happy_point' || type == 'withdraw'
               ? 'debit'

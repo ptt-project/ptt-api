@@ -1,10 +1,11 @@
 import { transformerDayjsToDate } from "src/utils/entity-transform";
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
 import { AppEntity } from "./AppEntity";
 import { Order } from "./Order";
 import { OrderShopProduct } from "./OrderShopProduct";
 import { ShippingOption } from "./ShippingOption";
 import { Shop } from "./Shop";
+import { WalletTransaction } from "./WalletTransaction";
 
 export type OrderShopStatusType = 'toPay' | 'toShip' | 'toReceive' | 'complated' | 'cancelled' | 'return' | 'refund'
 @Entity({ name: 'order_shops' })
@@ -79,6 +80,9 @@ export class OrderShop extends AppEntity {
     transformer: transformerDayjsToDate,
   })
   expectedDate?: Date
+
+  @Column({ name: 'wallet_transaction_id', nullable: true })
+  walletTransactionId: string
   
   @ManyToOne(
     () => Order,
@@ -107,5 +111,12 @@ export class OrderShop extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'order_shop_id' })
   orderShopProduct: OrderShopProduct[]
+
+  @OneToOne(
+    () => WalletTransaction,
+    walletTransaction => walletTransaction.orderShop,
+  )
+  @JoinColumn({ name: 'wallet_transaction_id', referencedColumnName: 'id' })
+  walletTransaction: WalletTransaction
 
 }

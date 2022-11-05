@@ -12,6 +12,7 @@ export type RequestInteranlWalletTransactionServiceFuncType = (
   type: TransactionType,
   thirdPtReferenceNo: string,
   detail?: string,
+  orderShopId?: string
 ) => Promise<[Wallet, string]>
 
 export type InqueryWalletTransactionFuncType = (
@@ -33,6 +34,7 @@ export type InsertTransactionToDbFuncType = (
   detail: string,
   type: TransactionType,
   bankAccountId?: string,
+  orderShopId?: string,
 ) => Promise<[WalletTransaction, string]>
 
 export type InsertReferenceToDbFuncType = (
