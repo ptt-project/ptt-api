@@ -151,6 +151,8 @@ export class MockDataConsoleService {
       this.regiserSellerService.CreateTablePartitionOfProductProfileToDbFunc(
         etm,
       ),
+      this.walletService.InsertWalletToDbFunc(etm),
+      this.regiserSellerService.updateShopWalletFunc(etm),
     )(member, bodyRegisterSeller)
   }
 

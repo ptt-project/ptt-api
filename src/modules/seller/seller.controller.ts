@@ -18,6 +18,7 @@ import {
   UpdateShopInfoRequestDto,
 } from './dto/seller.dto'
 import { ShopService } from './service/shop.service'
+import { WalletService } from '../wallet/service/wallet.service'
 
 @Auth()
 @Controller('v1/sellers')
@@ -25,6 +26,7 @@ export class SellerController {
   constructor(
     private readonly registerService: RegisterService,
     private readonly shopService: ShopService,
+    private readonly walletService: WalletService,
   ) {}
 
   @Post('/register')
@@ -38,7 +40,9 @@ export class SellerController {
       this.registerService.validateSellerDataFunc(etm),
       this.registerService.insertShopToDbFunc(etm),
       this.registerService.CreateTablePartitionOfProductProfileToDbFunc(etm),
-    )(member, body)
+      this.walletService.InsertWalletToDbFunc(etm),
+      this.registerService.updateShopWalletFunc(etm),
+      )(member, body)
   }
 
   @Patch('/register/resubmit')

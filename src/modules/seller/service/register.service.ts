@@ -8,6 +8,8 @@ import {
   InvalidSellerRegister,
   UnableCreatePartitionOfProductProfile,
   UnableInsertShopToDb,
+  UnableToInsertWallet,
+  UnableToUpdateShopWallet,
   UnableUpdateShopToDb,
 } from 'src/utils/response-code'
 
@@ -20,7 +22,8 @@ import { Shop } from 'src/db/entities/Shop'
 
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
-import { CreateTablePartitionOfProductProfileToDbType } from '../type/register.type'
+import { CreateTablePartitionOfProductProfileToDbType, UpdateShopWalletFuncType } from '../type/register.type'
+import { InsertWalletToDbFuncType } from 'src/modules/wallet/type/wallet.type'
 
 @Injectable()
 export class RegisterService {
@@ -32,6 +35,8 @@ export class RegisterService {
     validateSellerData: Promise<ValidateSellerRegisterType>,
     insertShopToDb: Promise<InsertShopToDbType>,
     createTablePartitionOfProductProfileToDb: CreateTablePartitionOfProductProfileToDbType,
+    insertWalletToDb: Promise<InsertWalletToDbFuncType>,
+    updateShopWalletToDb: Promise<UpdateShopWalletFuncType>,
   ) {
     return async (member: Member, body: RegisterSellerRequestDto) => {
       const start = dayjs()
@@ -68,8 +73,24 @@ export class RegisterService {
         )
       }
 
+      const [wallet, insertWalletToDbError] = await (await insertWalletToDb)(
+        member.id,
+        shop.id,
+      )
+      if (insertWalletToDbError != '') {
+        return response(undefined, UnableToInsertWallet, insertWalletToDbError)
+      }
+
+      const [updatedShop, updateShopWalletToDbError] = await (await updateShopWalletToDb)(
+        shop,
+        wallet.id
+      )
+      if (updateShopWalletToDbError != '') {
+        return response(undefined, UnableToUpdateShopWallet, updateShopWalletToDbError)
+      }
+
       this.logger.info(`Done registerSellerHandler ${dayjs().diff(start)} ms`)
-      return response(shop)
+      return response(updatedShop)
     }
   }
 
@@ -263,6 +284,23 @@ export class RegisterService {
       }
 
       this.logger.info(`Done resubmitShopToDbFunc ${dayjs().diff(start)} ms`)
+      return [shop, '']
+    }
+  }
+
+  async updateShopWalletFunc(etm: EntityManager): Promise<UpdateShopWalletFuncType> {
+    return async (shop: Shop, walletId: string): Promise<[Shop, string]> => {
+      const start = dayjs()
+
+      try {
+        shop.walletId = walletId
+
+        await etm.save(shop)
+      } catch (error) {
+        return [shop, error.message]
+      }
+
+      this.logger.info(`Done updateShopWalletFunc ${dayjs().diff(start)} ms`)
       return [shop, '']
     }
   }

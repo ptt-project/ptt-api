@@ -23,6 +23,7 @@ export type InqueryWalletTransactionFuncType = (
 
 export type InsertWalletToDbFuncType = (
   memberId: string,
+  shopId?: string,
 ) => Promise<[Wallet, string]>
 
 export type InsertTransactionToDbFuncType = (

@@ -334,12 +334,12 @@ export class WalletService {
   async InsertWalletToDbFunc(
     etm: EntityManager,
   ): Promise<InsertWalletToDbFuncType> {
-    return async (memberId: string): Promise<[Wallet, string]> => {
+    return async (memberId: string, shopId?: string): Promise<[Wallet, string]> => {
       const start = dayjs()
       let wallet: Wallet
 
       try {
-        wallet = etm.create(Wallet, { memberId })
+        wallet = etm.create(Wallet, { memberId, shopId })
         wallet = await etm.save(wallet)
       } catch (error) {
         return [wallet, error.message]
