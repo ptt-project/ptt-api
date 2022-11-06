@@ -134,7 +134,8 @@ export class InitialAppConsoleService {
     const brandJson = JSON.parse(brandData.toString('utf-8'))
 
     const brandMaster = etm.create(Brand, brandJson.map((brand) => ({
-      name: brand.name,
+      nameTh: brand.nameTh,
+      nameEn: brand.nameEn,
     })))
     await etm.save(brandMaster)
     console.log('Brands load successfully')
@@ -143,8 +144,11 @@ export class InitialAppConsoleService {
     const platformCategoriesJson = JSON.parse(platFormCategoriesData.toString('utf-8'))
 
     const platformCategoriesdMaster = etm.create(PlatformCategory, platformCategoriesJson.map((cat) => ({
-      name: cat.name,
+      nameTh: cat.nameTh,
+      nameEn: cat.nameEn,
       status: cat.status,
+      commissionRate: cat.commissionRate,
+      icon: cat.icon,
     })))
     await etm.save(platformCategoriesdMaster)
     console.log('PlatformCategories load successfully')

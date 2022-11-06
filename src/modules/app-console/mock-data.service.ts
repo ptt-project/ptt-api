@@ -267,13 +267,15 @@ export class MockDataConsoleService {
     const shopId = '3'
 
     const platformCategory = etm.create(PlatformCategory, {
-      name: 'platform-category01',
+      nameEn: 'platform-category01',
+      nameTh: 'ประเภทสินค้า01',
       status: 'active',
     })
     await etm.save(platformCategory)
 
     const brand = etm.create(Brand, {
-      name: 'brand01',
+      nameTh: 'brand01',
+      nameEn: 'brand01',
     })
     await etm.save(brand)
 
