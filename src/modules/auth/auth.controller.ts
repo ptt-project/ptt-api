@@ -13,6 +13,8 @@ import dayjs from 'dayjs'
 import { Request } from 'express'
 import { WalletService } from '../wallet/service/wallet.service'
 import { HappyPointService } from '../happy-point/service/happy-point.service'
+import { PasswordService } from '../member/service/password.service'
+import { ForgotPasswordRequestDto, ResetPasswordEmailRequestDto, ResetPasswordMobileRequestDto } from '../member/dto/password.dto'
 import { ShopService } from '../shop/service/shop.service'
 
 @Controller('v1/auth')
@@ -24,6 +26,7 @@ export class AuthController {
     private readonly mobileService: MobileService,
     private readonly walletService: WalletService,
     private readonly shopService: ShopService,
+    private readonly passwordService: PasswordService,
     private readonly happyPointService: HappyPointService,
   ) {}
 
@@ -43,6 +46,46 @@ export class AuthController {
       this.walletService.InsertWalletToDbFunc(etm),
       this.happyPointService.InsertHappyPointToDbFunc(etm),
     )(body, request.cookies)
+  }
+
+  @Post('forgot-password')
+  @Transaction()
+  async forgotPassword(
+    @Body() body: ForgotPasswordRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return this.passwordService.ForgotPasswordHandler(
+      this.passwordService.InquiryMemberExistByEmailFunc(etm),
+      this.authService.GenAccessTokenFunc(),
+      this.passwordService.UpdateLoginTokenToMemberFunc(),
+      this.passwordService.SendMessageToEmailFunc(),
+    )(body)
+  }
+
+  @Post('reset-password/email')
+  @Transaction()
+  async resetPasswordEmail(
+    @Body() body: ResetPasswordEmailRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return this.passwordService.ResetPasswordEmailHandler(
+      this.passwordService.InquiryMemberExistByLoginTokenAndEmailFunc(etm),
+      this.passwordService.UpdateLoginTokenToMemberFunc(),
+      this.passwordService.UpdatePasswordToMemberFunc(),
+    )(body)
+  }
+
+  @Post('reset-password/mobile')
+  @Transaction()
+  async resetPasswordMobile(
+    @Body() body: ResetPasswordMobileRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return this.passwordService.ResetPasswordMobileHandler(
+      this.otpService.InquiryVerifyOtpFunc(etm),
+      this.passwordService.InquiryMemberExistByMobileFunc(etm),
+      this.passwordService.UpdatePasswordToMemberFunc(),
+    )(body)
   }
 
   @Post('register/validate')

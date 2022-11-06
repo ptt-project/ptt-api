@@ -2,8 +2,8 @@ import { Body, Controller, Get, Param, Patch, Put, Query } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
-import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
+import { ChagnePasswordRequestDto } from './dto/password.dto'
 import { GetRelationRequestDto } from './dto/relation.dto'
 import { RelationService } from './service/relation.service'
 import { GetProductInfoMemberDto, GetProductListMemberDto } from './dto/getProductList.dto'
@@ -30,9 +30,9 @@ export class MemberController {
     @ReqUser() member: Member,
     @Body() body: ChagnePasswordRequestDto,
   ) {
-    return await this.passwordService.changePasswordHandler(
-      this.passwordService.vadlidateOldPasswordFunc(),
-      this.passwordService.updatePasswordToMemberFunc(),
+    return await this.passwordService.ChangePasswordHandler(
+      this.passwordService.VadlidateOldPasswordFunc(),
+      this.passwordService.UpdatePasswordToMemberFunc(),
     )(member, body)
   }
 

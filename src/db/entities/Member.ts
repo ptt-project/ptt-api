@@ -78,6 +78,9 @@ export class Member extends AppEntity {
   @Column({ name: 'image_id', nullable: true })
   imageId: string
 
+  @Column({ name: 'login_token', nullable: true })
+  loginToken: string
+
   @OneToMany(
     () => Mobile,
     mobile => mobile.member,
