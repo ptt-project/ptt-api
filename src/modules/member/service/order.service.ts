@@ -97,6 +97,14 @@ export class OrderService {
         
 
       } else if (body.paymentType == 'happyPoint') {
+
+        if(happyPoint.balance < body.point){
+          return internalSeverError(
+            UnableToInsertOrder,
+            "Insufficient funds",
+          )
+        }
+
         if(body.amountSell && body.point && body.refId && body.totalAmount && body.feeAmount && body.refCode && body.otpCode){
           const { id: happyPointId } = happyPoint
           const { amountSell, point, refId, totalAmount, feeAmount } = body
@@ -254,6 +262,14 @@ export class OrderService {
         }
 
       } else if (body.paymentType == 'ewallet') {
+
+        if(wallet.balance < body.amountSell){
+          return internalSeverError(
+            UnableToInsertOrder,
+            "Insufficient funds",
+          )
+        }
+
         if (body.amountSell && body.refId) {
           const params = {
             walletId: wallet.id,
