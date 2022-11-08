@@ -18,6 +18,7 @@ import {
   UnableRegisterUsernameAlreayExist,
   UnableInsertMemberToDbError,
   UnableToAddMobile,
+  InvalideInviteToken,
   UnableToInsertWallet,
   UnableToInsertHappyPoint,
 } from 'src/utils/response-code'
@@ -36,6 +37,7 @@ import {
   ExiredTokenType,
   TokenType,
   ValidateTokenResponse,
+  ValidateInviteTokenFuncType,
 } from '../type/auth.type'
 import { PinoLogger } from 'nestjs-pino'
 import { InsertWalletToDbFuncType } from '../../wallet/type/wallet.type'
@@ -50,7 +52,7 @@ export class AuthService {
     this.logger.setContext(AuthService.name)
   }
 
-  validateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
+  ValidateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
     return async (body: ValidateRegisterRequestDto) => {
       const start = dayjs()
       const [validateErrorCode, validateErrorMessage] = await (
@@ -65,15 +67,16 @@ export class AuthService {
     }
   }
 
-  registerHandler(
+  RegisterHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     inquiryMemberEixst: Promise<InquiryMemberExistType>,
+    validateInviteToken: Promise<ValidateInviteTokenFuncType>,
     insertMemberToDb: Promise<InsertMemberToDbTye>,
     addMobileFunc: Promise<AddMobileFuncType>,
     insertWalletToDb: Promise<InsertWalletToDbFuncType>,
     insertHappyPointToDb: Promise<InsertHappyPointToDbType>,
   ) {
-    return async (body: RegisterRequestDto) => {
+    return async (body: RegisterRequestDto, cookies) => {
       const start = dayjs()
       const verifyOtpData: verifyOtpRequestDto = {
         reference: body.mobile,
@@ -96,7 +99,22 @@ export class AuthService {
         return response(undefined, validateErrorCode, validateErrorMessage)
       }
 
-      const [member, insertMemberError] = await (await insertMemberToDb)(body)
+      let inviter: Member;
+      if (cookies.InvitationToken) {
+        const [spCode, validateInviteTokenErrorCode, validateInviteTokenErrorMessage] = await (
+          await validateInviteToken
+        )(cookies.InvitationToken)
+
+        if (spCode) {
+          inviter = spCode
+        }
+  
+        if (validateInviteTokenErrorCode != 0) {
+          return response(undefined, validateInviteTokenErrorCode, validateInviteTokenErrorMessage)
+        }
+      }
+
+      const [member, insertMemberError] = await (await insertMemberToDb)(body, inviter)
       if (insertMemberError != '') {
         return internalSeverError(
           UnableInsertMemberToDbError,
@@ -112,6 +130,7 @@ export class AuthService {
         return response(undefined, UnableToAddMobile, addMobileErrorMessege)
       }
 
+      delete member.spCodeId
       const [, insertWalletToDbError] = await (await insertWalletToDb)(
         member.id,
       )
@@ -135,7 +154,7 @@ export class AuthService {
     }
   }
 
-  async inquiryMemberExistFunc(
+  async InquiryMemberExistFunc(
     etm: EntityManager,
   ): Promise<InquiryMemberExistType> {
     return async (
@@ -172,8 +191,33 @@ export class AuthService {
     }
   }
 
-  async insertMemberToDbFunc(etm: EntityManager): Promise<InsertMemberToDbTye> {
-    return async (params: RegisterRequestDto): Promise<[Member, string]> => {
+  async ValidateInviteTokenFunc(
+    etm: EntityManager,
+  ): Promise<ValidateInviteTokenFuncType> {
+    return async (
+      inviteToken: string
+    ): Promise<[Member, number, string]> => {
+      const start = dayjs()
+      let member: Member;
+      const memberCode = this.jwtService.decode(inviteToken)
+      try {
+        member = await etm.findOne(Member, {
+          where: { memberCode }
+        })
+        if (!member) {
+          return [undefined, 0, '']
+        }
+      } catch (error) {
+        return [undefined, InternalSeverError, error.message]
+      }
+
+      this.logger.info(`Done ValidateInviteTokenFunc ${dayjs().diff(start)} ms`)
+      return [member, 0, '']
+    }
+  }
+
+  async InsertMemberToDbFunc(etm: EntityManager): Promise<InsertMemberToDbTye> {
+    return async (params: RegisterRequestDto, inviter?: Member): Promise<[Member, string]> => {
       const start = dayjs()
       const {
         username,
@@ -195,9 +239,18 @@ export class AuthService {
           pdpaStatus,
           email,
           password: await hashPassword(password),
+          memberCode: "*******",
+          spCodeId: inviter?.id,
         })
 
-        await etm.save(member)
+        member = await etm.save(member)
+        member.memberCode = `${member.no}`.padStart(7, '0')
+        member = await etm.save(member)
+
+        if (inviter) {
+          inviter.relationIds.push(member.id)
+          await etm.save(inviter)
+        }
       } catch (error) {
         return [member, error.message]
       }
@@ -207,7 +260,7 @@ export class AuthService {
     }
   }
 
-  async validateTokenHandler(
+  async ValidateTokenHandler(
     exiredToken: Promise<ExiredTokenType>,
     inquiryUserExistById: Promise<InquiryUserExistByIdType>,
     genAccessToken: Promise<GenAccessTokenType>,
@@ -247,7 +300,7 @@ export class AuthService {
     }
   }
 
-  async exiredTokenFunc(): Promise<ExiredTokenType> {
+  async ExiredTokenFunc(): Promise<ExiredTokenType> {
     return async (token: string): Promise<boolean> => {
       // const start = dayjs()
       const decodedTokenFromJwt = this.jwtService.decode(token) as TokenType
@@ -259,7 +312,7 @@ export class AuthService {
     }
   }
 
-  async inquiryUserExistByIdFunc(
+  async InquiryUserExistByIdFunc(
     etm: EntityManager,
   ): Promise<InquiryUserExistByIdType> {
     return async (id: string): Promise<[Member, string]> => {
@@ -289,7 +342,7 @@ export class AuthService {
     }
   }
 
-  async genAccessTokenFunc(): Promise<GenAccessTokenType> {
+  async GenAccessTokenFunc(): Promise<GenAccessTokenType> {
     return async (member: Member): Promise<string> => {
       // const start = dayjs()
       const payload: TokenType = {
@@ -302,7 +355,7 @@ export class AuthService {
     }
   }
 
-  async genRefreshTokenFunc(): Promise<GenRefreshTokenType> {
+  async GenRefreshTokenFunc(): Promise<GenRefreshTokenType> {
     return async (member: Member): Promise<string> => {
       // const start = dayjs()
       const payload: TokenType = {

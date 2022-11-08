@@ -13,10 +13,10 @@ export class OtpController {
     @Body() body: sendOtpRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.otpService.requestOtpHandler(
-      this.otpService.verifyForSendOtp(etm),
-      this.otpService.sendOtp(),
-      this.otpService.saveOtpToDb(etm),
+    return await this.otpService.RequestOtpHandler(
+      this.otpService.VerifyForSendOtp(etm),
+      this.otpService.SendOtpFunc(),
+      this.otpService.CreateOrUpdateOtpToDbFunc(etm),
     )(body)
   }
 
@@ -26,7 +26,7 @@ export class OtpController {
     @Body() body: verifyOtpRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.otpService.verifyOtpHandler(
+    return await this.otpService.VerifyOtpHandler(
       this.otpService.InquiryVerifyOtpFunc(etm),
     )(body)
   }

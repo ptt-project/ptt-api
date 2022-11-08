@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { Dayjs } from 'dayjs'
 
 import { PinoLogger } from 'nestjs-pino'
 import { IPaginationMeta, paginate, Pagination } from 'nestjs-typeorm-paginate'
@@ -27,11 +28,16 @@ export class HappyPointTransactionService {
     responseHappyPointTransctionToHistory: ResponseHappyPointTransctionToHistoryType,
   ) {
     return async (happyPoint: HappyPoint, body: GetHappyPointHistoryDto) => {
-      const { filter, limit = 10, page = 1 } = body
+      const { filter, startDate, endDate, limit = 10, page = 1 } = body
       const [
         builderHappyPointTransaction,
         errorInquiryHappyPointTransactionToDb,
-      ] = inquiryHappyPointTransactionToDb(happyPoint.id, filter)
+      ] = inquiryHappyPointTransactionToDb(
+        happyPoint.id,
+        filter,
+        startDate,
+        endDate,
+      )
       if (errorInquiryHappyPointTransactionToDb != '') {
         return response(
           undefined,
@@ -61,6 +67,8 @@ export class HappyPointTransactionService {
     return (
       happyPointId: string,
       filter?: HappyPointTransactionType,
+      startDate?: Dayjs,
+      endDate?: Dayjs,
     ): [SelectQueryBuilder<HappyPointTransaction>, string] => {
       let happyPointTransaction: SelectQueryBuilder<HappyPointTransaction>
 
@@ -91,6 +99,24 @@ export class HappyPointTransactionService {
             },
           )
         }
+
+        if (startDate) {
+          happyPointTransaction.andWhere(
+            'happyPointTransactions.createdAt >= :startDate',
+            {
+              startDate: startDate.startOf('day'),
+            },
+          )
+        }
+
+        if (endDate) {
+          happyPointTransaction.andWhere(
+            'happyPointTransactions.createdAt <= :endDate',
+            {
+              endDate: endDate.endOf('day'),
+            },
+          )
+        }
       } catch (error) {
         return [happyPointTransaction, error.message]
       }
@@ -108,7 +134,6 @@ export class HappyPointTransactionService {
     ): Pagination<any, IPaginationMeta> => {
       const result = happyPointTransactions.items.map(
         (happyPointTransaction: HappyPointTransaction, index: number) => {
-          console.log('index =>', index + 1)
           const { toHappyPoint } = happyPointTransaction
           let memberRemark = null
 

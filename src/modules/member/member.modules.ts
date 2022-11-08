@@ -1,4 +1,8 @@
 import { Module } from '@nestjs/common'
+import { JwtModule } from '@nestjs/jwt'
+import { jwtConstants } from '../auth/auth.constants'
+
+import { RelationService } from './service/relation.service'
 import { EmailService } from '../email/service/email.service'
 import { MemberEmailService } from './service/email.service'
 import { MemberController } from './member.controller'
@@ -29,19 +33,23 @@ import { RedisModule } from 'nestjs-redis'
     //   //useFactory: async (configService: ConfigService) => configService.get('redis'),
     //   inject: [ConfigService],
     // }),
+    JwtModule.register({
+      secret: jwtConstants.secret,
+    }),
   ],
   controllers: [MemberController],
   providers: [
     PasswordService,
     MemberService,
     EmailService,
+    RelationService,
     ProductService,
     MemberEmailService,
-    OrderService, 
-    LookupService, 
-    HappyPointService, 
-    OtpService, 
-    WalletService
+    OrderService,
+    LookupService,
+    HappyPointService,
+    OtpService,
+    WalletService,
   ],
 
   exports: [],

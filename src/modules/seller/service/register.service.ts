@@ -28,7 +28,7 @@ export class RegisterService {
     this.logger.setContext(RegisterService.name)
   }
 
-  registerSellerHandler(
+  RegisterSellerHandler(
     validateSellerData: Promise<ValidateSellerRegisterType>,
     insertShopToDb: Promise<InsertShopToDbType>,
     createTablePartitionOfProductProfileToDb: CreateTablePartitionOfProductProfileToDbType,
@@ -73,7 +73,7 @@ export class RegisterService {
     }
   }
 
-  resubmitRegisterSellerHandler(
+  ResubmitRegisterSellerHandler(
     validateSellerData: Promise<ValidateSellerRegisterType>,
     resubmitShopToDb: Promise<InsertShopToDbType>,
   ) {
@@ -110,7 +110,7 @@ export class RegisterService {
     }
   }
 
-  async validateSellerDataFunc(
+  async ValidateSellerDataFunc(
     etm: EntityManager,
   ): Promise<ValidateSellerRegisterType> {
     return async (
@@ -169,7 +169,7 @@ export class RegisterService {
     }
   }
 
-  async insertShopToDbFunc(etm: EntityManager): Promise<InsertShopToDbType> {
+  async InsertShopToDbFunc(etm: EntityManager): Promise<InsertShopToDbType> {
     return async (params: InsertShopToDbParams): Promise<[Shop, string]> => {
       const start = dayjs()
       let shop: Shop
@@ -222,7 +222,7 @@ export class RegisterService {
     }
   }
 
-  async resubmitShopToDbFunc(etm: EntityManager): Promise<InsertShopToDbType> {
+  async ResubmitShopToDbFunc(etm: EntityManager): Promise<InsertShopToDbType> {
     return async (params: InsertShopToDbParams): Promise<[Shop, string]> => {
       const start = dayjs()
       let shop: Shop

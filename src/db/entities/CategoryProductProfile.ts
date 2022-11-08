@@ -8,7 +8,7 @@ export class CategoryProductProfile extends AppEntity {
   @Column({ name: 'category_id', nullable: false })
   categoryId: string
 
-  @Column({ name: 'product_profile_id', nullable: false })
+  @Column({ name: 'product_profile_id', nullable: false, type: 'uuid' })
   productProfileId: string
 
   @ManyToOne(
