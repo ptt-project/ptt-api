@@ -7,7 +7,7 @@ export class ProductOption extends AppEntity {
   @Column({ name: 'name', nullable: false })
   name: string
 
-  @Column({ name: 'product_profile_id', nullable: false })
+  @Column({ name: 'product_profile_id', nullable: false, type: 'uuid' })
   productProfileId: string
 
   @Column({ name: 'options', type: 'simple-json' })

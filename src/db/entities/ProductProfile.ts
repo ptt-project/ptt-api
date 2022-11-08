@@ -15,7 +15,7 @@ import { PlatformCategory } from './PlatformCategory'
 import { Product } from './Product'
 import { ProductOption } from './ProductOption'
 import { Shop } from './Shop'
-import { transformerDayjsToDate } from 'src/utils/entity-transform'
+import { transformerDayjsToDate, transformerDecimalToNumber } from 'src/utils/entity-transform'
 
 export type ConditionType = 'old' | 'new'
 export type ProductProfileStatusType = 'public' | 'hidden' | 'out of stock'
@@ -37,7 +37,7 @@ export class ProductProfile {
   @Column({ name: 'platform_category_id' })
   platformCategoryId: string
 
-  @Column({ name: 'brand_id', nullable: true })
+  @Column({ name: 'brand_id', nullable: true, type: 'uuid' })
   brandId: string
 
   @Column({ name: 'status' })
@@ -46,16 +46,44 @@ export class ProductProfile {
   @Column({ name: 'approval', default: false })
   approval: boolean
 
-  @Column({ name: 'weight', type: 'decimal', precision: 5, scale: 2 })
+  @Column({
+    name: 'weight',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: false,
+    transformer: transformerDecimalToNumber,
+  })
   weight: number
 
-  @Column({ name: 'width', nullable: false })
+  @Column({
+    name: 'width',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: false,
+    transformer: transformerDecimalToNumber,
+  })
   width: number
 
-  @Column({ name: 'length', nullable: false })
+  @Column({
+    name: 'length',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: false,
+    transformer: transformerDecimalToNumber,
+  })
   length: number
 
-  @Column({ name: 'height', nullable: false })
+  @Column({
+    name: 'height',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: false,
+    transformer: transformerDecimalToNumber,
+  })
   height: number
 
   @Column({ name: 'exp', nullable: true })
