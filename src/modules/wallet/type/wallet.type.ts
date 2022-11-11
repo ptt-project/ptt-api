@@ -76,3 +76,7 @@ export type AdjustWalletFuncType = (
   transactionType: TransactionType,
 ) => Promise<[Wallet, string]>
 
+export type InquiryWalletByShopIdType = (
+  shopId: string,
+) => Promise<[Wallet, string]> 
+

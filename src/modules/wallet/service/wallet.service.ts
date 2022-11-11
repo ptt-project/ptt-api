@@ -25,6 +25,7 @@ import {
   InsertWalletToDbFuncType,
   RequestDepositQrCodeFuncType,
   RequestWithdrawFuncType,
+  InquiryWalletByShopIdType,
 } from '../type/wallet.type'
 
 import { PinoLogger } from 'nestjs-pino'
@@ -402,9 +403,7 @@ export class WalletService {
         const note: TransactionNote =
           transactionType == 'buy' ||
           transactionType == 'buy_happy_point' ||
-          transactionType == 'withdraw'
-            ? 'debit'
-            : 'credit'
+          transactionType == 'withdraw' ? 'debit' : 'credit'
 
         if (!wallet) {
           return [null, 'Unable to find wallet']
@@ -628,6 +627,36 @@ export class WalletService {
 
       this.logger.info(`Done UpdateReferenceToDbFunc ${dayjs().diff(start)} ms`)
       return [walletTransactionReference, '']
+    }
+  }
+
+  async InquiryWalletByShopIdFunc(
+    etm: EntityManager,
+  ): Promise<InquiryWalletByShopIdType> {
+    return async (
+      shopId: string,
+    ): Promise<[Wallet, string]> => {
+      const start = dayjs()
+      let wallet: Wallet
+
+      try {
+        wallet = await etm
+          .getRepository(Wallet)
+          .findOne({ where: { deletedAt: null, shopId } })
+      } catch (error) {
+        return [wallet, error.message]
+      }
+
+      if (!wallet) {
+        return [wallet, 'Not found wallet with shopId']
+      }
+
+      this.logger.info(
+        `Done InquiryWalletByShopIdFunc ${dayjs().diff(
+          start,
+        )} ms`,
+      )
+      return [wallet, '']
     }
   }
 }

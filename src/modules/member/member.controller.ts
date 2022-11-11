@@ -134,6 +134,7 @@ export class MemberController {
     const redis = this.redisService.getClient()
 
     return await this.orderService.CheckoutHandler(
+      this.orderService.ValidateOrderParamsFunc(),
       this.orderService.InsertOrderToDbFunc(etm),
       this.orderService.InsertPaymentByBankToDbFunc(etm),
       this.otpService.InquiryVerifyOtpFunc(etm),
@@ -159,6 +160,7 @@ export class MemberController {
       this.orderService.UpdatePaymentIdToOrderFunc(etm),
       this.orderService.InquiryShopByIdFunc(etm),
       this.orderService.InsertOrderShopToDbFunc(etm),
+      this.walletService.InquiryWalletByShopIdFunc(etm),
       this.orderService.InquiryProductByIdFunc(etm),
       this.orderService.UpdateStockToProductFunc(etm),
       this.orderService.InquiryProductProfileByIdFunc(etm),

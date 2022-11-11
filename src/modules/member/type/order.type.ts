@@ -62,5 +62,10 @@ export type InsertOrderShopProductToDbType = (
 export type UpdateStockToProductType = (
   productId: string,
   stock: number,
-  sold: number
+  sold: number,
+  amountSold: number
+) => Promise<string>
+
+export type ValidateOrderParamsType = (
+  params: CreateOrderDto,
 ) => Promise<string>

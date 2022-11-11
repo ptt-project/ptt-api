@@ -174,6 +174,7 @@ export const UnableToInquiryShopByIdError = _orderError + 6
 export const UnableToInquiryProductByIdError = _orderError + 7
 export const UnableToInquiryProductProfileByIdError = _orderError + 8
 export const UnableToUpdateStockToProductError = _orderError + 9
+export const UnableToValidateOrder = _orderError + 10
 
 
 
