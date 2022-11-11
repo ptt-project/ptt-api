@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common'
 import { RedisService } from 'nestjs-redis'
 import { HappyPoint } from 'src/db/entities/HappyPoint'
 import { Member } from 'src/db/entities/Member'
@@ -10,12 +19,15 @@ import { HappyPointService } from '../happy-point/service/happy-point.service'
 import { LookupService } from '../happy-point/service/lookup.service'
 import { OtpService } from '../otp/service/otp.service'
 import { WalletService } from '../wallet/service/wallet.service'
+import { ChagnePasswordRequestDto } from './dto/password.dto'
 import { CreateOrderDto } from './dto/createOrder.dto'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
-import { ChagnePasswordRequestDto } from './dto/password.dto'
 import { GetRelationRequestDto } from './dto/relation.dto'
 import { RelationService } from './service/relation.service'
-import { GetProductInfoMemberDto, GetProductListMemberDto } from './dto/getProductList.dto'
+import {
+  GetProductInfoMemberDto,
+  GetProductListMemberDto,
+} from './dto/getProductList.dto'
 import { SearchMemberByUsernameDto } from './dto/search.dto'
 import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
 import { MemberService } from './service/member.service'

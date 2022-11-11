@@ -29,11 +29,11 @@ import { WalletService } from '../wallet/service/wallet.service'
     RelationService,
     ProductService,
     MemberEmailService,
-    OrderService, 
-    LookupService, 
-    HappyPointService, 
-    OtpService, 
-    WalletService
+    OrderService,
+    LookupService,
+    HappyPointService,
+    OtpService,
+    WalletService,
   ],
 
   exports: [],

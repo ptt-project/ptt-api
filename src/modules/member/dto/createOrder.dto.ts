@@ -1,16 +1,20 @@
-import { IsArray, IsISO8601, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator"
-import { PaymentType } from "src/db/entities/Payment"
+import {
+  IsArray,
+  IsISO8601,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator'
+import { PaymentType } from 'src/db/entities/Payment'
 
 export class CreateOrderDto {
-
   @IsOptional()
   happyVoucherId?: string
 
   @IsString()
   @IsNotEmpty()
   paymentType: PaymentType
-
-
 
   @IsOptional()
   bankPaymentId?: string
@@ -20,8 +24,6 @@ export class CreateOrderDto {
 
   @IsOptional()
   reference?: string
-
-
 
   @IsOptional()
   point?: number
@@ -43,8 +45,6 @@ export class CreateOrderDto {
 
   @IsOptional()
   refCode?: string
-
-
 
   @IsNumber()
   @IsNotEmpty()
@@ -133,8 +133,8 @@ export class OrderShopDto {
 export class OrderShopProductDto {
   @IsNumber()
   @IsNotEmpty()
-  productId: string 
-  
+  productId: string
+
   @IsString()
   @IsNotEmpty()
   productProfileName: string

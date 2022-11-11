@@ -183,6 +183,7 @@ export class Shop extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'shop_id' })
   orderShop: OrderShop[]
+
   @OneToOne(
     () => Condition,
     condition => condition.shop,
