@@ -114,3 +114,46 @@ export const deepLoop = (data: any, func: (data: any) => any): any => {
   }
   return func(data)
 }
+
+export const createFormData = (data: Record<string, any>): any => {
+  const formData = new FormData()
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (value instanceof Object) {
+      Object.entries(value).forEach(([keyObject, valueObject]) => {
+        if (valueObject instanceof Object) {
+          Object.entries(valueObject).forEach(([keyObject2, valueObject2]) => {
+            if (valueObject2 instanceof Object) {
+              Object.entries(valueObject2).forEach(
+                ([keyObject3, valueObject3]) => {
+                  // console.log(
+                  //   `${key}[${keyObject}][${keyObject2}][${keyObject3}]`,
+                  //   valueObject3,
+                  // )
+                  formData.append(
+                    `${key}[${keyObject}][${keyObject2}][${keyObject3}]`,
+                    valueObject3,
+                  )
+                },
+              )
+            } else {
+              // console.log(`${key}[${keyObject}][${keyObject2}]`, valueObject2)
+              formData.append(
+                `${key}[${keyObject}][${keyObject2}]`,
+                valueObject2,
+              )
+            }
+          })
+        } else {
+          // console.log(`${key}[${keyObject}]`, valueObject)
+          formData.append(`${key}[${keyObject}]`, valueObject)
+        }
+      })
+    } else {
+      // console.log(`${key}`, value)
+      formData.append(key, value)
+    }
+  })
+  // console.log('=== debug2 ===')
+  return formData
+}
