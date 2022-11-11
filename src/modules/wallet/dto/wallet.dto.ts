@@ -67,4 +67,16 @@ export class WithdrawRequestDTO {
   @IsNumber()
   @IsNotEmpty()
   amount: number
+
+  @IsString()
+  @IsNotEmpty()
+  refId: string
+
+  @IsNumber()
+  @IsNotEmpty()
+  total: number
+
+  @IsNumber()
+  @IsNotEmpty()
+  fee: number
 }

@@ -10,9 +10,11 @@ import { HappyPointService } from '../happy-point/service/happy-point.service'
 import { LookupService } from '../happy-point/service/lookup.service'
 import { OtpService } from '../otp/service/otp.service'
 import { WalletService } from '../wallet/service/wallet.service'
-import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
 import { CreateOrderDto } from './dto/createOrder.dto'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
+import { ChagnePasswordRequestDto } from './dto/password.dto'
+import { GetRelationRequestDto } from './dto/relation.dto'
+import { RelationService } from './service/relation.service'
 import { GetProductInfoMemberDto, GetProductListMemberDto } from './dto/getProductList.dto'
 import { SearchMemberByUsernameDto } from './dto/search.dto'
 import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
@@ -27,6 +29,7 @@ export class MemberController {
   constructor(
     private readonly passwordService: PasswordService,
     private readonly memberService: MemberService,
+    private readonly relationService: RelationService,
     private readonly emailService: MemberEmailService,
     private readonly productService: ProductService,
     private readonly orderService: OrderService,
@@ -42,9 +45,9 @@ export class MemberController {
     @ReqUser() member: Member,
     @Body() body: ChagnePasswordRequestDto,
   ) {
-    return await this.passwordService.changePasswordHandler(
-      this.passwordService.vadlidateOldPasswordFunc(),
-      this.passwordService.updatePasswordToMemberFunc(),
+    return await this.passwordService.ChangePasswordHandler(
+      this.passwordService.VadlidateOldPasswordFunc(),
+      this.passwordService.UpdatePasswordToMemberFunc(),
     )(member, body)
   }
 
@@ -83,7 +86,18 @@ export class MemberController {
     )(member, body)
   }
 
-  @Auth()
+  @Get('relations')
+  @Transaction()
+  async getRelation(
+    @ReqUser() member: Member,
+    @Query() query: GetRelationRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.relationService.GetRelationHandler(
+      this.relationService.InquiryMemberRelationFunc(etm),
+    )(member, query)
+  }
+
   @Get('products/infos')
   @Transaction()
   async getProductInfos(
@@ -121,7 +135,7 @@ export class MemberController {
     )(query)
   }
 
-    @Auth()
+  @Auth()
   @Post('order')
   @Transaction()
   async createOrder(

@@ -5,7 +5,6 @@ import { Between, EntityManager, SelectQueryBuilder } from 'typeorm'
 import {
   UnableToAdjustWallet,
   UnableToGetWalletTransaction,
-  UnableToInqueryFeeRate,
   UnableToInsertReference,
   UnableToInsertTransaction,
   UnableToInsertWithdrawReference,
@@ -13,6 +12,11 @@ import {
   UnableToRequestWithdraw,
   UnableToUpdateReference,
   UnableToInqueryBankAccount,
+  UnableLookupWithdrawFeeRate,
+  WrongCalculateAmountAndFee,
+  UnableInquiryRefIdExistTransactions,
+  UnableDuplicateRefId,
+  
 } from 'src/utils/response-code'
 
 import {
@@ -26,6 +30,8 @@ import {
   RequestDepositQrCodeFuncType,
   RequestWithdrawFuncType,
   InquiryWalletByShopIdType,
+  ValidateCalculateWithdrawAndFeeFuncType,
+  InquiryRefIdExistInTransactionType,
 } from '../type/wallet.type'
 
 import { PinoLogger } from 'nestjs-pino'
@@ -51,6 +57,9 @@ import { verifyOtpRequestDto } from '../../otp/dto/otp.dto'
 import { Member } from 'src/db/entities/Member'
 import { InqueryBankAccountFormDbFuncType } from '../../bankAccount/type/bankAccount.type'
 import { InquiryMasterConfigType } from 'src/modules/master-config/type/master-config.type'
+import { GetCacheLookupToRedisType } from '../type/lookup.type'
+import { internalSeverError } from 'src/utils/response-error'
+import { genUuid } from 'src/utils/helpers'
 
 @Injectable()
 export class WalletService {
@@ -225,8 +234,10 @@ export class WalletService {
 
   WithdrawHandler(
     verifyOtp: Promise<InquiryVerifyOtpType>,
+    inquiryRefIdExistTransaction: Promise<InquiryRefIdExistInTransactionType>,
+    getLookupToRedis: Promise<GetCacheLookupToRedisType>,
+    validateAmountAndFee: Promise<ValidateCalculateWithdrawAndFeeFuncType>,
     inqueryBankAccount: Promise<InqueryBankAccountFormDbFuncType>,
-    inqueryMasterConfig: Promise<InquiryMasterConfigType>,
     insertTransaction: Promise<InsertTransactionToDbFuncType>,
     insertWithdrawReference: Promise<InsertReferenceToDbFuncType>,
     requestWithdraw: Promise<RequestWithdrawFuncType>,
@@ -235,7 +246,7 @@ export class WalletService {
     return async (member: Member, wallet: Wallet, body: WithdrawRequestDTO) => {
       const start = dayjs()
       const { id: walletId } = wallet
-      const { amount, bankAccountId } = body
+      const { amount, bankAccountId, refId, total, fee  } = body
 
       const verifyOtpData: verifyOtpRequestDto = {
         reference: member.mobile,
@@ -250,6 +261,49 @@ export class WalletService {
         return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
       }
 
+      const [
+        statusErrorInquiryRefIdExistTransaction,
+        errorMessageInquiryRefIdExistTransaction,
+      ] = await (await inquiryRefIdExistTransaction)(refId)
+
+      if (errorMessageInquiryRefIdExistTransaction != '') {
+        if (statusErrorInquiryRefIdExistTransaction === 200) {
+          return response(
+            undefined,
+            UnableDuplicateRefId,
+            errorMessageInquiryRefIdExistTransaction,
+          )
+        } else {
+          return internalSeverError(
+            UnableInquiryRefIdExistTransactions,
+            errorMessageInquiryRefIdExistTransaction,
+          )
+        }
+      }
+
+      const [lookup, isErrorGetLookupToRedis] = await (await getLookupToRedis)(
+        refId,
+      )
+      if (isErrorGetLookupToRedis != '') {
+        return response(
+          undefined,
+          UnableLookupWithdrawFeeRate,
+          isErrorGetLookupToRedis,
+        )
+      }
+
+      const { eWalletWithdrawFeeRate: feeRate } = lookup
+      const iseErrorValidatePoint = await (await validateAmountAndFee)(
+        total,
+        amount,
+        feeRate,
+        fee,
+      )
+
+      if (iseErrorValidatePoint != '') {
+        return response(undefined, WrongCalculateAmountAndFee, iseErrorValidatePoint)
+      }
+
       const [bankAccount, inqueryBankAccountError] = await (
         await inqueryBankAccount
       )(member.id, bankAccountId)
@@ -262,20 +316,7 @@ export class WalletService {
         )
       }
 
-      const [masterConfig, inqueryMasterConfigtError] = await (
-        await inqueryMasterConfig
-      )()
-
-      if (inqueryMasterConfigtError != '') {
-        return response(undefined, UnableToInqueryFeeRate, inqueryMasterConfigtError)
-      }
-
-      const {eWalletWithdrawFeeRate: feeRate} = masterConfig.config
-
-      const fee = amount * feeRate
-      const newAmount = amount - fee
-
-      const detail = `Withdraw ${amount} baht fee ${fee} baht with ${
+      const detail = `Withdraw ${total} baht fee ${fee} baht with ${
         bankAccount.bankCode
       } **${bankAccount.accountNumber.slice(
         bankAccount.accountNumber.length - 4,
@@ -284,7 +325,7 @@ export class WalletService {
 
       const [walletTransaction, insertTransactionError] = await (
         await insertTransaction
-      )(walletId, amount, feeRate, detail, 'withdraw', bankAccountId)
+      )(walletId, total, feeRate, detail, 'withdraw', bankAccountId)
 
       if (insertTransactionError != '') {
         return response(
@@ -296,7 +337,7 @@ export class WalletService {
 
       const [referenceNo, insertWithdrawReferenceError] = await (
         await insertWithdrawReference
-      )(walletTransaction)
+      )(walletTransaction, refId)
 
       if (insertWithdrawReferenceError != '') {
         return response(
@@ -308,7 +349,7 @@ export class WalletService {
 
       const [qrCode, requestWithdrawQrCodeError] = await (
         await requestWithdraw
-      )(newAmount, referenceNo, detail)
+      )(amount, referenceNo, detail)
 
       if (requestWithdrawQrCodeError != '') {
         return response(
@@ -481,6 +522,7 @@ export class WalletService {
   ): Promise<InsertReferenceToDbFuncType> {
     return async (
       walletTransaction: WalletTransaction,
+      refId?: string,
     ): Promise<[string, string]> => {
       const start = dayjs()
       let walletTransactionReference: WalletTransactionReference
@@ -489,7 +531,7 @@ export class WalletService {
       try {
         let alreadyUsedRef: WalletTransactionReference
         do {
-          referenceNo = randomUUID()
+          referenceNo = refId || genUuid()
           alreadyUsedRef = await etm.findOne(WalletTransactionReference, {
             where: { referenceNo },
           })
@@ -508,43 +550,6 @@ export class WalletService {
 
       this.logger.info(
         `Done InsertDepositReferenceToDbFunc ${dayjs().diff(start)} ms`,
-      )
-      return [referenceNo, '']
-    }
-  }
-
-  async InsertWithdrawReferenceToDbFunc(
-    etm: EntityManager,
-  ): Promise<InsertReferenceToDbFuncType> {
-    return async (
-      walletTransaction: WalletTransaction,
-    ): Promise<[string, string]> => {
-      const start = dayjs()
-      let walletTransactionReference: WalletTransactionReference
-      let referenceNo: string
-
-      try {
-        let alreadyUsedRef: WalletTransactionReference
-        do {
-          referenceNo = randomUUID()
-          alreadyUsedRef = await etm.findOne(WalletTransactionReference, {
-            where: { referenceNo },
-          })
-        } while (alreadyUsedRef)
-
-        walletTransactionReference = etm.create(WalletTransactionReference, {
-          transactionId: walletTransaction.id,
-          referenceNo,
-        })
-        walletTransactionReference = await etm.save(walletTransactionReference)
-        walletTransaction.referenceId = walletTransactionReference.id
-        await etm.save(walletTransaction)
-      } catch (error) {
-        return [referenceNo, error.message]
-      }
-
-      this.logger.info(
-        `Done InsertWithdrawReferenceToDbFunc ${dayjs().diff(start)} ms`,
       )
       return [referenceNo, '']
     }
@@ -659,4 +664,24 @@ export class WalletService {
       return [wallet, '']
     }
   }
+  async ValidateCalculateWithdrawAndFeeFunc(): Promise<
+  ValidateCalculateWithdrawAndFeeFuncType
+> {
+  return async (
+    total: number,
+    amount: number,
+    feeRate: number,
+    fee: number,
+  ) => {
+    if (total * feeRate !== fee) {
+      return 'Calculate wrong fee'
+    }
+
+    if (amount !== total - fee) {
+      return 'Calculate wrong amount'
+    }
+
+    return ''
+  }
+}
 }

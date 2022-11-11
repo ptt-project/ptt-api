@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Put,
-} from '@nestjs/common'
+import { Body, Controller, Get, Patch, Post } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser, Seller } from '../auth/auth.decorator'
@@ -15,10 +6,10 @@ import { Auth, ReqUser, Seller } from '../auth/auth.decorator'
 import { RegisterService } from './service/register.service'
 import {
   RegisterSellerRequestDto,
-  UpdateShopInfoRequestDto,
 } from './dto/seller.dto'
-import { ShopService } from './service/shop.service'
 import { WalletService } from '../wallet/service/wallet.service'
+import { ShopService } from '../shop/service/shop.service'
+import { UpdateShopInfoRequestDto } from '../shop/dto/shop.dto'
 
 @Auth()
 @Controller('v1/sellers')
@@ -36,9 +27,9 @@ export class SellerController {
     @Body() body: RegisterSellerRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.registerService.registerSellerHandler(
-      this.registerService.validateSellerDataFunc(etm),
-      this.registerService.insertShopToDbFunc(etm),
+    return await this.registerService.RegisterSellerHandler(
+      this.registerService.ValidateSellerDataFunc(etm),
+      this.registerService.InsertShopToDbFunc(etm),
       this.registerService.CreateTablePartitionOfProductProfileToDbFunc(etm),
       this.walletService.InsertWalletToDbFunc(etm),
       this.registerService.updateShopWalletFunc(etm),
@@ -52,9 +43,9 @@ export class SellerController {
     @Body() body: RegisterSellerRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.registerService.resubmitRegisterSellerHandler(
-      this.registerService.validateSellerDataFunc(etm),
-      this.registerService.resubmitShopToDbFunc(etm),
+    return await this.registerService.ResubmitRegisterSellerHandler(
+      this.registerService.ValidateSellerDataFunc(etm),
+      this.registerService.ResubmitShopToDbFunc(etm),
     )(member, body)
   }
 
@@ -65,7 +56,7 @@ export class SellerController {
     @ReqUser() member: Member,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.shopService.getShopInfoHandler(
+    return await this.shopService.GetShopInfoHandler(
       this.shopService.InquiryShopByMemberIdFunc(etm),
     )(member)
   }
@@ -78,8 +69,8 @@ export class SellerController {
     @Body() body: UpdateShopInfoRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.shopService.updateShopInfoHandler(
-      this.shopService.InquiryUpdateShopByMemberIdFunc(etm),
+    return await this.shopService.UpdateShopInfoHandler(
+      this.shopService.UpdateShopByMemberIdFunc(etm),
     )(member, body)
   }
 }

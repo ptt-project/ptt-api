@@ -10,10 +10,18 @@ const _authError = 101000
 export const UnableRegisterEmailAlreayExist = _authError + 1
 export const UnableRegisterUsernameAlreayExist = _authError + 2
 export const UnableInsertMemberToDbError = _authError + 3
+export const UnableInquiryEmailExistByEmailError= _authError + 4
+export const UnableInquiryMemberExistByMobileError= _authError + 5
+export const UnableUpateLoginTokenToDb= _authError + 6
+export const UnableInquiryMemberExistByLoginTokenAndEmailError= _authError + 7
+export const UnableSendMessageToEmailError= _authError + 8
 
 // login
 export const UnableLoginUsernameDoNotAlreayExist = _authError + 4
 export const PasswordIsInvalid = _authError + 5
+
+// register with relation
+export const InvalideInviteToken = _authError + 6
 
 // otp module
 const _otpError = 102000
@@ -22,6 +30,9 @@ export const UnableVerifyOtpDataNotfound = _otpError + 2
 export const UnableVerifyOtpLimitExceeded = _otpError + 3
 export const UnableVerifyOtpIsAreadyVerified = _otpError + 4
 export const UnableToSendOtp = _otpError + 5
+export const UnableInquiryValidateSendOtpType = _otpError + 6
+export const UnableRequestValidateOtpToSmsMkt = _otpError + 7
+export const OtpTokenExpiredInSmsMkt = _otpError + 7
 
 // member module
 const _memberError = 103000
@@ -38,6 +49,9 @@ export const UnableToSendEmail = _memberError + 4
 
 // password service
 export const UnableUpatePasswordToDb = _memberError + 5
+
+// relation service
+export const UnableToGetMemberRelations = _memberError + 6
 
 // mobile module
 const _mobileError = 104000
@@ -90,6 +104,10 @@ export const UnableinquiryProductProfileIdsByCategoryId = _categoryError + 12
 export const UnableinquiryProductProfileByCatgoryIdFunc = _categoryError + 13
 export const UnableInquiryCategoryByName = _categoryError + 14
 
+// condition module
+const _conditionError = 111000
+export const UnableToGetConditions = _conditionError + 1
+
 const _productError = 109000
 export const CreateProductValidationFailed = _productError + 1
 export const UnableToCreateProductProfile = _productError + 2
@@ -125,6 +143,9 @@ export const UnableToAdjustWallet = _walletError + 6
 export const UnableToInsertWithdrawReference = _walletError + 7
 export const UnableToRequestWithdraw = _walletError + 8
 export const UnableToUpdateReference = _walletError + 9
+export const UnableInsertLookupToDbForWallet = _walletError + 1
+export const UnableLookupWithdrawFeeRate = _walletError + 2
+export const WrongCalculateAmountAndFee = _walletError + 3
 
 const _bankAccountError = 115000
 export const UnableToGetBankAccount = _bankAccountError + 1
