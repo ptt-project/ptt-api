@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common'
 import { response } from 'src/utils/response'
-import { randomStr, randomNum } from 'src/utils/helpers'
+import { genUuid, randomNum } from 'src/utils/helpers'
 import { Otp } from 'src/db/entities/Otp'
 import { sendOtpRequestDto, verifyOtpRequestDto } from '../dto/otp.dto'
 import {
   InternalSeverError,
-  UnableVerifyOtpIncorrect,
   UnableVerifyOtpDataNotfound,
   UnableVerifyOtpLimitExceeded,
   UnableVerifyOtpIsAreadyVerified,
   UnableToSendOtp,
+  UnableInquiryValidateSendOtpType,
+  UnableRequestValidateOtpToSmsMkt,
+  OtpTokenExpiredInSmsMkt,
+  UnableVerifyOtpIncorrect,
 } from 'src/utils/response-code'
 
 import { validateBadRequest } from 'src/utils/response-error'
@@ -17,13 +20,18 @@ import { EntityManager } from 'typeorm'
 
 import {
   SendOtpType,
-  InquirySendOtpType,
-  InquirySaveOtpType,
+  CreateOrUpdateOtpToDbType,
   InquiryValidateSendOtpType,
   InquiryVerifyOtpType,
+  RequestSendOtpToSmsMkt,
+  ResponseSendOtpToSmsKmt,
+  ParamsSendOtp,
+  RequestValidateOtp,
+  ResponseValidateOtp,
 } from '../type/otp.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
+import { api } from 'src/utils/api'
 
 @Injectable()
 export class OtpService {
@@ -31,10 +39,10 @@ export class OtpService {
     this.logger.setContext(OtpService.name)
   }
 
-  requestOtpHandler(
+  RequestOtpHandler(
     verifyForSend: Promise<InquiryValidateSendOtpType>,
-    sendOtp: Promise<InquirySendOtpType>,
-    saveOtp: InquirySaveOtpType,
+    sendOtp: Promise<SendOtpType>,
+    saveOtp: CreateOrUpdateOtpToDbType,
   ) {
     return async ({ reference, type }) => {
       const start = dayjs()
@@ -45,38 +53,38 @@ export class OtpService {
 
       if (verSendOtpError != 0) {
         if (verSendOtpError == UnableToSendOtp)
-          return validateBadRequest(
+          return response(
+            undefined,
             UnableToSendOtp,
             'Unable to send Otp with in 90 sec',
           )
         else {
-          return validateBadRequest(UnableToSendOtp, 'Unable to send Otp')
+          return response(undefined, UnableToSendOtp, 'Unable to send Otp')
         }
       }
 
       const [otpData, sendOtpError] = await (await sendOtp)({ reference, type })
 
-      if (sendOtpError != 0) {
-        return validateBadRequest(sendOtpError, 'Fail to Send Otp')
+      if (sendOtpError != '') {
+        return response(
+          undefined,
+          UnableInquiryValidateSendOtpType,
+          sendOtpError,
+        )
       }
 
-      const [_, saveOtpError] = await saveOtp(otp, otpData)
+      const [, saveOtpError] = await saveOtp(otp, otpData)
 
       if (saveOtpError != 0) {
-        return validateBadRequest(saveOtpError, 'Fail to Save Otp')
+        return response(undefined, saveOtpError, 'Fail to Save Otp')
       }
 
-      const responseObj: any = { refCode: otpData.refCode, reference }
-
-      if (process.env.NODE_ENV !== 'PROD' && process.env.NODE_ENV !== 'UAT') {
-        responseObj.otpCode = otpData.otpCode
-      }
       this.logger.info(`Done RequestOtpHandler ${dayjs().diff(start)} ms`)
-      return response(responseObj)
+      return response(otpData)
     }
   }
 
-  async verifyForSendOtp(
+  async VerifyForSendOtp(
     etm: EntityManager,
   ): Promise<InquiryValidateSendOtpType> {
     return async (params: sendOtpRequestDto) => {
@@ -104,64 +112,85 @@ export class OtpService {
     }
   }
 
-  async sendOtp(): Promise<InquirySendOtpType> {
+  async SendOtpFunc(): Promise<SendOtpType> {
     return async (params: sendOtpRequestDto) => {
       const start = dayjs()
-      const refCode: string = randomStr(4)
-      const otpCode: string = randomNum(6)
-      // Todo: sand otp
+      let result: ParamsSendOtp
 
-      console.log(refCode, otpCode)
+      if (process.env.SKIP_REQUEST_TO_SMS_MKT == 'true') {
+        console.log('=== SKIP_REQUEST_TO_SMS_MKT ===')
+        const refCode: string = randomNum(6)
+        const token: string = genUuid()
 
-      const result: SendOtpType = {
-        ...params,
-        refCode,
-        otpCode,
-      }
+        console.log(refCode, token)
 
-      this.logger.info(`Done SendOtp ${dayjs().diff(start)} ms`)
-      return [result, 0]
-    }
-  }
-
-  saveOtpToDb(etm: EntityManager): InquirySaveOtpType {
-    return async (otp: Otp, otpData: SendOtpType) => {
-      const start = dayjs()
-      // save otpData
-      if (otp) {
-        try {
-          otp.refCode = otpData.refCode
-          otp.otpCode = otpData.otpCode
-          otp.type = otpData.type
-          otp.verifyCount = 0
-          otp.status = 'send'
-          otp.createdAt = new Date()
-
-          await etm.save(otp)
-        } catch (error) {
-          return [otp, UnableToSendOtp]
+        result = {
+          ...params,
+          refCode,
+          token,
         }
-
-        return [otp, 0]
       } else {
-        let newOtp: Otp
-        try {
-          newOtp = etm.create(Otp, {
-            ...otpData,
-          })
-
-          await newOtp.save()
-        } catch (error) {
-          return [newOtp, UnableToSendOtp]
+        let response: ResponseSendOtpToSmsKmt
+        const paramsRequestOtp: RequestSendOtpToSmsMkt = {
+          projectKey: process.env.SMS_MKT_API_PROJECT_KEY,
+          phone: params.reference,
+          refCode: '',
         }
 
-        this.logger.info(`Done SaveOtpToDb ${dayjs().diff(start)} ms`)
-        return [newOtp, 0]
+        try {
+          const { data } = await api.smsMkt.post<ResponseSendOtpToSmsKmt>(
+            'otp-send',
+            paramsRequestOtp,
+          )
+          response = data
+        } catch (error) {
+          return [null, error.message]
+        }
+
+        if (response.code != '000') {
+          return [null, `Error from API sms-kmt becase ${response.detail}`]
+        }
+
+        result = {
+          ...params,
+          refCode: response.result.refCode,
+          token: response.result.token,
+        }
       }
+      this.logger.info(`Done SendOtp ${dayjs().diff(start)} ms`)
+      return [result, '']
     }
   }
 
-  verifyOtpHandler(inquiryVerifyOtp: Promise<InquiryVerifyOtpType>) {
+  CreateOrUpdateOtpToDbFunc(etm: EntityManager): CreateOrUpdateOtpToDbType {
+    return async (otp: Otp, otpData: ParamsSendOtp) => {
+      const start = dayjs()
+      try {
+        if (!otp) {
+          otp = etm.create(Otp, {
+            reference: otpData.reference,
+          })
+        }
+        otp.type = otpData.type
+        otp.token = otpData.token
+        otp.refCode = otpData.refCode
+        otp.verifyCount = 0
+        otp.status = 'send'
+        otp.createdAt = new Date()
+
+        await etm.save(otp)
+      } catch (error) {
+        return [otp, UnableToSendOtp]
+      }
+
+      this.logger.info(
+        `Done CreateOrUpdateOtpToDbFunc ${dayjs().diff(start)} ms`,
+      )
+      return [otp, 0]
+    }
+  }
+
+  VerifyOtpHandler(inquiryVerifyOtp: Promise<InquiryVerifyOtpType>) {
     return async (otpData: verifyOtpRequestDto) => {
       const start = dayjs()
       const { reference, otpCode, refCode } = otpData
@@ -181,12 +210,13 @@ export class OtpService {
   async InquiryVerifyOtpFunc(
     etm: EntityManager,
   ): Promise<InquiryVerifyOtpType> {
-    return async (otpData: verifyOtpRequestDto) => {
+    return async (params: verifyOtpRequestDto) => {
       const start = dayjs()
-      if (process.env.SKIP_VERIFY_OTP) {
+      if (process.env.SKIP_VERIFY_OTP == 'true') {
+        console.log('==== SKIP_VERIFY_OTP ====')
         return [0, null]
       }
-      const { reference, otpCode, refCode } = otpData
+      const { reference, refCode, otpCode } = params
       try {
         const otp = await Otp.findOne({
           where: {
@@ -208,7 +238,27 @@ export class OtpService {
             'Otp verification has exceeded the limit',
           ]
         }
-        if (otp.otpCode !== otpCode) {
+
+        const RequestValidateOtp: RequestValidateOtp = {
+          token: otp.token,
+          otpCode,
+          refCode,
+        }
+
+        let response: ResponseValidateOtp
+        try {
+          const { data } = await api.smsMkt.post<ResponseValidateOtp>(
+            'otp-validate',
+            RequestValidateOtp,
+          )
+          response = data
+        } catch (error) {
+          return [UnableRequestValidateOtpToSmsMkt, error.message]
+        }
+
+        if (response.code == '5000') {
+          return [OtpTokenExpiredInSmsMkt, 'refCode expire']
+        } else if (response.code == '000' && !response.result.status) {
           return [UnableVerifyOtpIncorrect, 'Otp code is incorrect']
         }
         otp.status = 'verified'

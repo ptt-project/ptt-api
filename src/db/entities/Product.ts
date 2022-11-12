@@ -11,7 +11,7 @@ export class Product extends AppEntity {
   @Column({ name: 'sku' })
   sku: string
 
-  @Column({ name: 'product_profile_id' })
+  @Column({ name: 'product_profile_id', type: 'uuid' })
   productProfileId: string
 
   @Column({ name: 'option1', nullable: true })
@@ -24,7 +24,7 @@ export class Product extends AppEntity {
     name: 'price',
     type: 'decimal',
     precision: 12,
-    scale: 2,
+    scale: 4,
     nullable: true,
     transformer: transformerDecimalToNumber,
   })

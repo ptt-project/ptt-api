@@ -16,6 +16,10 @@ import { MobileModule } from '../mobile/mobile.modules'
 import { OtpService } from '../otp/service/otp.service'
 import { MobileService } from '../mobile/service/mobile.service'
 import { RegisterService } from '../seller/service/register.service'
+import { MemberModule } from '../member/member.modules'
+import { MemberService } from '../member/service/member.service'
+import { OrderModule } from '../order/order.module'
+import { OrderService } from '../order/service/order.service'
 
 @Module({
   imports: [
@@ -27,6 +31,7 @@ import { RegisterService } from '../seller/service/register.service'
     OtpModule,
     MobileModule,
     HappyPointModule,
+    OrderModule,
   ],
   providers: [
     AppConsoleService,
@@ -39,6 +44,7 @@ import { RegisterService } from '../seller/service/register.service'
     OtpService,
     MobileService,
     RegisterService,
+    OrderService,
   ],
 })
 export class AppConsoleModule {}

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { ShopService } from '../seller/service/shop.service'
+import { ShopService } from '../shop/service/shop.service'
 
 import { CategoryController } from './category.controller'
 import { CategoryService } from './service/category.service'

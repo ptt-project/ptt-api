@@ -1,5 +1,5 @@
 import { transformerDayjsToDate } from 'src/utils/entity-transform'
-import { Column, Entity, OneToOne, OneToMany, JoinColumn } from 'typeorm'
+import { Column, Entity, OneToOne, OneToMany, JoinColumn, ManyToOne, Generated } from 'typeorm'
 import { Address } from './Address'
 import { AppEntity } from './AppEntity'
 import { HappyPoint } from './HappyPoint'
@@ -39,10 +39,17 @@ export class Member extends AppEntity {
   })
   birthday: Date
 
-  @Column({ name: 'sp_code_id', nullable: true })
-  spCodeId: number
+  @Column({ name: 'member_code', nullable: false, length: 7 })
+  memberCode: string
 
-  @OneToOne(() => Member)
+  @Column()
+  @Generated('increment')
+  no: number
+
+  @Column({ name: 'sp_code_id', nullable: true })
+  spCodeId: string
+
+  @ManyToOne(() => Member)
   @JoinColumn({ name: 'sp_code_id', referencedColumnName: 'id' })
   spCode: Member
 
@@ -66,8 +73,14 @@ export class Member extends AppEntity {
   })
   role: MemberRoleType
 
+  @Column({ name: 'relationIds', type: 'simple-json', default: [] })
+  relationIds: string[]
+  
   @Column({ name: 'image_id', nullable: true })
   imageId: string
+
+  @Column({ name: 'login_token', nullable: true })
+  loginToken: string
 
   @OneToMany(
     () => Mobile,

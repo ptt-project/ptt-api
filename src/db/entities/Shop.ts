@@ -1,9 +1,11 @@
 import { Column, Entity, OneToOne, JoinColumn, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
+import { Condition } from './Condition'
 import { Member } from './Member'
 import { OrderShop } from './OrderShop'
 import { Product } from './Product'
 import { ProductProfile } from './ProductProfile'
+import { Wallet } from './Wallet'
 
 export type ShopType = 'Normal' | 'Mall'
 export type ApprovalType = 'requested' | 'rejected' | 'approved'
@@ -141,6 +143,9 @@ export class Shop extends AppEntity {
   @Column({ name: 'member_id', nullable: true })
   memberId: string
 
+  @Column({ name: 'wallet_id', nullable: true })
+  walletId: string
+
   @Column({ name: 'is_recommended', nullable: false, default: false })
   isRecommended: boolean
 
@@ -150,6 +155,13 @@ export class Shop extends AppEntity {
   )
   @JoinColumn({ name: 'member_id', referencedColumnName: 'id' })
   member: Member
+
+  @OneToOne(
+    () => Wallet,
+    wallet => wallet.shop,
+  )
+  @JoinColumn({ name: 'wallet_id', referencedColumnName: 'id' })
+  wallet: Wallet
 
   @OneToMany(
     () => Product,
@@ -171,4 +183,11 @@ export class Shop extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'shop_id' })
   orderShop: OrderShop[]
+
+  @OneToOne(
+    () => Condition,
+    condition => condition.shop,
+  )
+  @JoinColumn({ name: 'condition_id', referencedColumnName: 'id' })
+  condition: Condition
 }

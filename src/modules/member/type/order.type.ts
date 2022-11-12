@@ -1,13 +1,17 @@
-import { Address } from "@nestjs-modules/mailer/dist/interfaces/send-mail-options.interface"
-import { Order } from "src/db/entities/Order"
-import { OrderShop } from "src/db/entities/OrderShop"
-import { OrderShopProduct } from "src/db/entities/OrderShopProduct"
-import { Payment } from "src/db/entities/Payment"
-import { Product } from "src/db/entities/Product"
-import { ProductProfile } from "src/db/entities/ProductProfile"
-import { Shop } from "src/db/entities/Shop"
-import { SelectQueryBuilder } from "typeorm"
-import { CreateOrderDto, OrderShopDto, OrderShopProductDto } from "../dto/createOrder.dto"
+import { Address } from '@nestjs-modules/mailer/dist/interfaces/send-mail-options.interface'
+import { Order } from 'src/db/entities/Order'
+import { OrderShop } from 'src/db/entities/OrderShop'
+import { OrderShopProduct } from 'src/db/entities/OrderShopProduct'
+import { Payment } from 'src/db/entities/Payment'
+import { Product } from 'src/db/entities/Product'
+import { ProductProfile } from 'src/db/entities/ProductProfile'
+import { Shop } from 'src/db/entities/Shop'
+import { SelectQueryBuilder } from 'typeorm'
+import {
+  CreateOrderDto,
+  OrderShopDto,
+  OrderShopProductDto,
+} from '../dto/createOrder.dto'
 
 export type InsertOrderToDbType = (
   memberId: string,
@@ -47,9 +51,7 @@ export type UpdatePaymentIdToOrderType = (
   paymentId?: string,
 ) => Promise<string>
 
-export type InquiryShopByIdType = (
-  shopId: string,
-) => Promise<[Shop, string]>
+export type InquiryShopByIdType = (shopId: string) => Promise<[Shop, string]>
 
 export type InsertOrderShopToDbType = (
   orderId: string,
@@ -64,15 +66,19 @@ export type InquiryProducProfiletByIdType = (
   productProfileId: string,
 ) => Promise<[ProductProfile, string]>
 
-
 export type InsertOrderShopProductToDbType = (
   orderId: string,
   params: OrderShopProductDto,
-  productProfile: ProductProfile
+  productProfile: ProductProfile,
 ) => Promise<[OrderShopProduct, string]>
 
 export type UpdateStockToProductType = (
   productId: string,
   stock: number,
-  sold: number
+  sold: number,
+  amountSold: number
+) => Promise<string>
+
+export type ValidateOrderParamsType = (
+  params: CreateOrderDto,
 ) => Promise<string>
