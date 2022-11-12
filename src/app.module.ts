@@ -38,6 +38,7 @@ import { MasterConfigModule } from './modules/master-config/master-config.module
 import { TaskModule } from './task/task.module'
 
 import { AppConfigModule } from './modules/config/config.modules'
+import { OrderModule } from './modules/order/order.module'
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -115,6 +116,7 @@ import { AppConfigModule } from './modules/config/config.modules'
     MasterConfigModule,
     HappyPointModule,
     AppConfigModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [AppService],
