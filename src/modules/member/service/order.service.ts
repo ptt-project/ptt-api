@@ -567,7 +567,7 @@ export class OrderService {
       const [ordersQuery, inquiryOrdersError] = await (await inquiryOrders)(member.id, keyword, status)
 
       if (inquiryOrdersError != '') {
-        response(
+        return response(
           undefined,
           UnableInquiryOrderShops,
           inquiryOrdersError,
@@ -637,10 +637,10 @@ export class OrderService {
       orderShopId: string,
     ) => {
       const start = dayjs()
-      const [order, inquiryOrderShopByIdError] = await (await inquiryOrderById)(member.id, orderShopId)
+      const [orderShop, inquiryOrderShopByIdError] = await (await inquiryOrderById)(member.id, orderShopId)
 
       if (inquiryOrderShopByIdError != '') {
-        response(
+        return response(
           undefined,
           UnableInquiryOrderShopById,
           inquiryOrderShopByIdError,
@@ -648,7 +648,7 @@ export class OrderService {
       }
 
       this.logger.info(`Done GetOrderByIdHandler ${dayjs().diff(start)} ms`)
-      return response(order)
+      return response(orderShop)
     }
   }
 
@@ -678,6 +678,10 @@ export class OrderService {
           },
           deletedAt: null,
         }).getOne()
+
+        if (!orderShop) {
+          return [orderShop, "Order-shop is not found"]
+        }
         
       } catch(error) {
         return [orderShop, error.message]
