@@ -11,7 +11,7 @@ import { LookupService } from '../happy-point/service/lookup.service'
 import { OtpService } from '../otp/service/otp.service'
 import { WalletService } from '../wallet/service/wallet.service'
 import { ChagnePasswordRequestDto } from './dto/changePassword.dto'
-import { CreateOrderDto } from './dto/createOrder.dto'
+import { CreateOrderDto, GetOrderRequestDto } from './dto/createOrder.dto'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
 import { GetProductInfoMemberDto, GetProductListMemberDto } from './dto/getProductList.dto'
 import { SearchMemberByUsernameDto } from './dto/search.dto'
@@ -164,5 +164,31 @@ export class MemberController {
       this.orderService.InquiryProductProfileByIdFunc(etm),
       this.orderService.InsertOrderShopProductToDbFunc(etm),
     )(wallet, happyPoint, member, body)
+  }
+
+  @Auth()
+  @Get('order-shops')
+  @Transaction()
+  async getOrderShops(
+    @ReqUser() member: Member,
+    @Query() query: GetOrderRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.orderService.GetOrderShopsHandler(
+      this.orderService.InquiryOrderShopsFunc(etm),
+    )(member, query)
+  }
+
+  @Auth()
+  @Get('order-shops/:orderShopId')
+  @Transaction()
+  async getOrderShopById(
+    @Param('orderShopId') orderShopId: string,
+    @ReqUser() member: Member,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.orderService.GetOrderShopByIdHandler(
+      this.orderService.InquiryOrderShopByIdFunc(etm),
+    )(member, orderShopId)
   }
 }

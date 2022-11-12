@@ -6,12 +6,24 @@ import { Payment } from "src/db/entities/Payment"
 import { Product } from "src/db/entities/Product"
 import { ProductProfile } from "src/db/entities/ProductProfile"
 import { Shop } from "src/db/entities/Shop"
+import { SelectQueryBuilder } from "typeorm"
 import { CreateOrderDto, OrderShopDto, OrderShopProductDto } from "../dto/createOrder.dto"
 
 export type InsertOrderToDbType = (
   memberId: string,
   createOrderParams: CreateOrderDto,
 ) => Promise<[Order, string]>
+
+export type InquiryOrderShopsFuncType = (
+  memberId: string,
+  keyword?: string,
+  status?: string,
+) => Promise<[SelectQueryBuilder<OrderShop>, string]>
+
+export type InquiryOrderShopByIdFuncType = (
+  memberId: string,
+  orderShopId: string,
+) => Promise<[OrderShop, string]>
 
 export type InsertPaymentByBankToDbType = (
   orderId: string,
