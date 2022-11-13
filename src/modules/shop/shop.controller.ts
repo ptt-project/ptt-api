@@ -7,12 +7,9 @@ import { UpdateShopInfoRequestDto } from './dto/shop.dto'
 import { ShopService } from './service/shop.service'
 
 @Auth()
-@Seller()
 @Controller('v1/shops')
 export class ShopController {
-  constructor(
-    private readonly shopService: ShopService,
-  ) {}
+  constructor(private readonly shopService: ShopService) {}
 
   @Get('/shop-info')
   @Transaction()
@@ -25,6 +22,7 @@ export class ShopController {
     )(member)
   }
 
+  @Seller()
   @Patch('/shop-info')
   @Transaction()
   async updateShopoInfo(
@@ -36,7 +34,8 @@ export class ShopController {
       this.shopService.UpdateShopByMemberIdFunc(etm),
     )(member, body)
   }
-  
+
+  @Seller()
   @Get('/conditions')
   @Transaction()
   async getConditions(
