@@ -85,6 +85,7 @@ import {
 } from '../type/order.type'
 
 import { ContentType, createFormData } from 'src/utils/api/tools'
+import { genOrderNumber } from 'src/utils/helpers'
 
 @Injectable()
 export class OrderService {
@@ -615,7 +616,7 @@ export class OrderService {
           ])
           .where(condition)
         if (keyword) {
-          const keywordCondition = "shop.fullName LIKE :keyword OR products.productProfileName LIKE :keyword"
+          const keywordCondition = "(shop.fullName LIKE :keyword OR products.productProfileName LIKE :keyword OR orderShops.orderNumber LIKE :keyword)"
           orderShopsQuery = orderShopsQuery.andWhere(keywordCondition, { keyword: `%${keyword}%` })
         }
 
@@ -979,6 +980,7 @@ export class OrderService {
           maxDeliverDate,
           orderId,
           status,
+          orderNumber: genOrderNumber(),
         })
 
         await etm.save(orderShop)
