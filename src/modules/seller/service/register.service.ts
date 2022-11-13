@@ -7,6 +7,7 @@ import { RegisterSellerRequestDto } from '../dto/seller.dto'
 import {
   InvalidSellerRegister,
   UnableCreatePartitionOfProductProfile,
+  UnableInsertConditionToDb,
   UnableInsertShopToDb,
   UnableUpdateShopToDb,
 } from 'src/utils/response-code'
@@ -21,6 +22,7 @@ import { Shop } from 'src/db/entities/Shop'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 import { CreateTablePartitionOfProductProfileToDbType } from '../type/register.type'
+import { InsertConditionToDbFuncType } from 'src/modules/shop/type/condition.type'
 
 @Injectable()
 export class RegisterService {
@@ -31,6 +33,7 @@ export class RegisterService {
   RegisterSellerHandler(
     validateSellerData: Promise<ValidateSellerRegisterType>,
     insertShopToDb: Promise<InsertShopToDbType>,
+    insertConditionToDb: Promise<InsertConditionToDbFuncType>,
     createTablePartitionOfProductProfileToDb: CreateTablePartitionOfProductProfileToDbType,
   ) {
     return async (member: Member, body: RegisterSellerRequestDto) => {
@@ -51,10 +54,17 @@ export class RegisterService {
         ...body,
         memberId,
       }
+
       const [shop, insertShopToDbError] = await (await insertShopToDb)(params)
 
       if (insertShopToDbError != '') {
         return response(undefined, UnableInsertShopToDb, insertShopToDbError)
+      }
+
+      const [, insertConditionToDbError] = await (await insertConditionToDb)(shop)
+
+      if (insertConditionToDbError != '') {
+        return response(undefined, UnableInsertConditionToDb, insertConditionToDbError)
       }
 
       const isErrorCreateTablePartitionOfProductProfileToDb = await createTablePartitionOfProductProfileToDb(

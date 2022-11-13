@@ -5,9 +5,9 @@ import { PinoLogger } from 'nestjs-pino'
 import { Condition } from 'src/db/entities/Condition'
 import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, UpdateResult } from 'typeorm'
-import { UnableToGetConditions, UnableToGetShopInfo, UnableToUpdateShopInfo } from 'src/utils/response-code'
+import { UnableToGetShopInfo, UnableToUpdateShopInfo } from 'src/utils/response-code'
 import { Member } from 'src/db/entities/Member'
-import { GetShopInfoType, InquiryConditionByShopIdType, UpdateShopInfoToDbParams, UpdateShopTobDbByIdType } from '../type/shop.type'
+import { GetShopInfoType, UpdateShopInfoToDbParams, UpdateShopTobDbByIdType } from '../type/shop.type'
 
 @Injectable()
 export class ShopService {
@@ -44,24 +44,6 @@ export class ShopService {
 
       this.logger.info(`Done UpdateShopInfoHandler ${dayjs().diff(start)} ms`)
       return response(undefined)
-    }
-  }
-
-
-  GetConditionsHandler(inquiryConditionByShopId: Promise<InquiryConditionByShopIdType>) {
-    return async (shop: Shop) => {
-      const start = dayjs()
-
-      const [condition, InquiryConditionByShopIdError] = await (await inquiryConditionByShopId)(
-        shop.id,
-      )
-
-      if (InquiryConditionByShopIdError != '') {
-        return response(undefined, UnableToGetConditions, InquiryConditionByShopIdError)
-      }
-
-      this.logger.info(`Done GetConditionsHandler ${dayjs().diff(start)} ms`)
-      return response(condition)
     }
   }
 
@@ -117,27 +99,4 @@ export class ShopService {
       return ''
     }
   }
-
-  async InquiryConditionByShopIdFunc(
-    etm: EntityManager,
-  ): Promise<InquiryConditionByShopIdType> {
-    return async (shopId: string): Promise<[Condition, string]> => {
-      const start = dayjs()
-      let condition: Condition
-      try {
-        condition = await etm.findOne(Condition, {
-          where: { shopId, deletedAt: null },
-        })
-        if (!condition) {
-          return [condition, 'Unable to get conditions for this shop']
-        }
-      } catch (error) {
-        return [condition, error.message]
-      }
-
-      this.logger.info(`Done InquiryConditionByShopIdFunc ${dayjs().diff(start)} ms`)
-      return [condition, '']
-    }
-  }
-
 }

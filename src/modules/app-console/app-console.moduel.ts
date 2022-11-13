@@ -16,6 +16,8 @@ import { MobileModule } from '../mobile/mobile.modules'
 import { OtpService } from '../otp/service/otp.service'
 import { MobileService } from '../mobile/service/mobile.service'
 import { RegisterService } from '../seller/service/register.service'
+import { ConditionService } from '../shop/service/condition.service'
+import { CreateConditionConsoleService } from './service/create-condition.service'
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { RegisterService } from '../seller/service/register.service'
     OtpModule,
     MobileModule,
     HappyPointModule,
+    SellerModule,
   ],
   providers: [
     AppConsoleService,
@@ -39,6 +42,8 @@ import { RegisterService } from '../seller/service/register.service'
     OtpService,
     MobileService,
     RegisterService,
+    ConditionService,
+    CreateConditionConsoleService,
   ],
 })
 export class AppConsoleModule {}

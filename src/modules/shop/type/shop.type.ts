@@ -57,6 +57,3 @@ export type UpdateShopTobDbByIdType = (
   params: UpdateShopInfoRequestDto,
 ) => Promise<string>
 
-export type InquiryConditionByShopIdType = (
-  shopId: string,
-) => Promise<[Condition, string]>
