@@ -16,7 +16,6 @@ import {
   WrongCalculateAmountAndFee,
   UnableInquiryRefIdExistTransactions,
   UnableDuplicateRefId,
-  
 } from 'src/utils/response-code'
 
 import {
@@ -56,7 +55,7 @@ import { InquiryVerifyOtpType } from '../../otp/type/otp.type'
 import { verifyOtpRequestDto } from '../../otp/dto/otp.dto'
 import { Member } from 'src/db/entities/Member'
 import { InqueryBankAccountFormDbFuncType } from '../../bankAccount/type/bankAccount.type'
-import { InquiryMasterConfigType } from 'src/modules/master-config/type/master-config.type'
+
 import { GetCacheLookupToRedisType } from '../type/lookup.type'
 import { internalSeverError } from 'src/utils/response-error'
 import { genUuid } from 'src/utils/helpers'
@@ -246,7 +245,7 @@ export class WalletService {
     return async (member: Member, wallet: Wallet, body: WithdrawRequestDTO) => {
       const start = dayjs()
       const { id: walletId } = wallet
-      const { amount, bankAccountId, refId, total, fee  } = body
+      const { amount, bankAccountId, refId, total, fee } = body
 
       const verifyOtpData: verifyOtpRequestDto = {
         reference: member.mobile,
@@ -301,7 +300,11 @@ export class WalletService {
       )
 
       if (iseErrorValidatePoint != '') {
-        return response(undefined, WrongCalculateAmountAndFee, iseErrorValidatePoint)
+        return response(
+          undefined,
+          WrongCalculateAmountAndFee,
+          iseErrorValidatePoint,
+        )
       }
 
       const [bankAccount, inqueryBankAccountError] = await (
@@ -358,7 +361,7 @@ export class WalletService {
           requestWithdrawQrCodeError,
         )
       }
-      
+
       const [adjestedWallet, adjustWalletError] = await (await adjustWallet)(
         walletId,
         amount,
@@ -487,7 +490,7 @@ export class WalletService {
       const fee = amount * feeRate
       const newAmount = amount - fee
       const total = amount
-      
+
       try {
         walletTransaction = etm.create(WalletTransaction, {
           walletId,
@@ -665,23 +668,23 @@ export class WalletService {
     }
   }
   async ValidateCalculateWithdrawAndFeeFunc(): Promise<
-  ValidateCalculateWithdrawAndFeeFuncType
-> {
-  return async (
-    total: number,
-    amount: number,
-    feeRate: number,
-    fee: number,
-  ) => {
-    if (total * feeRate !== fee) {
-      return 'Calculate wrong fee'
-    }
+    ValidateCalculateWithdrawAndFeeFuncType
+  > {
+    return async (
+      total: number,
+      amount: number,
+      feeRate: number,
+      fee: number,
+    ) => {
+      if (total * feeRate !== fee) {
+        return 'Calculate wrong fee'
+      }
 
-    if (amount !== total - fee) {
-      return 'Calculate wrong amount'
-    }
+      if (amount !== total - fee) {
+        return 'Calculate wrong amount'
+      }
 
-    return ''
+      return ''
+    }
   }
-}
 }

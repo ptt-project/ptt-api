@@ -5,6 +5,12 @@ import {
   HappyPointTransactionStatusType,
   HappyPointTransactionType,
 } from 'src/db/entities/HappyPointTransaction'
+import { Member } from 'src/db/entities/Member'
+import { Wallet } from 'src/db/entities/Wallet'
+import {
+  BuyHappyPointRequestDto,
+  SellHappyPointRequestDto,
+} from '../dto/happy-point.dto'
 import { Lookup } from './lookup.type'
 
 export type InsertHappyPointTypeBuyToDbType = (
@@ -16,6 +22,7 @@ export type InsertHappyPointToDbParams = {
   exchangeRate: number
   fromHappyPointId: string
   toHappyPointId?: string
+  orderId?: string
   amount?: number
   fee?: number
   totalAmount?: number
@@ -104,3 +111,19 @@ export type UpdateCreditLimitTransferToDbType = (
   happyPoint: HappyPoint,
   point: number,
 ) => Promise<string>
+
+export type DebitHappyPointTransactionParams = {
+  point: number
+  totalAmount: number
+  feeAmount: number
+  amount: number
+  refId: string
+  transactionType: 'SELL' | 'PAYMENT'
+  orderId?: string
+}
+
+export type DebitHappyPointType = (
+  wallet: Wallet,
+  happyPoint: HappyPoint,
+  body: DebitHappyPointTransactionParams,
+) => Promise<[HappyPoint, number, string]>

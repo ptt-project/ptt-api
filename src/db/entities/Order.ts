@@ -1,10 +1,25 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
-import { AppEntity } from "./AppEntity";
-import { Member } from "./Member";
-import { OrderShop } from "./OrderShop";
-import { Payment } from "./Payment";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm'
+import { AppEntity } from './AppEntity'
+import { HappyPointTransaction } from './HappyPointTransaction'
+import { Member } from './Member'
+import { OrderShop } from './OrderShop'
+import { Payment } from './Payment'
 
-export type OrderStatusType = 'toPay' | 'toShip' | 'toReceive' | 'complated' | 'cancelled' | 'return' | 'refund'
+export type OrderStatusType =
+  | 'toPay'
+  | 'toShip'
+  | 'toReceive'
+  | 'complated'
+  | 'cancelled'
+  | 'return'
+  | 'refund'
 @Entity({ name: 'orders' })
 export class Order extends AppEntity {
   @Column({ name: 'member_id', nullable: false })
@@ -25,7 +40,7 @@ export class Order extends AppEntity {
     default: 0,
   })
   merchandiseSubtotal: number
-  
+
   @Column({
     name: 'shipping_total',
     nullable: false,
@@ -77,11 +92,18 @@ export class Order extends AppEntity {
   @Column({ name: 'mobile', nullable: false, length: 20 })
   mobile: string
 
-
   @Column({
-    name: 'status', 
+    name: 'status',
     type: 'enum',
-    enum: ['toPay', 'toShip', 'toReceive', 'complated', 'cancelled', 'return', 'refund'],
+    enum: [
+      'toPay',
+      'toShip',
+      'toReceive',
+      'complated',
+      'cancelled',
+      'return',
+      'refund',
+    ],
     nullable: false,
   })
   status: OrderStatusType
@@ -106,5 +128,11 @@ export class Order extends AppEntity {
   )
   @JoinColumn({ name: 'payment_id', referencedColumnName: 'id' })
   payment: Payment
-  
+
+  @OneToMany(
+    () => HappyPointTransaction,
+    happyPointTransactins => happyPointTransactins.order,
+  )
+  @JoinColumn({ referencedColumnName: 'order_id' })
+  happyPointTransactins: HappyPointTransaction[]
 }

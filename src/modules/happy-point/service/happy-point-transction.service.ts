@@ -85,6 +85,11 @@ export class HappyPointTransactionService {
             'toHappyPoints.member',
             'members',
           )
+          .leftJoinAndMapOne(
+            'happyPointTransactions.order',
+            'happyPointTransactions.order',
+            'orders',
+          )
           .where('happyPointTransactions.fromHappyPointId = :happyPointId', {
             happyPointId,
           })
@@ -134,19 +139,24 @@ export class HappyPointTransactionService {
     ): Pagination<any, IPaginationMeta> => {
       const result = happyPointTransactions.items.map(
         (happyPointTransaction: HappyPointTransaction, index: number) => {
-          const { toHappyPoint } = happyPointTransaction
-          let memberRemark = null
+          const { toHappyPoint, order } = happyPointTransaction
+          let remark = null
 
           if (happyPointTransaction.type == 'TRANSFER') {
             const { member } = toHappyPoint
-            memberRemark = member
+            remark = member
               ? { username: member.username, firstName: member.firstName }
               : null
           }
 
+          if (happyPointTransaction.type == 'PAYMENT') {
+            // const {  } = order
+            remark = '#123'
+          }
+
           return {
             ...happyPointTransaction,
-            memberRemark,
+            remark,
             toHappyPoint: undefined,
           }
         },
