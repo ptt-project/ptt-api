@@ -1075,9 +1075,9 @@ export class ProductService {
           }
 
           if (newProducts.length > 0) {
-            const [createNewProducts, createProductsError] = await (
-              await createProducts
-            )(newProducts)
+            const [, createProductsError] = await (await createProducts)(
+              newProducts,
+            )
 
             if (createProductsError != '') {
               return response(
@@ -1125,7 +1125,7 @@ export class ProductService {
             },
           )
 
-          const [products, createProductsError] = await (await createProducts)(
+          const [, createProductsError] = await (await createProducts)(
             newProducts,
           )
 
@@ -1169,7 +1169,7 @@ export class ProductService {
           },
         ]
 
-        const [products, createProductsError] = await (await createProducts)(
+        const [, createProductsError] = await (await createProducts)(
           newProducts,
         )
 
