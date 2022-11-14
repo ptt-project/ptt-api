@@ -86,19 +86,21 @@ export class HappyPointContoller {
 
     return await this.happyService.SellHappyPointHandler(
       this.otpService.InquiryVerifyOtpFunc(etm),
-      this.lookupService.InquiryRefIdExistInTransactionFunc(etm),
-      this.lookupService.GetCacheLookupToRedisFunc(redis),
-      this.happyService.ValidateCalculateFeeAmountFunc(),
-      this.happyService.ValidateCalculatePointByExchangeAndAmountFunc(),
-      this.happyService.ValidateCalculateAmountFunc(),
-      this.happyService.InsertHappyPointTransactionToDbFunc(etm),
-      this.walletService.RequestInteranlWalletTransactionService(
-        this.walletService.InsertTransactionToDbFunc(etm),
-        this.walletService.InsertReferenceToDbFunc(etm),
-        this.walletService.UpdateReferenceToDbFunc(etm),
-        this.walletService.AdjustWalletInDbFunc(etm),
+      this.happyService.DebitHappyPointFunc(
+        this.lookupService.InquiryRefIdExistInTransactionFunc(etm),
+        this.lookupService.GetCacheLookupToRedisFunc(redis),
+        this.happyService.ValidateCalculateFeeAmountFunc(),
+        this.happyService.ValidateCalculatePointByExchangeAndAmountFunc(),
+        this.happyService.ValidateCalculateAmountFunc(),
+        this.happyService.InsertHappyPointTransactionToDbFunc(etm),
+        this.walletService.RequestInteranlWalletTransactionService(
+          this.walletService.InsertTransactionToDbFunc(etm),
+          this.walletService.InsertReferenceToDbFunc(etm),
+          this.walletService.UpdateReferenceToDbFunc(etm),
+          this.walletService.AdjustWalletInDbFunc(etm),
+        ),
+        this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
       ),
-      this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
     )(wallet, happyPoint, member, body)
   }
 
