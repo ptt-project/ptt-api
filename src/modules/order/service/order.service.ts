@@ -43,6 +43,7 @@ import { Wallet } from 'src/db/entities/Wallet'
 import { HappyPoint } from 'src/db/entities/HappyPoint'
 import { Member } from 'src/db/entities/Member'
 import {
+  UnableToAdjustWalletToSeller,
   UnableToInsertOrder,
   UnableToInsertOrderShop,
   UnableToInsertOrderShopProduct,
@@ -162,7 +163,7 @@ export class OrderService {
           paymentOrder = payment
         } else {
           return internalSeverError(
-            UnableToInsertOrder,
+            UnableToInsertPayment,
             'bankPaymentId, qrCode and reference not null',
           )
         }
@@ -238,7 +239,7 @@ export class OrderService {
           paymentOrder = payment
         } else {
           return internalSeverError(
-            UnableToInsertOrder,
+            UnableToInsertPayment,
             'amountSell, point, refId, totalAmount, feeAmount, refCode and otpCode not null',
           )
         }
@@ -313,7 +314,7 @@ export class OrderService {
           paymentOrder = payment
         } else {
           return internalSeverError(
-            UnableToInsertOrder,
+            UnableToInsertPayment,
             'amountSell and refId not null',
           )
         }
@@ -331,13 +332,16 @@ export class OrderService {
         )
       }
 
-      const adjustWalletError = await adjustWalletToSeller(
+      const adjustWalletToSellerError = await adjustWalletToSeller(
         orderShopList,
         body.refId,
       )
 
-      if (adjustWalletError != '') {
-        return internalSeverError(undefined, adjustWalletError)
+      if (adjustWalletToSellerError != '') {
+        return internalSeverError(
+          UnableToAdjustWalletToSeller,
+          adjustWalletToSellerError,
+        )
       }
 
       this.logger.info(`Done CheckoutHandler ${dayjs().diff(start)} ms`)
