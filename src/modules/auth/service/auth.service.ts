@@ -65,14 +65,14 @@ export class AuthService {
         await validateMember
       )(body)
       if (validateErrorCode != 0) {
-        return validateError(validateErrorCode, validateErrorMessage)
+        return response(undefined, validateErrorCode, validateErrorMessage)
       }
 
       const [validateMobileErrorCode, validateMobileErrorMessage] = await (
         await validateMobile
       )(body.mobile)
       if (validateMobileErrorCode != 0) {
-        return validateError(validateMobileErrorCode, validateMobileErrorMessage)
+        return response(undefined, validateMobileErrorCode, validateMobileErrorMessage)
       }
 
       this.logger.info(`Done validateRegisterHandler ${dayjs().diff(start)} ms`)
@@ -118,7 +118,7 @@ export class AuthService {
       )(body.mobile)
 
       if (validateMobileErrorCode != 0) {
-        return validateError(validateMobileErrorCode, validateMobileErrorMessage)
+        return response(undefined, validateMobileErrorCode, validateMobileErrorMessage)
       }
 
       let inviter: Member;
