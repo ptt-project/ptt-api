@@ -1,13 +1,27 @@
-import { transformerDayjsToDate } from "src/utils/entity-transform";
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
-import { AppEntity } from "./AppEntity";
-import { Order } from "./Order";
-import { OrderShopProduct } from "./OrderShopProduct";
-import { ShippingOption } from "./ShippingOption";
-import { Shop } from "./Shop";
-import { WalletTransaction } from "./WalletTransaction";
+import { transformerDayjsToDate } from 'src/utils/entity-transform'
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm'
+import { AppEntity } from './AppEntity'
+import { Order } from './Order'
+import { OrderShopProduct } from './OrderShopProduct'
+import { ShippingOption } from './ShippingOption'
+import { Shop } from './Shop'
+import { WalletTransaction } from './WalletTransaction'
 
-export type OrderShopStatusType = 'toPay' | 'toShip' | 'toReceive' | 'complated' | 'cancelled' | 'return' | 'refund'
+export type OrderShopStatusType =
+  | 'toPay'
+  | 'toShip'
+  | 'toReceive'
+  | 'complated'
+  | 'cancelled'
+  | 'return'
+  | 'refund'
 @Entity({ name: 'order_shops' })
 export class OrderShop extends AppEntity {
   @Column({ name: 'order_id', nullable: false })
@@ -60,9 +74,17 @@ export class OrderShop extends AppEntity {
   note?: string
 
   @Column({
-    name: 'status', 
+    name: 'status',
     type: 'enum',
-    enum: ['toPay', 'toShip', 'toReceive', 'complated', 'cancelled', 'return', 'refund'],
+    enum: [
+      'toPay',
+      'toShip',
+      'toReceive',
+      'complated',
+      'cancelled',
+      'return',
+      'refund',
+    ],
     nullable: false,
   })
   status: OrderShopStatusType
@@ -83,7 +105,7 @@ export class OrderShop extends AppEntity {
 
   @Column({ name: 'wallet_transaction_id', nullable: true })
   walletTransactionId: string
-  
+
   @ManyToOne(
     () => Order,
     order => order.orderShop,
@@ -118,5 +140,4 @@ export class OrderShop extends AppEntity {
   )
   @JoinColumn({ name: 'wallet_transaction_id', referencedColumnName: 'id' })
   walletTransaction: WalletTransaction
-
 }

@@ -1,8 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-} from '@nestjs/common'
+import { Body, Controller, Post } from '@nestjs/common'
 import { RedisService } from 'nestjs-redis'
 import { HappyPoint } from 'src/db/entities/HappyPoint'
 import { Member } from 'src/db/entities/Member'
@@ -39,38 +35,50 @@ export class OrderController {
     @TransactionManager() etm: EntityManager,
   ) {
     const redis = this.redisService.getClient()
-
     return await this.orderService.CheckoutHandler(
-      this.orderService.ValidateOrderParamsFunc(etm),
-      this.orderService.InsertOrderToDbFunc(etm),
-      this.orderService.InsertPaymentByBankToDbFunc(etm),
       this.otpService.InquiryVerifyOtpFunc(etm),
-      this.lookupService.InquiryRefIdExistInTransactionFunc(etm),
-      this.lookupService.GetCacheLookupToRedisFunc(redis),
-      this.happyService.ValidateCalculateFeeAmountFunc(),
-      this.happyService.ValidateCalculatePointByExchangeAndAmountFunc(),
-      this.happyService.ValidateCalculateAmountFunc(),
-      this.happyService.InsertHappyPointTransactionToDbFunc(etm),
-      this.walletService.RequestInteranlWalletTransactionService(
+      this.orderService.ValidateOrderParamsFunc(
+        this.orderService.InquiryShopByIdFunc(etm),
+        this.orderService.InquiryProductByIdFunc(etm),
+      ),
+      this.orderService.InsertOrderToDbFunc(etm),
+      this.orderService.InsertOrderShopToDbFunc(etm),
+      this.orderService.InsertOrderShopProductFunc(
+        this.orderService.InquiryProductByIdFunc(etm),
+        this.orderService.UpdateStockToProductFunc(etm),
+        this.orderService.InquiryProductProfileByIdFunc(etm),
+        this.orderService.InsertOrderShopProductToDbFunc(etm),
+      ),
+      this.happyService.DebitHappyPointFunc(
+        this.lookupService.InquiryRefIdExistInTransactionFunc(etm),
+        this.lookupService.GetCacheLookupToRedisFunc(redis),
+        this.happyService.ValidateCalculateFeeAmountFunc(),
+        this.happyService.ValidateCalculatePointByExchangeAndAmountFunc(),
+        this.happyService.ValidateCalculateAmountFunc(),
+        this.happyService.InsertHappyPointTransactionToDbFunc(etm),
+        this.walletService.RequestInteranlWalletTransactionService(
+          this.walletService.InsertTransactionToDbFunc(etm),
+          this.walletService.InsertReferenceToDbFunc(etm),
+          this.walletService.UpdateReferenceToDbFunc(etm),
+          this.walletService.AdjustWalletInDbFunc(etm),
+        ),
+        this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
+      ),
+      this.walletService.InsertTransactionToDbFunc(etm),
+      this.walletService.InsertReferenceToDbFunc(etm),
+      this.walletService.UpdateReferenceToDbFunc(etm),
+      this.walletService.AdjustWalletInDbFunc(etm),
+      this.orderService.InsertPaymentByBankToDbFunc(etm),
+      this.orderService.InsertPaymentByHappyPointToDbFunc(etm),
+      this.orderService.InsertPaymentByEwalletToDbFunc(etm),
+      this.orderService.UpdatePaymentIdToOrderFunc(etm),
+      this.orderService.AdjustWalletToSellerFunc(
+        this.walletService.InquiryWalletByShopIdFunc(etm),
         this.walletService.InsertTransactionToDbFunc(etm),
         this.walletService.InsertReferenceToDbFunc(etm),
         this.walletService.UpdateReferenceToDbFunc(etm),
         this.walletService.AdjustWalletInDbFunc(etm),
       ),
-      this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
-      this.walletService.InsertTransactionToDbFunc(etm),
-      this.walletService.InsertReferenceToDbFunc(etm),
-      this.walletService.UpdateReferenceToDbFunc(etm),
-      this.walletService.AdjustWalletInDbFunc(etm),
-      this.orderService.InsertPaymentByEwalletToDbFunc(etm),
-      this.orderService.InsertPaymentByHappyPointToDbFunc(etm),
-      this.orderService.UpdatePaymentIdToOrderFunc(etm),
-      this.orderService.InsertOrderShopToDbFunc(etm),
-      this.walletService.InquiryWalletByShopIdFunc(etm),
-      this.orderService.InquiryProductByIdFunc(etm),
-      this.orderService.UpdateStockToProductFunc(etm),
-      this.orderService.InquiryProductProfileByIdFunc(etm),
-      this.orderService.InsertOrderShopProductToDbFunc(etm),
     )(wallet, happyPoint, member, body)
   }
 }

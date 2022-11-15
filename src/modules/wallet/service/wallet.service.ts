@@ -380,7 +380,10 @@ export class WalletService {
   async InsertWalletToDbFunc(
     etm: EntityManager,
   ): Promise<InsertWalletToDbFuncType> {
-    return async (memberId: string, shopId?: string): Promise<[Wallet, string]> => {
+    return async (
+      memberId: string,
+      shopId?: string,
+    ): Promise<[Wallet, string]> => {
       const start = dayjs()
       let wallet: Wallet
 
@@ -447,7 +450,9 @@ export class WalletService {
         const note: TransactionNote =
           transactionType == 'buy' ||
           transactionType == 'buy_happy_point' ||
-          transactionType == 'withdraw' ? 'debit' : 'credit'
+          transactionType == 'withdraw'
+            ? 'debit'
+            : 'credit'
 
         if (!wallet) {
           return [null, 'Unable to find wallet']
@@ -638,12 +643,8 @@ export class WalletService {
     }
   }
 
-  async InquiryWalletByShopIdFunc(
-    etm: EntityManager,
-  ): Promise<InquiryWalletByShopIdType> {
-    return async (
-      shopId: string,
-    ): Promise<[Wallet, string]> => {
+  InquiryWalletByShopIdFunc(etm: EntityManager): InquiryWalletByShopIdType {
+    return async (shopId: string): Promise<[Wallet, string]> => {
       const start = dayjs()
       let wallet: Wallet
 
@@ -660,9 +661,7 @@ export class WalletService {
       }
 
       this.logger.info(
-        `Done InquiryWalletByShopIdFunc ${dayjs().diff(
-          start,
-        )} ms`,
+        `Done InquiryWalletByShopIdFunc ${dayjs().diff(start)} ms`,
       )
       return [wallet, '']
     }

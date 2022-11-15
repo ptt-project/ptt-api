@@ -1,11 +1,15 @@
-import { Order } from "src/db/entities/Order"
-import { OrderShop } from "src/db/entities/OrderShop"
-import { OrderShopProduct } from "src/db/entities/OrderShopProduct"
-import { Payment } from "src/db/entities/Payment"
-import { Product } from "src/db/entities/Product"
-import { ProductProfile } from "src/db/entities/ProductProfile"
-import { Shop } from "src/db/entities/Shop"
-import { CreateOrderDto, OrderShopDto, OrderShopProductDto } from "../dto/createOrder.dto"
+import { Order } from 'src/db/entities/Order'
+import { OrderShop } from 'src/db/entities/OrderShop'
+import { OrderShopProduct } from 'src/db/entities/OrderShopProduct'
+import { Payment } from 'src/db/entities/Payment'
+import { Product } from 'src/db/entities/Product'
+import { ProductProfile } from 'src/db/entities/ProductProfile'
+import { Shop } from 'src/db/entities/Shop'
+import {
+  CreateOrderDto,
+  OrderShopDto,
+  OrderShopProductDto,
+} from '../dto/createOrder.dto'
 
 export type ShippopGetPriceDetail = {
   courierCode: string
@@ -92,7 +96,7 @@ export type InquiryProducProfiletByIdType = (
 ) => Promise<[ProductProfile, string]>
 
 export type InsertOrderShopProductToDbType = (
-  orderId: string,
+  orderShopId: string,
   params: OrderShopProductDto,
   productProfile: ProductProfile,
 ) => Promise<[OrderShopProduct, string]>
@@ -101,9 +105,19 @@ export type UpdateStockToProductType = (
   productId: string,
   stock: number,
   sold: number,
-  amountSold: number
+  amountSold: number,
 ) => Promise<string>
 
 export type ValidateOrderParamsType = (
   params: CreateOrderDto,
+) => Promise<string>
+
+export type InsertOrderShopProductType = (
+  orderShopId: string,
+  params: OrderShopProductDto,
+) => Promise<[OrderShopProduct, string]>
+
+export type AdjustWalletToSellerType = (
+  orderShopList: OrderShop[],
+  refId: string,
 ) => Promise<string>
