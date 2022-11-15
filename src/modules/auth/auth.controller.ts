@@ -40,6 +40,7 @@ export class AuthController {
     return await this.authService.RegisterHandler(
       this.otpService.InquiryVerifyOtpFunc(etm),
       this.authService.InquiryMemberExistFunc(etm),
+      this.authService.ValidateMobileUsedFunc(etm),
       this.authService.ValidateInviteTokenFunc(etm),
       this.authService.InsertMemberToDbFunc(etm),
       this.mobileService.AddMobileFunc(etm),
@@ -96,6 +97,7 @@ export class AuthController {
   ) {
     return await this.authService.ValidateRegisterHandler(
       this.authService.InquiryMemberExistFunc(etm),
+      this.authService.ValidateMobileUsedFunc(etm),
     )(body)
   }
 

@@ -21,6 +21,7 @@ import {
   InvalideInviteToken,
   UnableToInsertWallet,
   UnableToInsertHappyPoint,
+  UnableRegisterMobileAlreayExist,
 } from 'src/utils/response-code'
 
 import { verifyOtpRequestDto } from '../../otp/dto/otp.dto'
@@ -38,10 +39,12 @@ import {
   TokenType,
   ValidateTokenResponse,
   ValidateInviteTokenFuncType,
+  ValidateMobileUsedFuncType,
 } from '../type/auth.type'
 import { PinoLogger } from 'nestjs-pino'
 import { InsertWalletToDbFuncType } from '../../wallet/type/wallet.type'
 import { InsertHappyPointToDbType } from '../../happy-point/type/happy-point.type'
+import { Mobile } from 'src/db/entities/Mobile'
 
 @Injectable()
 export class AuthService {
@@ -52,7 +55,10 @@ export class AuthService {
     this.logger.setContext(AuthService.name)
   }
 
-  ValidateRegisterHandler(validateMember: Promise<InquiryMemberExistType>) {
+  ValidateRegisterHandler(
+    validateMember: Promise<InquiryMemberExistType>,
+    validateMobile: Promise<ValidateMobileUsedFuncType>,
+  ) {
     return async (body: ValidateRegisterRequestDto) => {
       const start = dayjs()
       const [validateErrorCode, validateErrorMessage] = await (
@@ -60,6 +66,13 @@ export class AuthService {
       )(body)
       if (validateErrorCode != 0) {
         return validateError(validateErrorCode, validateErrorMessage)
+      }
+
+      const [validateMobileErrorCode, validateMobileErrorMessage] = await (
+        await validateMobile
+      )(body.mobile)
+      if (validateMobileErrorCode != 0) {
+        return validateError(validateMobileErrorCode, validateMobileErrorMessage)
       }
 
       this.logger.info(`Done validateRegisterHandler ${dayjs().diff(start)} ms`)
@@ -70,6 +83,7 @@ export class AuthService {
   RegisterHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     inquiryMemberEixst: Promise<InquiryMemberExistType>,
+    validateMobile: Promise<ValidateMobileUsedFuncType>,
     validateInviteToken: Promise<ValidateInviteTokenFuncType>,
     insertMemberToDb: Promise<InsertMemberToDbTye>,
     addMobileFunc: Promise<AddMobileFuncType>,
@@ -97,6 +111,14 @@ export class AuthService {
 
       if (validateErrorCode != 0) {
         return response(undefined, validateErrorCode, validateErrorMessage)
+      }
+
+      const [validateMobileErrorCode, validateMobileErrorMessage] = await (
+        await validateMobile
+      )(body.mobile)
+
+      if (validateMobileErrorCode != 0) {
+        return validateError(validateMobileErrorCode, validateMobileErrorMessage)
       }
 
       let inviter: Member;
@@ -161,15 +183,21 @@ export class AuthService {
       params: RegisterRequestDto | ValidateRegisterRequestDto,
     ): Promise<[number, string]> => {
       const start = dayjs()
-      const { email, username } = params
+      const { email, username, mobile } = params
       try {
         const member = await etm.findOne(Member, {
           where: [
             {
               email,
+              deletedAt: null,
             },
             {
               username,
+              deletedAt: null,
+            },
+            {
+              mobile,
+              deletedAt: null,
             },
           ],
         })
@@ -182,11 +210,42 @@ export class AuthService {
         if (member.email === email) {
           return [UnableRegisterEmailAlreayExist, 'Email is already used']
         }
+        if (member.mobile === mobile) {
+          return [UnableRegisterMobileAlreayExist, 'Mobile is already used']
+        }
       } catch (error) {
         return [InternalSeverError, error.message]
       }
 
       this.logger.info(`Done InquiryMemberExistFunc ${dayjs().diff(start)} ms`)
+      return [0, '']
+    }
+  }
+
+  async ValidateMobileUsedFunc(
+    etm: EntityManager,
+  ): Promise<ValidateMobileUsedFuncType> {
+    return async (
+      mobilePhone: string,
+    ): Promise<[number, string]> => {
+      const start = dayjs()
+      
+      try {
+        const mobile = await etm.findOne(Mobile, {
+          where:
+            {
+              mobile: mobilePhone,
+              deletedAt: null,
+            },
+        })
+        if (mobile) {
+          return [UnableRegisterMobileAlreayExist, 'Mobile is already used']
+        }
+      } catch (error) {
+        return [InternalSeverError, error.message]
+      }
+
+      this.logger.info(`Done ValidateMobileUsedFunc ${dayjs().diff(start)} ms`)
       return [0, '']
     }
   }
