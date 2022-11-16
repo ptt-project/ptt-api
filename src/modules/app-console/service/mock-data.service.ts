@@ -24,6 +24,7 @@ import { RegisterSellerRequestDto } from 'src/modules/seller/dto/seller.dto'
 import { Member } from 'src/db/entities/Member'
 import { Wallet } from 'src/db/entities/Wallet'
 import { Shop } from 'src/db/entities/Shop'
+import { ConditionService } from 'src/modules/shop/service/condition.service'
 
 @Console()
 export class MockDataConsoleService {
@@ -35,6 +36,7 @@ export class MockDataConsoleService {
     private readonly otpService: OtpService,
     private readonly mobileService: MobileService,
     private readonly happyPointService: HappyPointService,
+    private readonly conditionService: ConditionService,
   ) {}
 
   @Command({
@@ -149,6 +151,7 @@ export class MockDataConsoleService {
     await this.regiserSellerService.RegisterSellerHandler(
       this.regiserSellerService.ValidateSellerDataFunc(etm),
       this.regiserSellerService.InsertShopToDbFunc(etm),
+      this.conditionService.InsertConditionToDbFunc(etm),
       this.regiserSellerService.CreateTablePartitionOfProductProfileToDbFunc(
         etm,
       ),

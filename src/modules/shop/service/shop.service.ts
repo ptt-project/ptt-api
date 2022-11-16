@@ -13,10 +13,10 @@ import {
 import { Member } from 'src/db/entities/Member'
 import {
   GetShopInfoType,
-  InquiryConditionByShopIdType,
   UpdateShopInfoToDbParams,
   UpdateShopTobDbByIdType,
 } from '../type/shop.type'
+import { InquiryConditionByShopIdType } from '../type/condition.type'
 
 @Injectable()
 export class ShopService {

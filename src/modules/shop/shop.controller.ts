@@ -4,12 +4,16 @@ import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqShop, ReqUser, Seller } from '../auth/auth.decorator'
 import { UpdateShopInfoRequestDto } from './dto/shop.dto'
+import { ConditionService } from './service/condition.service'
 import { ShopService } from './service/shop.service'
 
 @Auth()
 @Controller('v1/shops')
 export class ShopController {
-  constructor(private readonly shopService: ShopService) {}
+  constructor(
+    private readonly shopService: ShopService,
+    private readonly conditionService: ConditionService,
+  ) {}
 
   @Get('/shop-info')
   @Transaction()
@@ -42,8 +46,8 @@ export class ShopController {
     @ReqShop() shop: Shop,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.shopService.GetConditionsHandler(
-      this.shopService.InquiryConditionByShopIdFunc(etm),
+    return await this.conditionService.GetConditionsHandler(
+      this.conditionService.InquiryConditionByShopIdFunc(etm),
     )(shop)
   }
 }
