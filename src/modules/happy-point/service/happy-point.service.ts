@@ -677,8 +677,20 @@ export class HappyPointService {
   ): Promise<UpdateCreditBalanceToDbType> {
     return async (params: UpdateBalanceToDbParams) => {
       const start = dayjs()
-      const { happyPoint, point } = params
+      const { happyPoint: { id }, point } = params
+      let happyPoint:HappyPoint
+
       try {
+        happyPoint = await etm.findOne(HappyPoint, {
+          where: {
+            id,
+            deletedAt: null,
+          },
+          lock: {
+            mode: "pessimistic_write"
+          }
+        })
+
         const newBalance = point + happyPoint.balance
         console.log('newBalance = point + happyPoint.balance', newBalance)
 
@@ -702,13 +714,24 @@ export class HappyPointService {
   ): Promise<UpdateDebitBalanceToDbType> {
     return async (params: UpdateBalanceToDbParams) => {
       const start = dayjs()
-      const { happyPoint, point } = params
-
-      if (happyPoint.balance < point) {
-        return [happyPoint, 'point not enough for transfer']
-      }
+      const { happyPoint: { id }, point } = params
+      let happyPoint:HappyPoint
 
       try {
+        happyPoint = await etm.findOne(HappyPoint, {
+          where: {
+            id,
+            deletedAt: null,
+          },
+          lock: {
+            mode: "pessimistic_write"
+          }
+        })
+
+        if (happyPoint.balance < point) {
+          return [happyPoint, 'point not enough for transfer']
+        }
+
         const newBalance = happyPoint.balance - point
         console.log('newBalance = happyPoint.balance - point', newBalance)
 
