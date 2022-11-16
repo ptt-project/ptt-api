@@ -144,7 +144,7 @@ export class RegisterService {
             },
             {
               deletedAt: null,
-              corperateId: params.corperateId,
+              corporateId: params.corporateId,
             },
           ],
         })
@@ -158,17 +158,17 @@ export class RegisterService {
           if (shop.mobile === params.mobile) {
             return 'mobile is alredy used'
           }
-          if (shop.corperateId === params.corperateId) {
-            return 'corperateId is alredy used'
+          if (shop.corporateId === params.corporateId) {
+            return 'corporateId is alredy used'
           }
         }
         if (
           params.type === 'Mall' &&
-          (!params.corperateId ||
-            !params.corperateName ||
+          (!params.corporateId ||
+            !params.corporateName ||
             !params.mallApplicantRole)
         ) {
-          return 'corperateId, corperateName and mallApplicantRole are required for Mall shop'
+          return 'corporateId, corporateName and mallApplicantRole are required for Mall shop'
         }
       } catch (error) {
         return error.message
@@ -197,8 +197,8 @@ export class RegisterService {
           instagram: params.instagram,
           socialMedia: params.socialMedia,
           note: params.note,
-          corperateId: params.corperateId,
-          corperateName: params.corperateName,
+          corporateId: params.corporateId,
+          corporateName: params.corporateName,
           mallApplicantRole: params.mallApplicantRole,
           mallOfflineShopDetail: params.mallOfflineShopDetail,
           mallShopDescription: params.mallShopDescription,
@@ -260,8 +260,8 @@ export class RegisterService {
         shop.instagram = params.instagram
         shop.socialMedia = params.socialMedia
         shop.note = params.note
-        shop.corperateId = params.corperateId
-        shop.corperateName = params.corperateName
+        shop.corporateId = params.corporateId
+        shop.corporateName = params.corporateName
         shop.mallApplicantRole = params.mallApplicantRole
         shop.mallOfflineShopDetail = params.mallOfflineShopDetail
         shop.mallShopDescription = params.mallShopDescription

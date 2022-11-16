@@ -144,8 +144,8 @@ export class MockDataConsoleService {
       instagram: '@myshop',
       socialMedia: '@myshop',
       note: '',
-      corperateName: 's',
-      corperateId: 'ss2',
+      corporateName: 's',
+      corporateId: 'ss2',
       type: 'Mall',
       mallApplicantRole: 'Exclusive Distributor',
     }
