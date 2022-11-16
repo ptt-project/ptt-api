@@ -15,8 +15,8 @@ export type InsertShopToDbParams = {
   instagram?: string
   socialMedia?: string
   note?: string
-  corperateId?: string
-  corperateName?: string
+  corporateId?: string
+  corporateName?: string
   mallApplicantRole?: MallApplicantRoleType
   mallOfflineShopDetail?: string
   mallShopDescription?: string
@@ -34,8 +34,8 @@ export type UpdateShopToDbParams = {
   instagram?: string
   socialMedia?: string
   note?: string
-  corperateId?: string
-  corperateName?: string
+  corporateId?: string
+  corporateName?: string
   mallApplicantRole?: MallApplicantRoleType
   mallOfflineShopDetail?: string
   mallShopDescription?: string

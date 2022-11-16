@@ -55,11 +55,11 @@ export class Shop extends AppEntity {
   @Column({ name: 'note', nullable: true, length: 1000 })
   note: string
 
-  @Column({ name: 'corperate_name', nullable: true, length: 50 })
-  corperateName: string
+  @Column({ name: 'corporate_name', nullable: true, length: 50 })
+  corporateName: string
 
-  @Column({ name: 'corperate_id', nullable: true, length: 20 })
-  corperateId: string
+  @Column({ name: 'corporate_id', nullable: true, length: 20 })
+  corporateId: string
 
   @Column({
     name: 'approval_status',
