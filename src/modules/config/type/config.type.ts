@@ -1,7 +1,9 @@
 
 export type OptionType = {
   value: number | string,
-  label: string,
+  labelTh: string,
+  labelEn: string,
+  icon?: string,
 }
 
 export type InquiryBrandOptionsFormDbFuncType = () => Promise<[OptionType[], string]>
