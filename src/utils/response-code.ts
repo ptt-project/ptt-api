@@ -15,6 +15,7 @@ export const UnableInquiryMemberExistByMobileError= _authError + 5
 export const UnableUpateLoginTokenToDb= _authError + 6
 export const UnableInquiryMemberExistByLoginTokenAndEmailError= _authError + 7
 export const UnableSendMessageToEmailError= _authError + 8
+export const UnableRegisterMobileAlreayExist = _authError + 9
 
 // login
 export const UnableLoginUsernameDoNotAlreayExist = _authError + 4
