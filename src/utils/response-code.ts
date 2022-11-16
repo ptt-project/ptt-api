@@ -15,6 +15,7 @@ export const UnableInquiryMemberExistByMobileError= _authError + 5
 export const UnableUpateLoginTokenToDb= _authError + 6
 export const UnableInquiryMemberExistByLoginTokenAndEmailError= _authError + 7
 export const UnableSendMessageToEmailError= _authError + 8
+export const UnableRegisterMobileAlreayExist = _authError + 9
 
 // login
 export const UnableLoginUsernameDoNotAlreayExist = _authError + 4
@@ -80,6 +81,7 @@ export const UnableUpdateShopToDb = _sellerError + 3
 export const UnableToGetShopInfo = _sellerError + 4
 export const UnableToUpdateShopInfo = _sellerError + 5
 export const UnableCreatePartitionOfProductProfile = _sellerError + 6
+export const UnableInsertConditionToDb = _sellerError + 7
 
 // review module
 const _reviewError = 107000

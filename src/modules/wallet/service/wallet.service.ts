@@ -441,7 +441,15 @@ export class WalletService {
       const start = dayjs()
       let wallet: Wallet
       try {
-        wallet = await etm.findOne(Wallet, walletId)
+        wallet = await etm.findOne(Wallet, {
+          where: {
+            id: walletId,
+            deletedAt: null,
+          },
+          lock: {
+            mode: "pessimistic_write"
+          },
+        })
         const note: TransactionNote =
           transactionType == 'buy' ||
           transactionType == 'buy_happy_point' ||

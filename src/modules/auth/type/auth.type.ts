@@ -11,6 +11,10 @@ export type InquiryMemberExistType = (
   params: RegisterRequestDto | ValidateRegisterRequestDto,
 ) => Promise<[number, string]>
 
+export type ValidateMobileUsedFuncType = (
+  mobilePhone: string,
+) => Promise<[number, string]>
+
 export type ValidateInviteTokenFuncType = (
   inviteToken: string,
 ) => Promise<[Member, number, string]>

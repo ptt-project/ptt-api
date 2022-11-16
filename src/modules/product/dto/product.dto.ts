@@ -88,7 +88,7 @@ export class CreateProductProfileRequestDto {
   @IsNotEmpty()
   platformCategoryId: string
 
-  @IsNumber()
+  @IsString()
   @IsOptional()
   brandId?: string
 
@@ -168,7 +168,7 @@ export class UpdateProductProfileRequestDto {
   @MaxLength(500)
   detail: string
 
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
   platformCategoryId: string
 
