@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsIn,
   IsISO8601,
   IsNotEmpty,
   IsNumber,
@@ -7,6 +8,25 @@ import {
   IsString,
 } from 'class-validator'
 import { PaymentType } from 'src/db/entities/Payment'
+
+export class GetOrderRequestDto {
+  @IsOptional()
+  @IsNumber()
+  limit?: number
+
+  @IsOptional()
+  @IsNumber()
+  page?: number
+
+  @IsOptional() 
+  @IsString() 
+  keyword?: string
+
+  @IsOptional() 
+  @IsString()
+  @IsIn(['toPay', 'toShip', 'toReceive', 'complated', 'cancelled', 'return', 'refund'])
+  status?: string
+}
 
 export class CreateOrderDto {
   @IsOptional()

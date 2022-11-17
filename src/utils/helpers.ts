@@ -40,6 +40,14 @@ export const genUuid = () => {
   })
 }
 
+export const genOrderNumber = () => {
+  const dt = new Date()
+  const year = dt.getFullYear() % 100
+  const month = (dt.getMonth() + 1).toString().padStart(2, '0')
+  const date = dt.getDate().toString().padStart(2, '0')
+  return `ORD${year}${month}${date}${randomStr(6)}`
+}
+
 export class ColumnNumericTransformer {
   to(data: number): number {
     return data

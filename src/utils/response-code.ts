@@ -192,6 +192,13 @@ export const UnableToInsertPayment = _orderError + 4
 export const UnableToUpdatePaymentIdToOrder = _orderError + 5
 export const UnableToValidateOrder = _orderError + 6
 export const UnableToAdjustWalletToSeller = _orderError + 7
+export const UnableToInquiryShopByIdError = _orderError + 8
+export const UnableToInquiryProductByIdError = _orderError + 9
+export const UnableToInquiryProductProfileByIdError = _orderError + 10
+export const UnableToUpdateStockToProductError = _orderError + 11
+export const UnableToValidateOrder = _orderError + 12
+export const UnableInquiryOrderShops = _orderError + 13
+export const UnableInquiryOrderShopById = _orderError + 14
 
 const _config = 300000
 export const UnableToGetBrandOptions = _config + 1

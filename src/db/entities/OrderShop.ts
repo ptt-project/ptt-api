@@ -27,6 +27,9 @@ export class OrderShop extends AppEntity {
   @Column({ name: 'order_id', nullable: false })
   orderId: string
 
+  @Column({ name: 'order_number', nullable: false })
+  orderNumber: string
+
   @Column({ name: 'shop_voucher_id', nullable: true })
   shopVoucherId?: string
 
