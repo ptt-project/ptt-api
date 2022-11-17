@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common'
+import { Body, Controller, Post, Get, Param, Query } from '@nestjs/common'
 import { RedisService } from 'nestjs-redis'
 import { HappyPoint } from 'src/db/entities/HappyPoint'
 import { Member } from 'src/db/entities/Member'
@@ -9,7 +9,7 @@ import { HappyPointService } from '../happy-point/service/happy-point.service'
 import { LookupService } from '../happy-point/service/lookup.service'
 import { OtpService } from '../otp/service/otp.service'
 import { WalletService } from '../wallet/service/wallet.service'
-import { CreateOrderDto } from './dto/createOrder.dto'
+import { CreateOrderDto, GetOrderRequestDto } from './dto/createOrder.dto'
 import { OrderService } from './service/order.service'
 
 @Auth()
@@ -80,5 +80,29 @@ export class OrderController {
         this.walletService.AdjustWalletInDbFunc(etm),
       ),
     )(wallet, happyPoint, member, body)
+  }
+
+  @Get('order-shops')
+  @Transaction()
+  async getOrderShops(
+    @ReqUser() member: Member,
+    @Query() query: GetOrderRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.orderService.GetOrderShopsHandler(
+      this.orderService.InquiryOrderShopsFunc(etm),
+    )(member, query)
+  }
+
+  @Get('order-shops/:orderShopId')
+  @Transaction()
+  async getOrderShopById(
+    @Param('orderShopId') orderShopId: string,
+    @ReqUser() member: Member,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.orderService.GetOrderShopByIdHandler(
+      this.orderService.InquiryOrderShopByIdFunc(etm),
+    )(member, orderShopId)
   }
 }

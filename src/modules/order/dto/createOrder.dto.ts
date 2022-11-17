@@ -18,13 +18,21 @@ export class GetOrderRequestDto {
   @IsNumber()
   page?: number
 
-  @IsOptional() 
-  @IsString() 
+  @IsOptional()
+  @IsString()
   keyword?: string
 
-  @IsOptional() 
+  @IsOptional()
   @IsString()
-  @IsIn(['toPay', 'toShip', 'toReceive', 'complated', 'cancelled', 'return', 'refund'])
+  @IsIn([
+    'toPay',
+    'toShip',
+    'toReceive',
+    'complated',
+    'cancelled',
+    'return',
+    'refund',
+  ])
   status?: string
 }
 

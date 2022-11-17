@@ -5,6 +5,7 @@ import { Payment } from 'src/db/entities/Payment'
 import { Product } from 'src/db/entities/Product'
 import { ProductProfile } from 'src/db/entities/ProductProfile'
 import { Shop } from 'src/db/entities/Shop'
+import { SelectQueryBuilder } from 'typeorm'
 import {
   CreateOrderDto,
   OrderShopDto,
@@ -121,3 +122,14 @@ export type AdjustWalletToSellerType = (
   orderShopList: OrderShop[],
   refId: string,
 ) => Promise<string>
+
+export type InquiryOrderShopByIdFuncType = (
+  memberId: string,
+  orderShopId: string,
+) => Promise<[OrderShop, string]>
+
+export type InquiryOrderShopsFuncType = (
+  memberId: string,
+  keyword?: string,
+  status?: string,
+) => Promise<[SelectQueryBuilder<OrderShop>, string]>

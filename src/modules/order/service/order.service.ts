@@ -5,6 +5,8 @@ import { PinoLogger } from 'nestjs-pino'
 import {
   AddressToShippop,
   AdjustWalletToSellerType,
+  InquiryOrderShopByIdFuncType,
+  InquiryOrderShopsFuncType,
   InquiryPriceFromShippopType,
   InquiryProducProfiletByIdType,
   InquiryProductByIdType,
@@ -43,6 +45,8 @@ import { Wallet } from 'src/db/entities/Wallet'
 import { HappyPoint } from 'src/db/entities/HappyPoint'
 import { Member } from 'src/db/entities/Member'
 import {
+  UnableInquiryOrderShopById,
+  UnableInquiryOrderShops,
   UnableToAdjustWalletToSeller,
   UnableToInsertOrder,
   UnableToInsertOrderShop,
@@ -54,7 +58,7 @@ import {
 import { internalSeverError } from 'src/utils/response-error'
 import { verifyOtpRequestDto } from 'src/modules/otp/dto/otp.dto'
 import { response } from 'src/utils/response'
-import { EntityManager } from 'typeorm'
+import { EntityManager, SelectQueryBuilder } from 'typeorm'
 import { Order } from 'src/db/entities/Order'
 import { Payment } from 'src/db/entities/Payment'
 import { Shop } from 'src/db/entities/Shop'
@@ -64,9 +68,11 @@ import { ProductProfile } from 'src/db/entities/ProductProfile'
 import { OrderShopProduct } from 'src/db/entities/OrderShopProduct'
 import {
   CreateOrderDto,
+  GetOrderRequestDto,
   OrderShopDto,
   OrderShopProductDto,
 } from '../dto/createOrder.dto'
+import { paginate } from 'nestjs-typeorm-paginate'
 
 @Injectable()
 export class OrderService {
@@ -974,6 +980,147 @@ export class OrderService {
         `Done InquiryPriceFromShippopFunc ${dayjs().diff(start)} ms`,
       )
       return resp
+    }
+  }
+
+  GetOrderShopsHandler(inquiryOrders: Promise<InquiryOrderShopsFuncType>) {
+    return async (member: Member, query: GetOrderRequestDto) => {
+      const start = dayjs()
+      const { limit = 10, page = 1, keyword, status } = query
+
+      const [ordersQuery, inquiryOrdersError] = await (await inquiryOrders)(
+        member.id,
+        keyword,
+        status,
+      )
+
+      if (inquiryOrdersError != '') {
+        return response(undefined, UnableInquiryOrderShops, inquiryOrdersError)
+      }
+
+      const result = await paginate<OrderShop>(ordersQuery, {
+        limit,
+        page,
+      })
+      this.logger.info(`Done GetOrdersHandler ${dayjs().diff(start)} ms`)
+      return response(result)
+    }
+  }
+
+  async InquiryOrderShopsFunc(
+    etm: EntityManager,
+  ): Promise<InquiryOrderShopsFuncType> {
+    return async (
+      memberId: string,
+      keyword?: string,
+      status?: string,
+    ): Promise<[SelectQueryBuilder<OrderShop>, string]> => {
+      const start = dayjs()
+      let orderShopsQuery: SelectQueryBuilder<OrderShop>
+      const condition: any = {
+        order: {
+          memberId,
+          deletedAt: null,
+        },
+      }
+
+      if (status) {
+        condition.status = status
+      }
+
+      try {
+        orderShopsQuery = etm
+          .createQueryBuilder(OrderShop, 'orderShops')
+          .innerJoin(`orderShops.orderShopProduct`, 'products')
+          .leftJoin(`orderShops.shop`, 'shop')
+          .leftJoin(`orderShops.order`, 'order')
+          .select([
+            'orderShops',
+            'order',
+            'products',
+            'shop.id',
+            'shop.shopName',
+          ])
+          .where(condition)
+        if (keyword) {
+          const keywordCondition =
+            '(shop.fullName LIKE :keyword OR products.productProfileName LIKE :keyword OR orderShops.orderNumber LIKE :keyword)'
+          orderShopsQuery = orderShopsQuery.andWhere(keywordCondition, {
+            keyword: `%${keyword}%`,
+          })
+        }
+      } catch (error) {
+        return [orderShopsQuery, error.message]
+      }
+      this.logger.info(`Done InquiryOrderShopsFunc ${dayjs().diff(start)} ms`)
+      return [orderShopsQuery, '']
+    }
+  }
+
+  GetOrderShopByIdHandler(
+    inquiryOrderById: Promise<InquiryOrderShopByIdFuncType>,
+  ) {
+    return async (member: Member, orderShopId: string) => {
+      const start = dayjs()
+      const [orderShop, inquiryOrderShopByIdError] = await (
+        await inquiryOrderById
+      )(member.id, orderShopId)
+
+      if (inquiryOrderShopByIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryOrderShopById,
+          inquiryOrderShopByIdError,
+        )
+      }
+
+      this.logger.info(`Done GetOrderByIdHandler ${dayjs().diff(start)} ms`)
+      return response(orderShop)
+    }
+  }
+
+  async InquiryOrderShopByIdFunc(
+    etm: EntityManager,
+  ): Promise<InquiryOrderShopByIdFuncType> {
+    return async (
+      memberId: string,
+      orderId: string,
+    ): Promise<[OrderShop, string]> => {
+      const start = dayjs()
+      let orderShop: OrderShop
+
+      try {
+        orderShop = await etm
+          .createQueryBuilder(OrderShop, 'orderShops')
+          .innerJoin(`orderShops.orderShopProduct`, 'products')
+          .leftJoin(`orderShops.shop`, 'shop')
+          .leftJoin(`orderShops.order`, 'order')
+          .select([
+            'orderShops',
+            'order',
+            'products',
+            'shop.id',
+            'shop.shopName',
+          ])
+          .where({
+            id: orderId,
+            order: {
+              memberId,
+            },
+            deletedAt: null,
+          })
+          .getOne()
+
+        if (!orderShop) {
+          return [orderShop, 'Order-shop is not found']
+        }
+      } catch (error) {
+        return [orderShop, error.message]
+      }
+      this.logger.info(
+        `Done InquiryOrderShopByIdFunc ${dayjs().diff(start)} ms`,
+      )
+      return [orderShop, '']
     }
   }
 }
