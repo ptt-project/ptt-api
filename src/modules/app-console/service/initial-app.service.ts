@@ -5,12 +5,12 @@ import { AddressMaster } from 'src/db/entities/AddressMaster'
 import { Brand } from 'src/db/entities/Brand'
 import { Bank } from 'src/db/entities/Bank'
 import { PlatformCategory } from 'src/db/entities/PlatformCategory'
-import { ImageSize } from '../image/type/image.type'
 import { genUuid } from 'src/utils/helpers'
 import { InjectWebDAV, WebDAV } from 'nestjs-webdav'
 import sharp from 'sharp'
 import { Image } from 'src/db/entities/Image'
 import { truncates } from 'src/utils/db'
+import { ImageSize } from 'src/modules/image/type/image.type'
 
 const ROOT_MASTER_PATH = '/app/config/master'
 const ADDRESS_MASTER_PATH = '/app/config/master/address-data.json'
@@ -134,7 +134,8 @@ export class InitialAppConsoleService {
     const brandJson = JSON.parse(brandData.toString('utf-8'))
 
     const brandMaster = etm.create(Brand, brandJson.map((brand) => ({
-      name: brand.name,
+      nameTh: brand.nameTh,
+      nameEn: brand.nameEn,
     })))
     await etm.save(brandMaster)
     console.log('Brands load successfully')
@@ -143,8 +144,11 @@ export class InitialAppConsoleService {
     const platformCategoriesJson = JSON.parse(platFormCategoriesData.toString('utf-8'))
 
     const platformCategoriesdMaster = etm.create(PlatformCategory, platformCategoriesJson.map((cat) => ({
-      name: cat.name,
+      nameTh: cat.nameTh,
+      nameEn: cat.nameEn,
       status: cat.status,
+      commissionRate: cat.commissionRate,
+      icon: cat.icon,
     })))
     await etm.save(platformCategoriesdMaster)
     console.log('PlatformCategories load successfully')

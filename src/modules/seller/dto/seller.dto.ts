@@ -54,11 +54,11 @@ export class RegisterSellerRequestDto {
 
   @IsOptional()
   @MaxLength(20)
-  corperateId?: string
+  corporateId?: string
 
   @IsOptional()
   @MaxLength(50)
-  corperateName?: string
+  corporateName?: string
 
   @IsOptional()
   @IsIn(['Brand Owner', 'Exclusive Distributor', 'Non-Exclusive Distributor', 'Retailer', 'Other'])

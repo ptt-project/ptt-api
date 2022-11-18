@@ -84,7 +84,7 @@ export class AppConfigService {
       }
 
       this.logger.info(`Done InquiryBrandOptionsFormDbFunc ${dayjs().diff(start)} ms`)
-      return [ brands.map(brand => ({ value: brand.id, label: brand.name })), '' ]
+      return [ brands.map(brand => ({ value: brand.id, labelTh: brand.nameTh, labelEn: brand.nameEn })), '' ]
     }
   }
 
@@ -105,7 +105,9 @@ export class AppConfigService {
       this.logger.info(`Done InquiryPlatformCategoryOptionsFormDbFunc ${dayjs().diff(start)} ms`)
       return [ platformCategories.map(platformCategory => ({ 
         value: platformCategory.id,
-        label: platformCategory.name
+        labelTh: platformCategory.nameTh,
+        labelEn: platformCategory.nameEn,
+        icon: platformCategory.icon,
       })), '' ]
     }
   }

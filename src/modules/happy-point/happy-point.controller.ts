@@ -93,13 +93,13 @@ export class HappyPointContoller {
         this.happyService.ValidateCalculatePointByExchangeAndAmountFunc(),
         this.happyService.ValidateCalculateAmountFunc(),
         this.happyService.InsertHappyPointTransactionToDbFunc(etm),
-        this.walletService.RequestInteranlWalletTransactionService(
-          this.walletService.InsertTransactionToDbFunc(etm),
-          this.walletService.InsertReferenceToDbFunc(etm),
-          this.walletService.UpdateReferenceToDbFunc(etm),
-          this.walletService.AdjustWalletInDbFunc(etm),
-        ),
         this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
+      ),
+      this.walletService.RequestInteranlWalletTransactionService(
+        this.walletService.InsertTransactionToDbFunc(etm),
+        this.walletService.InsertReferenceToDbFunc(etm),
+        this.walletService.UpdateReferenceToDbFunc(etm),
+        this.walletService.AdjustWalletInDbFunc(etm),
       ),
     )(wallet, happyPoint, member, body)
   }

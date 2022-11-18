@@ -210,6 +210,7 @@ export class HappyPointService {
   SellHappyPointHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     debitHappyPoint: DebitHappyPointType,
+    updateWalletToDb: Promise<RequestInteranlWalletTransactionServiceFuncType>,
   ) {
     return async (
       wallet: Wallet,
@@ -222,6 +223,7 @@ export class HappyPointService {
         refCode: body.refCode,
         otpCode: body.otpCode,
       }
+      const { point, amount, refId } = body
       const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
         await inquiryVerifyOtp
       )(verifyOtpData)
@@ -238,7 +240,7 @@ export class HappyPointService {
         respHappyPoint,
         errorCodeDebitHappyPoint,
         errorMessageDebitHappyPoint,
-      ] = await debitHappyPoint(wallet, happyPoint, params)
+      ] = await debitHappyPoint(happyPoint, params)
 
       if (errorCodeDebitHappyPoint != 0) {
         return response(
@@ -246,6 +248,21 @@ export class HappyPointService {
           errorCodeDebitHappyPoint,
           errorMessageDebitHappyPoint,
         )
+      }
+
+      const [, requestSellHappyPointError] = await (await updateWalletToDb)(
+        wallet.id,
+        amount,
+        'sell_happy_point',
+        refId,
+        `Sell HappyPoint ${point} point.`,
+      )
+      if (requestSellHappyPointError != '') {
+        return [
+          undefined,
+          UpdateWalletWithBuyHappyPoint,
+          requestSellHappyPointError,
+        ]
       }
 
       return response(respHappyPoint)
@@ -259,11 +276,9 @@ export class HappyPointService {
     validatePoint: Promise<ValidateCalculatePointByExchangeAndAmountType>,
     validateAmount: Promise<ValidateCalculateAmountType>,
     insertHappyPointTypeBuyToDb: Promise<InsertHappyPointTypeBuyToDbType>,
-    updateWalletToDb: Promise<RequestInteranlWalletTransactionServiceFuncType>,
     updateDebitBalanceMemberToDb: Promise<UpdateCreditBalanceToDbType>,
   ): DebitHappyPointType {
     return async (
-      wallet: Wallet,
       happyPoint: HappyPoint,
       body: DebitHappyPointTransactionParams,
     ) => {
@@ -368,21 +383,6 @@ export class HappyPointService {
       const parmasUpdateCreditMember: UpdateBalanceToDbParams = {
         happyPoint,
         point,
-      }
-
-      const [, requestSellHappyPointError] = await (await updateWalletToDb)(
-        wallet.id,
-        amount,
-        'sell_happy_point',
-        refId,
-        `Sell HappyPoint ${point} point.`,
-      )
-      if (requestSellHappyPointError != '') {
-        return [
-          undefined,
-          UpdateWalletWithBuyHappyPoint,
-          requestSellHappyPointError,
-        ]
       }
 
       const [updateBalaceMember, isErrorUpdateDebitBalanceMemberToDb] = await (
@@ -716,8 +716,23 @@ export class HappyPointService {
   ): Promise<UpdateCreditBalanceToDbType> {
     return async (params: UpdateBalanceToDbParams) => {
       const start = dayjs()
-      const { happyPoint, point } = params
+      const {
+        happyPoint: { id },
+        point,
+      } = params
+      let happyPoint: HappyPoint
+
       try {
+        happyPoint = await etm.findOne(HappyPoint, {
+          where: {
+            id,
+            deletedAt: null,
+          },
+          lock: {
+            mode: 'pessimistic_write',
+          },
+        })
+
         const newBalance = point + happyPoint.balance
         console.log('newBalance = point + happyPoint.balance', newBalance)
 
@@ -741,13 +756,27 @@ export class HappyPointService {
   ): Promise<UpdateDebitBalanceToDbType> {
     return async (params: UpdateBalanceToDbParams) => {
       const start = dayjs()
-      const { happyPoint, point } = params
-
-      if (happyPoint.balance < point) {
-        return [happyPoint, 'point not enough for transfer']
-      }
+      const {
+        happyPoint: { id },
+        point,
+      } = params
+      let happyPoint: HappyPoint
 
       try {
+        happyPoint = await etm.findOne(HappyPoint, {
+          where: {
+            id,
+            deletedAt: null,
+          },
+          lock: {
+            mode: 'pessimistic_write',
+          },
+        })
+
+        if (happyPoint.balance < point) {
+          return [happyPoint, 'point not enough for transfer']
+        }
+
         const newBalance = happyPoint.balance - point
         console.log('newBalance = happyPoint.balance - point', newBalance)
 
