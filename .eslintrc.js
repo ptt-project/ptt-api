@@ -15,6 +15,7 @@ module.exports = {
   env: {
     node: true,
   },
+  ignorePatterns: ["tsconfig.json"],
   rules: {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
