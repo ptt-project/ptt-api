@@ -4,6 +4,7 @@ import { Condition } from './Condition'
 import { Member } from './Member'
 import { Product } from './Product'
 import { ProductProfile } from './ProductProfile'
+import { Review } from './Review'
 
 export type ShopType = 'Normal' | 'Mall'
 export type ApprovalType = 'requested' | 'rejected' | 'approved'
@@ -164,6 +165,13 @@ export class Shop extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'shop_id' })
   productProfiles: ProductProfile[]
+
+  @OneToMany(
+    () => Review,
+    review => review.shop,
+  )
+  @JoinColumn({ referencedColumnName: 'shop_id' })
+  reviews: Review[]
 
   @OneToOne(
     () => Condition,

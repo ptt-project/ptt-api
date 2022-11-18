@@ -10,11 +10,11 @@ const _authError = 101000
 export const UnableRegisterEmailAlreayExist = _authError + 1
 export const UnableRegisterUsernameAlreayExist = _authError + 2
 export const UnableInsertMemberToDbError = _authError + 3
-export const UnableInquiryEmailExistByEmailError= _authError + 4
-export const UnableInquiryMemberExistByMobileError= _authError + 5
-export const UnableUpateLoginTokenToDb= _authError + 6
-export const UnableInquiryMemberExistByLoginTokenAndEmailError= _authError + 7
-export const UnableSendMessageToEmailError= _authError + 8
+export const UnableInquiryEmailExistByEmailError = _authError + 4
+export const UnableInquiryMemberExistByMobileError = _authError + 5
+export const UnableUpateLoginTokenToDb = _authError + 6
+export const UnableInquiryMemberExistByLoginTokenAndEmailError = _authError + 7
+export const UnableSendMessageToEmailError = _authError + 8
 export const UnableRegisterMobileAlreayExist = _authError + 9
 
 // login
@@ -85,7 +85,7 @@ export const UnableInsertConditionToDb = _sellerError + 7
 
 // review module
 const _reviewError = 107000
-export const UnableInquiryInquiryReviewsBySellerId = _reviewError + 1
+export const UnableInquiryInquiryReviewsByShopId = _reviewError + 1
 export const UnableInquiryReviewsByReviewId = _reviewError + 2
 export const UnableReplyReviewByReviewId = _reviewError + 3
 

@@ -1,12 +1,11 @@
 import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common'
-import { query } from 'express'
-import { Member } from 'src/db/entities/Member'
+import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
-import { Auth, ReqUser } from '../auth/auth.decorator'
-import { getReviewQueryDTO, replyCommentRequestDto } from './dto/review.dto'
+import { ReqShop, Seller } from '../auth/auth.decorator'
+import { GetReviewQueryDto, ReplyCommentRequestDto } from './dto/review.dto'
 import { ReviewService } from './service/review.service'
 
-@Auth()
+@Seller()
 @Controller('v1/sellers')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
@@ -14,13 +13,13 @@ export class ReviewController {
   @Get('reviews')
   @Transaction()
   async getReviewsBySellerId(
-    @ReqUser() member: Member,
-    @Query() query: getReviewQueryDTO,
+    @ReqShop() shop: Shop,
+    @Query() query: GetReviewQueryDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.reviewService.getReviewsBySellerIdHandler(
-      this.reviewService.InquiryReviewsBySellerIdFunc(etm),
-    )(member, query)
+    return await this.reviewService.GetReviewsByShopIdHandler(
+      this.reviewService.InquiryReviewsByShopIdFunc(etm),
+    )(shop, query)
   }
 
   @Get('reviews/:reviewId')
@@ -29,7 +28,7 @@ export class ReviewController {
     @Param('reviewId') reviewId: string,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.reviewService.getReviewsByReviewIdHandler(
+    return await this.reviewService.GetReviewsByReviewIdHandler(
       this.reviewService.InquiryReviewsByReviewIdFunc(etm),
     )(reviewId)
   }
@@ -38,12 +37,12 @@ export class ReviewController {
   @Transaction()
   async replyReviewByReviewId(
     @Param('reviewId') reviewId: string,
-    @Body() body: replyCommentRequestDto,
+    @Body() body: ReplyCommentRequestDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.reviewService.replyReviewByReviewIdHandler(
+    return await this.reviewService.ReplyReviewByReviewIdHandler(
       this.reviewService.InquiryReviewsByReviewIdFunc(etm),
-      this.reviewService.replyReviewByReviewIdToDbFunc(etm),
+      this.reviewService.ReplyReviewByReviewIdToDbFunc(etm),
     )(reviewId, body)
   }
 }
