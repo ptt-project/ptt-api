@@ -5,12 +5,6 @@ import {
   HappyPointTransactionStatusType,
   HappyPointTransactionType,
 } from 'src/db/entities/HappyPointTransaction'
-import { Member } from 'src/db/entities/Member'
-import { Wallet } from 'src/db/entities/Wallet'
-import {
-  BuyHappyPointRequestDto,
-  SellHappyPointRequestDto,
-} from '../dto/happy-point.dto'
 import { Lookup } from './lookup.type'
 
 export type InsertHappyPointTypeBuyToDbType = (
@@ -123,7 +117,6 @@ export type DebitHappyPointTransactionParams = {
 }
 
 export type DebitHappyPointType = (
-  wallet: Wallet,
   happyPoint: HappyPoint,
   body: DebitHappyPointTransactionParams,
 ) => Promise<[HappyPoint, number, string]>
