@@ -1,12 +1,19 @@
 import { Column, Entity, OneToOne, JoinColumn, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
+import { Condition } from './Condition'
 import { Member } from './Member'
 import { Product } from './Product'
 import { ProductProfile } from './ProductProfile'
+import { Review } from './Review'
 
 export type ShopType = 'Normal' | 'Mall'
 export type ApprovalType = 'requested' | 'rejected' | 'approved'
-export type MallApplicantRoleType = 'Brand Owner' | 'Exclusive Distributor' | 'Non-Exclusive Distributor' | 'Retailer' | 'Other'
+export type MallApplicantRoleType =
+  | 'Brand Owner'
+  | 'Exclusive Distributor'
+  | 'Non-Exclusive Distributor'
+  | 'Retailer'
+  | 'Other'
 
 @Entity({ name: 'shops' })
 export class Shop extends AppEntity {
@@ -49,11 +56,11 @@ export class Shop extends AppEntity {
   @Column({ name: 'note', nullable: true, length: 1000 })
   note: string
 
-  @Column({ name: 'corperate_name', nullable: true, length: 50 })
-  corperateName: string
+  @Column({ name: 'corporate_name', nullable: true, length: 50 })
+  corporateName: string
 
-  @Column({ name: 'corperate_id', nullable: true, length: 20 })
-  corperateId: string
+  @Column({ name: 'corporate_id', nullable: true, length: 20 })
+  corporateId: string
 
   @Column({
     name: 'approval_status',
@@ -109,14 +116,20 @@ export class Shop extends AppEntity {
   @Column({
     name: 'mall_applicant_role',
     type: 'enum',
-    enum: ['Brand Owner', 'Exclusive Distributor', 'Non-Exclusive Distributor', 'Retailer', 'Other'],
+    enum: [
+      'Brand Owner',
+      'Exclusive Distributor',
+      'Non-Exclusive Distributor',
+      'Retailer',
+      'Other',
+    ],
     nullable: true,
   })
   mallApplicantRole: MallApplicantRoleType
 
   @Column({ name: 'mall_offline_shop_detail', nullable: true })
   mallOfflineShopDetail: string
-  
+
   @Column({ name: 'mall_shop_description', nullable: true })
   mallShopDescription: string
 
@@ -127,7 +140,10 @@ export class Shop extends AppEntity {
   coverImagePath: string
 
   @Column({ name: 'member_id', nullable: true })
-  memberId: number
+  memberId: string
+
+  @Column({ name: 'is_recommended', nullable: false, default: false })
+  isRecommended: boolean
 
   @OneToOne(
     () => Member,
@@ -149,4 +165,18 @@ export class Shop extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'shop_id' })
   productProfiles: ProductProfile[]
+
+  @OneToMany(
+    () => Review,
+    review => review.shop,
+  )
+  @JoinColumn({ referencedColumnName: 'shop_id' })
+  reviews: Review[]
+
+  @OneToOne(
+    () => Condition,
+    condition => condition.shop,
+  )
+  @JoinColumn({ name: 'condition_id', referencedColumnName: 'id' })
+  condition: Condition
 }

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
 import { jwtConstants } from './auth.constants'
-import { AuthService } from './auth.service'
-import { TokenType } from './auth.type'
+import { AuthService } from './service/auth.service'
+import { TokenType } from './type/auth.type'
 import { Request } from 'express'
 import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
@@ -32,27 +32,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const connection: Connection = getConnection()
     const etm: EntityManager = connection.createEntityManager()
     const [response, isError] = await (
-      await this.authService.validateTokenHandler(
-        this.authService.exiredTokenFunc(),
-        this.authService.inquiryUserExistByIdFunc(etm),
-        this.authService.genAccessTokenFunc(),
-        this.authService.genRefreshTokenFunc(),
+      await this.authService.ValidateTokenHandler(
+        this.authService.ExiredTokenFunc(),
+        this.authService.InquiryUserExistByIdFunc(etm),
+        this.authService.GenAccessTokenFunc(),
+        this.authService.GenRefreshTokenFunc(),
       )
     )(request?.cookies?.AccessToken, request?.cookies?.RefreshToken, payload.id)
 
     if (isError) {
       return false
     } else {
-      const accessToken = `${
-        response.accessToken
-      }; HttpOnly; Path=/; Max-Age=${dayjs().add(
-        1,
-        'day',
-      )};`
+      const accessToken = `${response.accessToken}; HttpOnly; Domain=${
+        process.env.SET_COOKIES_DOMAIN
+      }; Path=/; Max-Age=${dayjs().add(1, 'day')};`
 
-      const refreshToken = `${
-        response.refreshToken
-      }; HttpOnly; Path=/; Max-Age=${dayjs().add(7, 'day')};`
+      const refreshToken = `${response.refreshToken}; HttpOnly; Domain=${
+        process.env.SET_COOKIES_DOMAIN
+      }; Path=/; Max-Age=${dayjs().add(7, 'day')};`
 
       request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
     }

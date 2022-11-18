@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common'
+import { ConditionService } from '../shop/service/condition.service'
 
 import { SellerController } from './seller.controller'
-import { RegisterService } from './register.service'
-import { ShopService } from './shop.service'
-
+import { RegisterService } from './service/register.service'
 @Module({
   controllers: [SellerController],
-  providers: [RegisterService, ShopService],
+  providers: [RegisterService, ConditionService],
   exports: [RegisterService],
 })
 export class SellerModule {}

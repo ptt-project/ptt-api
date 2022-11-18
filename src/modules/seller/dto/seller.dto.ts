@@ -54,11 +54,11 @@ export class RegisterSellerRequestDto {
 
   @IsOptional()
   @MaxLength(20)
-  corperateId?: string
+  corporateId?: string
 
   @IsOptional()
   @MaxLength(50)
-  corperateName?: string
+  corporateName?: string
 
   @IsOptional()
   @IsIn(['Brand Owner', 'Exclusive Distributor', 'Non-Exclusive Distributor', 'Retailer', 'Other'])
@@ -71,24 +71,4 @@ export class RegisterSellerRequestDto {
   @IsOptional()
   @MaxLength(1000)
   mallShopDescription?: string
-}
-
-export class UpdateShopInfoRequestDto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(30)
-  shopName: string
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(500)
-  shopDescription: string
-
-  @IsOptional()
-  @IsString()
-  profileImagePath?: string
-
-  @IsOptional()
-  @IsString()
-  coverImagePath?: string
 }

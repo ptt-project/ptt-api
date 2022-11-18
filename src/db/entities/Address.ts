@@ -12,7 +12,7 @@ export class Address extends AppEntity {
   mobile: string
 
   @Column({ name: 'member_id', nullable: false })
-  memberId: number
+  memberId: string
 
   @Column({ name: 'province', nullable: false })
   province: string

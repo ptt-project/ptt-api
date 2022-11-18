@@ -1,10 +1,21 @@
 import { transformerDayjsToDate } from 'src/utils/entity-transform'
-import { Column, Entity, OneToOne, OneToMany, JoinColumn } from 'typeorm'
+import {
+  Column,
+  Entity,
+  OneToOne,
+  OneToMany,
+  JoinColumn,
+  ManyToOne,
+  Generated,
+} from 'typeorm'
 import { Address } from './Address'
 import { AppEntity } from './AppEntity'
+import { HappyPoint } from './HappyPoint'
+import { BankAccount } from './BankAccount'
 import { Mobile } from './Mobile'
 import { Review } from './Review'
 import { Shop } from './Shop'
+import { Wallet } from './Wallet'
 
 export type MemberGenderType = 'F' | 'M' | 'O'
 export type MemberRoleType = 'Buyer' | 'Seller'
@@ -30,15 +41,23 @@ export class Member extends AppEntity {
 
   @Column({
     name: 'birthday',
+    type: 'date',
     nullable: true,
     transformer: transformerDayjsToDate,
   })
   birthday: Date
 
-  @Column({ name: 'sp_code_id', nullable: true })
-  spCodeId: number
+  @Column({ name: 'member_code', nullable: false, length: 7 })
+  memberCode: string
 
-  @OneToOne(() => Member)
+  @Column()
+  @Generated('increment')
+  no: number
+
+  @Column({ name: 'sp_code_id', nullable: true })
+  spCodeId: string
+
+  @ManyToOne(() => Member)
   @JoinColumn({ name: 'sp_code_id', referencedColumnName: 'id' })
   spCode: Member
 
@@ -62,8 +81,14 @@ export class Member extends AppEntity {
   })
   role: MemberRoleType
 
+  @Column({ name: 'relationIds', type: 'simple-json', default: [] })
+  relationIds: string[]
+
   @Column({ name: 'image_id', nullable: true })
   imageId: string
+
+  @Column({ name: 'login_token', nullable: true })
+  loginToken: string
 
   @OneToMany(
     () => Mobile,
@@ -85,17 +110,27 @@ export class Member extends AppEntity {
   shop: Shop
 
   @OneToMany(
+    () => Wallet,
+    wallet => wallet.member,
+  )
+  wallets: Wallet[]
+
+  @OneToMany(
+    () => HappyPoint,
+    happyPoint => happyPoint.member,
+  )
+  happyPoints: HappyPoint[]
+
+  @OneToMany(
+    () => BankAccount,
+    bankAccount => bankAccount.member,
+  )
+  bankAccounts: BankAccount[]
+
+  @OneToMany(
     () => Review,
     review => review.reviewer,
   )
   @JoinColumn({ referencedColumnName: 'member_id' })
   reviews: Review[]
-
-  @OneToMany(
-    () => Review,
-    review => review.seller,
-  )
-  @JoinColumn({ referencedColumnName: 'member_id' })
-  sellers: Review[]
-
 }

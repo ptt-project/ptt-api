@@ -10,8 +10,8 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express'
 import { Response } from 'express'
 import { Transaction, TransactionManager, EntityManager } from 'typeorm'
-import { ImageService } from './image.service'
-import { SizeType } from './image.type'
+import { ImageService } from './service/image.service'
+import { SizeType } from './type/image.type'
 
 @Controller('v1/images')
 export class ImageController {

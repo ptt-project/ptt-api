@@ -26,4 +26,7 @@ export class UpdateProfiledRequestDto {
   @IsOptional()
   @IsIn(['M', 'F', 'O'])
   gender?: MemberGenderType
+
+  @IsOptional()
+  imageId?: string
 }

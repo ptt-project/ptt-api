@@ -2,13 +2,13 @@ import { Body, Controller, Delete, Get, Patch, Post } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser } from '../auth/auth.decorator'
-import { OtpService } from '../otp/otp.service'
+import { OtpService } from '../otp/service/otp.service'
 import {
   addMobileRequestDto,
   setMainMobileRequestDto,
   deleteMobileRequestDto,
 } from './dto/mobile.dto'
-import { MobileService } from './mobile.service'
+import { MobileService } from './service/mobile.service'
 
 @Controller('v1/members/mobiles')
 export class MobileController {
@@ -38,8 +38,8 @@ export class MobileController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.mobileService.addMobileHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
-      this.mobileService.addMobileFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
+      this.mobileService.AddMobileFunc(etm),
     )(member, body)
   }
 
@@ -52,14 +52,14 @@ export class MobileController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.mobileService.setMainMobileHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
-      this.mobileService.getMobileFormDbByMobilePhoneFunc(etm),
-      this.mobileService.setMainMobileFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
+      this.mobileService.GetMobileFormDbByMobilePhoneFunc(etm),
+      this.mobileService.SetMainMobileFunc(etm),
     )(member, body)
   }
 
   @Auth()
-  @Delete('delete')
+  @Patch('delete')
   @Transaction()
   async deleteMobile(
     @ReqUser() member: Member,
@@ -67,9 +67,9 @@ export class MobileController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.mobileService.deleteMobileHandler(
-      this.otpService.inquiryVerifyOtpFunc(etm),
-      this.mobileService.getMobileFormDbByMobilePhoneFunc(etm),
-      this.mobileService.deleteMobileFunc(etm),
+      this.otpService.InquiryVerifyOtpFunc(etm),
+      this.mobileService.GetMobileFormDbByMobilePhoneFunc(etm),
+      this.mobileService.DeleteMobileFunc(etm),
     )(member, body)
   }
 }

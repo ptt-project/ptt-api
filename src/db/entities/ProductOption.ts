@@ -7,8 +7,8 @@ export class ProductOption extends AppEntity {
   @Column({ name: 'name', nullable: false })
   name: string
 
-  @Column({ name: 'product_profile_id', nullable: false })
-  productProfileId: number
+  @Column({ name: 'product_profile_id', nullable: false, type: 'uuid' })
+  productProfileId: string
 
   @Column({ name: 'options', type: 'simple-json' })
   options: string[]
@@ -16,7 +16,8 @@ export class ProductOption extends AppEntity {
   @ManyToOne(
     () => ProductProfile,
     productProfile => productProfile.productOptions,
+    { createForeignKeyConstraints: false },
   )
-  @JoinColumn({ name: 'product_profile_id', referencedColumnName: 'id' })
+  @JoinColumn({ name: 'product_profile_id' })
   productProfile: ProductProfile
 }

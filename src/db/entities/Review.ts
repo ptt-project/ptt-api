@@ -1,14 +1,13 @@
-import { transformerDayjsToDate } from "src/utils/entity-transform";
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
-import { AppEntity } from "./AppEntity";
-import { Member } from "./Member";
-import { ProductProfile } from "./ProductProfile";
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { AppEntity } from './AppEntity'
+import { Member } from './Member'
+import { ProductProfile } from './ProductProfile'
+import { Shop } from './Shop'
 
 @Entity({ name: 'reviews' })
 export class Review extends AppEntity {
-    
-  @Column({ name: 'seller_id', nullable: false })
-  sellerId: number
+  @Column({ name: 'shop_id', nullable: false })
+  shopId: string
 
   @Column({ name: 'comment', nullable: true })
   comment: string
@@ -16,7 +15,7 @@ export class Review extends AppEntity {
   @Column({ name: 'reply', nullable: true })
   reply: string
 
-  @Column({ name: 'star', nullable: true })
+  @Column({ name: 'star', default: 0, nullable: false })
   star: number
 
   @Column({ name: 'is_reply', nullable: false, default: false })
@@ -26,17 +25,17 @@ export class Review extends AppEntity {
   isHide: boolean
 
   @Column({ name: 'reviewer_id', nullable: false })
-  reviewerId: number
+  reviewerId: string
 
-  @Column({ name: 'product_profile_id', nullable: false })
-  productProfileId: number
+  @Column({ name: 'product_profile_id', type: 'uuid' })
+  productProfileId: string
 
   @ManyToOne(
-    () => Member,
-    member => member.sellers,
+    () => Shop,
+    shop => shop.reviews,
   )
-  @JoinColumn({ name: 'seller_id', referencedColumnName: 'id' })
-  seller: Member
+  @JoinColumn({ name: 'shop_id', referencedColumnName: 'id' })
+  shop: Shop
 
   @ManyToOne(
     () => Member,
@@ -48,8 +47,8 @@ export class Review extends AppEntity {
   @ManyToOne(
     () => ProductProfile,
     productProfile => productProfile.reviews,
+    { createForeignKeyConstraints: false },
   )
-  @JoinColumn({ name: 'product_profile_id', referencedColumnName: 'id' })
-  productProfiles: ProductProfile
-
+  @JoinColumn({ name: 'product_profile_id' })
+  productProfile: ProductProfile
 }

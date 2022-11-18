@@ -6,12 +6,12 @@ import {
   IsString,
 } from 'class-validator'
 
-export class replyCommentRequestDto {
+export class ReplyCommentRequestDto {
   @IsString()
   @IsNotEmpty()
   reply: string
 }
-export class getReviewQueryDTO {
+export class GetReviewQueryDto {
   @IsOptional()
   limit?: number
 
@@ -30,9 +30,8 @@ export class getReviewQueryDTO {
   productName?: string
 
   @IsOptional()
-  startDate?: string
-  
-  @IsOptional()
-  endDate?: string
-}
+  startDate?: Date
 
+  @IsOptional()
+  endDate?: Date
+}

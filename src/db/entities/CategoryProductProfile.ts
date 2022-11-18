@@ -6,10 +6,10 @@ import { ProductProfile } from './ProductProfile'
 @Entity({ name: 'category_product_profiles' })
 export class CategoryProductProfile extends AppEntity {
   @Column({ name: 'category_id', nullable: false })
-  categoryId: number
+  categoryId: string
 
-  @Column({ name: 'product_profile_id', nullable: false })
-  productProfileId: number
+  @Column({ name: 'product_profile_id', nullable: false, type: 'uuid' })
+  productProfileId: string
 
   @ManyToOne(
     () => Category,
@@ -21,7 +21,8 @@ export class CategoryProductProfile extends AppEntity {
   @ManyToOne(
     () => ProductProfile,
     productProfile => productProfile.categoryProductProfiles,
+    { createForeignKeyConstraints: false },
   )
-  @JoinColumn({ name: 'product_profile_id', referencedColumnName: 'id' })
+  @JoinColumn({ name: 'product_profile_id' })
   productProfile: ProductProfile
 }
