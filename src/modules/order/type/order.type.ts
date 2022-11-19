@@ -133,3 +133,8 @@ export type InquiryOrderShopsFuncType = (
   keyword?: string,
   status?: string,
 ) => Promise<[SelectQueryBuilder<OrderShop>, string]>
+
+export type CreateOrderToDbType = (
+  memberId: string,
+  body: CreateOrderDto,
+) => Promise<[Order, OrderShop[], number, string]>

@@ -63,9 +63,6 @@ export class CreateOrderDto {
   feeAmount?: number
 
   @IsOptional()
-  amountSell?: number
-
-  @IsOptional()
   refId?: string
 
   @IsOptional()
@@ -76,18 +73,18 @@ export class CreateOrderDto {
 
   @IsNumber()
   @IsNotEmpty()
-  merchandiseSubtotal: number
+  totalPriceOfProducts: number
 
   @IsNumber()
   @IsNotEmpty()
-  shippingTotal: number
+  totalPriceOfShippings: number
 
   @IsOptional()
   discount?: number
 
   @IsNumber()
   @IsNotEmpty()
-  amount: number
+  totalPrice: number
 
   @IsString()
   @IsNotEmpty()
@@ -132,7 +129,7 @@ export class OrderShopDto {
 
   @IsNumber()
   @IsNotEmpty()
-  orderShopAmount: number
+  totalPriceOfProducts: number
 
   @IsNumber()
   @IsNotEmpty()
@@ -140,7 +137,7 @@ export class OrderShopDto {
 
   @IsNumber()
   @IsNotEmpty()
-  shippingPrice: number
+  totalPriceOfShippings: number
 
   @IsNotEmpty()
   @IsISO8601()

@@ -1,4 +1,7 @@
-import { transformerDayjsToDate } from 'src/utils/entity-transform'
+import {
+  transformerDayjsToDate,
+  transformerDecimalToNumber,
+} from 'src/utils/entity-transform'
 import {
   Column,
   Entity,
@@ -27,8 +30,8 @@ export class OrderShop extends AppEntity {
   @Column({ name: 'order_id', nullable: false })
   orderId: string
 
-  @Column({ name: 'order_number', nullable: false })
-  orderNumber: string
+  @Column({ name: 'code', nullable: false })
+  code: string
 
   @Column({ name: 'shop_voucher_id', nullable: true })
   shopVoucherId?: string
@@ -36,28 +39,49 @@ export class OrderShop extends AppEntity {
   @Column({ name: 'shop_id', nullable: false })
   shopId: string
 
-  @Column({
-    name: 'order_shop_amount',
-    nullable: false,
-    type: 'decimal',
-    precision: 12,
-    scale: 2,
-    default: 0,
-  })
-  orderShopAmount: number
-
   @Column({ name: 'shipping_option_id', nullable: false })
   shippingOptionId: string
 
   @Column({
-    name: 'shipping_price',
+    name: 'totalPrice',
     nullable: false,
     type: 'decimal',
     precision: 12,
     scale: 2,
     default: 0,
+    transformer: transformerDecimalToNumber,
   })
-  shippingPrice: number
+  totalPrice: number
+
+  @Column({
+    name: 'total_price_of_products',
+    nullable: false,
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    transformer: transformerDecimalToNumber,
+  })
+  totalPriceOfProducts: number
+
+  @Column({
+    name: 'total_price_of_shippings',
+    nullable: false,
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    transformer: transformerDecimalToNumber,
+  })
+  totalPriceOfShippings: number
+
+  @Column({
+    name: 'discount',
+    nullable: false,
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    transformer: transformerDecimalToNumber,
+  })
+  discount: number
 
   @Column({
     name: 'min_deliver_date',

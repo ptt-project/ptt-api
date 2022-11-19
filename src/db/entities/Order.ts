@@ -1,3 +1,4 @@
+import { transformerDecimalToNumber } from 'src/utils/entity-transform'
 import {
   Column,
   Entity,
@@ -32,24 +33,35 @@ export class Order extends AppEntity {
   paymentId?: string
 
   @Column({
-    name: 'merchandise_subtotal',
+    name: 'totalPrice',
     nullable: false,
     type: 'decimal',
     precision: 12,
     scale: 2,
     default: 0,
+    transformer: transformerDecimalToNumber,
   })
-  merchandiseSubtotal: number
+  totalPrice: number
 
   @Column({
-    name: 'shipping_total',
+    name: 'total_price_of_products',
     nullable: false,
     type: 'decimal',
     precision: 12,
     scale: 2,
-    default: 0,
+    transformer: transformerDecimalToNumber,
   })
-  shippingTotal: number
+  totalPriceOfProducts: number
+
+  @Column({
+    name: 'total_price_of_shippings',
+    nullable: false,
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    transformer: transformerDecimalToNumber,
+  })
+  totalPriceOfShippings: number
 
   @Column({
     name: 'discount',
@@ -57,19 +69,9 @@ export class Order extends AppEntity {
     type: 'decimal',
     precision: 12,
     scale: 2,
-    default: 0,
+    transformer: transformerDecimalToNumber,
   })
   discount: number
-
-  @Column({
-    name: 'amount',
-    nullable: false,
-    type: 'decimal',
-    precision: 12,
-    scale: 2,
-    default: 0,
-  })
-  amount: number
 
   @Column({ name: 'name', nullable: false })
   name: string

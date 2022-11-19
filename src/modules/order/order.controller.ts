@@ -11,6 +11,7 @@ import { OtpService } from '../otp/service/otp.service'
 import { WalletService } from '../wallet/service/wallet.service'
 import { CreateOrderDto, GetOrderRequestDto } from './dto/createOrder.dto'
 import { OrderService } from './service/order.service'
+import { PaymentService } from './service/payment.service'
 
 @Auth()
 @Controller('v1/order')
@@ -22,6 +23,7 @@ export class OrderController {
     private readonly otpService: OtpService,
     private readonly walletService: WalletService,
     private readonly redisService: RedisService,
+    private readonly paymentService: PaymentService,
   ) {}
 
   @Auth()
@@ -36,19 +38,19 @@ export class OrderController {
   ) {
     const redis = this.redisService.getClient()
     return await this.orderService.CheckoutHandler(
-      this.otpService.InquiryVerifyOtpFunc(etm),
-      this.orderService.ValidateOrderParamsFunc(
+      this.orderService.CreateOrderToDbFunc(
         this.orderService.InquiryShopByIdFunc(etm),
         this.orderService.InquiryProductByIdFunc(etm),
+        this.orderService.InsertOrderToDbFunc(etm),
+        this.orderService.InsertOrderShopToDbFunc(etm),
+        this.orderService.InsertOrderShopProductFunc(
+          this.orderService.InquiryProductByIdFunc(etm),
+          this.orderService.UpdateStockToProductFunc(etm),
+          this.orderService.InquiryProductProfileByIdFunc(etm),
+          this.orderService.InsertOrderShopProductToDbFunc(etm),
+        ),
       ),
-      this.orderService.InsertOrderToDbFunc(etm),
-      this.orderService.InsertOrderShopToDbFunc(etm),
-      this.orderService.InsertOrderShopProductFunc(
-        this.orderService.InquiryProductByIdFunc(etm),
-        this.orderService.UpdateStockToProductFunc(etm),
-        this.orderService.InquiryProductProfileByIdFunc(etm),
-        this.orderService.InsertOrderShopProductToDbFunc(etm),
-      ),
+      this.otpService.InquiryVerifyOtpFunc(etm),
       this.happyService.DebitHappyPointFunc(
         this.lookupService.InquiryRefIdExistInTransactionFunc(etm),
         this.lookupService.GetCacheLookupToRedisFunc(redis),
@@ -56,21 +58,15 @@ export class OrderController {
         this.happyService.ValidateCalculatePointByExchangeAndAmountFunc(),
         this.happyService.ValidateCalculateAmountFunc(),
         this.happyService.InsertHappyPointTransactionToDbFunc(etm),
-        this.walletService.RequestInteranlWalletTransactionService(
-          this.walletService.InsertTransactionToDbFunc(etm),
-          this.walletService.InsertReferenceToDbFunc(etm),
-          this.walletService.UpdateReferenceToDbFunc(etm),
-          this.walletService.AdjustWalletInDbFunc(etm),
-        ),
         this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
       ),
       this.walletService.InsertTransactionToDbFunc(etm),
       this.walletService.InsertReferenceToDbFunc(etm),
       this.walletService.UpdateReferenceToDbFunc(etm),
       this.walletService.AdjustWalletInDbFunc(etm),
-      this.orderService.InsertPaymentByBankToDbFunc(etm),
-      this.orderService.InsertPaymentByHappyPointToDbFunc(etm),
-      this.orderService.InsertPaymentByEwalletToDbFunc(etm),
+      this.paymentService.InsertPaymentByBankToDbFunc(etm),
+      this.paymentService.InsertPaymentByHappyPointToDbFunc(etm),
+      this.paymentService.InsertPaymentByEwalletToDbFunc(etm),
       this.orderService.UpdatePaymentIdToOrderFunc(etm),
       this.orderService.AdjustWalletToSellerFunc(
         this.walletService.InquiryWalletByShopIdFunc(etm),

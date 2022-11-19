@@ -5,6 +5,7 @@ import { PinoLogger } from 'nestjs-pino'
 import {
   AddressToShippop,
   AdjustWalletToSellerType,
+  CreateOrderToDbType,
   InquiryOrderShopByIdFuncType,
   InquiryOrderShopsFuncType,
   InquiryPriceFromShippopType,
@@ -45,8 +46,13 @@ import { Wallet } from 'src/db/entities/Wallet'
 import { HappyPoint } from 'src/db/entities/HappyPoint'
 import { Member } from 'src/db/entities/Member'
 import {
+  InvalidOrderShopTotalOfProducts,
+  InvalidOrderShopTotalOfShipping,
+  InvalidTotalPriceOfProducts,
   UnableInquiryOrderShopById,
   UnableInquiryOrderShops,
+  UnableInquiryProductById,
+  UnableInquiryShopById,
   UnableToAdjustWalletToSeller,
   UnableToInsertOrder,
   UnableToInsertOrderShop,
@@ -81,11 +87,8 @@ export class OrderService {
   }
 
   CheckoutHandler(
+    createOrderTodb: CreateOrderToDbType,
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
-    validateOrderParams: ValidateOrderParamsType,
-    insertOrderToDb: InsertOrderToDbType,
-    insertOrderShopToDb: InsertOrderShopToDbType,
-    insertOrderShopProduct: InsertOrderShopProductType,
     debitHappyPoint: DebitHappyPointType,
     insertTransaction: Promise<InsertTransactionToDbFuncType>,
     insertTransactionReference: Promise<InsertReferenceToDbFuncType>,
@@ -105,54 +108,19 @@ export class OrderService {
     ) => {
       const start = dayjs()
 
-      const validateOrderError = await validateOrderParams(body)
+      const [
+        order,
+        orderShopList,
+        errorCodeCreateOrderTodb,
+        errorMessageCreateOrderTodb,
+      ] = await createOrderTodb(member.id, body)
 
-      if (validateOrderError != '') {
-        return internalSeverError(UnableToValidateOrder, validateOrderError)
-      }
-
-      const [order, insertOrderError] = await insertOrderToDb(member.id, body)
-
-      if (insertOrderError != '') {
-        return internalSeverError(UnableToInsertOrder, insertOrderError)
-      }
-
-      const orderShopList: OrderShop[] = []
-
-      for (const x in body.orderShop) {
-        const orderShopRequest = body.orderShop[x]
-
-        const [orderShop, insertOrderShopError] = await insertOrderShopToDb(
-          order.id,
-          orderShopRequest,
+      if (errorMessageCreateOrderTodb != '') {
+        return response(
+          undefined,
+          errorCodeCreateOrderTodb,
+          errorMessageCreateOrderTodb,
         )
-
-        if (insertOrderShopError != '') {
-          return internalSeverError(
-            UnableToInsertOrderShop,
-            insertOrderShopError,
-          )
-        }
-        orderShopList.push(orderShop)
-
-        for (const x in orderShopRequest.orderShopProduct) {
-          const orderShopProductRequest = orderShopRequest.orderShopProduct[x]
-
-          const [
-            ,
-            insertOrderShopProductServiceError,
-          ] = await insertOrderShopProduct(
-            orderShop.id,
-            orderShopProductRequest,
-          )
-
-          if (insertOrderShopProductServiceError != '') {
-            return internalSeverError(
-              UnableToInsertOrderShopProduct,
-              insertOrderShopProductServiceError,
-            )
-          }
-        }
       }
 
       let paymentOrder
@@ -222,7 +190,7 @@ export class OrderService {
             respHappyPoint,
             errorCodeDebitHappyPoint,
             errorMessageDebitHappyPoint,
-          ] = await debitHappyPoint(wallet, happyPoint, params)
+          ] = await debitHappyPoint(happyPoint, params)
 
           if (errorCodeDebitHappyPoint != 0) {
             return response(
@@ -355,6 +323,128 @@ export class OrderService {
     }
   }
 
+  CreateOrderToDbFunc(
+    inquiryShopById: InquiryShopByIdType,
+    inquiryProductById: InquiryProductByIdType,
+    insertOrderToDb: InsertOrderToDbType,
+    insertOrderShopToDb: InsertOrderShopToDbType,
+    insertOrderShopProduct: InsertOrderShopProductType,
+  ): CreateOrderToDbType {
+    return async (
+      memberId: string,
+      body: CreateOrderDto,
+    ): Promise<[Order, OrderShop[], number, string]> => {
+      const orderShopList: OrderShop[] = []
+      const [order, insertOrderError] = await insertOrderToDb(memberId, body)
+
+      if (insertOrderError != '') {
+        return [order, orderShopList, UnableToInsertOrder, insertOrderError]
+      }
+
+      let priceShop = 0
+      let priceShippingShop = 0
+      for (const x in body.orderShop) {
+        const orderShopRequest = body.orderShop[x]
+
+        const [, inquiryShopByIdError] = await inquiryShopById(
+          orderShopRequest.shopId,
+        )
+        if (inquiryShopByIdError != '') {
+          return [
+            order,
+            orderShopList,
+            UnableInquiryShopById,
+            inquiryShopByIdError,
+          ]
+        }
+
+        const [orderShop, insertOrderShopError] = await insertOrderShopToDb(
+          order.id,
+          orderShopRequest,
+        )
+
+        if (insertOrderShopError != '') {
+          return [
+            order,
+            orderShopList,
+            UnableToInsertOrderShop,
+            insertOrderShopError,
+          ]
+        }
+        orderShopList.push(orderShop)
+
+        let priceProduct = 0
+        for (const x in orderShopRequest.orderShopProduct) {
+          const orderShopProductRequest = orderShopRequest.orderShopProduct[x]
+
+          const productId = orderShopProductRequest.productId
+          const [, inquiryProductByIdError] = await inquiryProductById(
+            productId,
+          )
+
+          if (inquiryProductByIdError != '') {
+            return [
+              order,
+              orderShopList,
+              UnableInquiryProductById,
+              inquiryProductByIdError,
+            ]
+          }
+
+          const [
+            ,
+            insertOrderShopProductServiceError,
+          ] = await insertOrderShopProduct(
+            orderShop.id,
+            orderShopProductRequest,
+          )
+
+          if (insertOrderShopProductServiceError != '') {
+            return [
+              order,
+              orderShopList,
+              UnableToInsertOrderShopProduct,
+              insertOrderShopProductServiceError,
+            ]
+          }
+
+          priceProduct +=
+            orderShopProductRequest.units * orderShopProductRequest.unitPrice
+        }
+
+        if (orderShop.orderShopAmount != priceProduct) {
+          return [
+            order,
+            orderShopList,
+            InvalidTotalPriceOfProducts,
+            'Validate order false because orderShopAmount is incorrect',
+          ]
+        }
+        priceShop += orderShop.orderShopAmount
+        priceShippingShop += orderShop.shippingPrice
+
+        if (body.merchandiseSubtotal != priceShop) {
+          return [
+            order,
+            orderShopList,
+            InvalidOrderShopTotalOfProducts,
+            'Validate order false because merchandiseSubtotal  are incorrect',
+          ]
+        }
+
+        if (body.shippingTotal != priceShippingShop) {
+          return [
+            order,
+            orderShopList,
+            InvalidOrderShopTotalOfShipping,
+            'Validate order false because shippingTotal are incorrect',
+          ]
+        }
+      }
+      return [order, orderShopList, 0, '']
+    }
+  }
+
   InsertOrderShopProductFunc(
     inquiryProductById: InquiryProductByIdType,
     updateStockToProduct: UpdateStockToProductType,
@@ -413,63 +503,6 @@ export class OrderService {
     }
   }
 
-  ValidateOrderParamsFunc(
-    inquiryShopById: InquiryShopByIdType,
-    inquiryProductById: InquiryProductByIdType,
-  ): ValidateOrderParamsType {
-    return async (body: CreateOrderDto): Promise<string> => {
-      const start = dayjs()
-
-      let priceShop = 0
-      let priceShippingShop = 0
-
-      for (const x in body.orderShop) {
-        const orderShop = body.orderShop[x]
-
-        let priceProduct = 0
-
-        const shopId = orderShop.shopId
-        const [, inquiryShopByIdError] = await inquiryShopById(shopId)
-
-        if (inquiryShopByIdError != '') {
-          return inquiryShopByIdError
-        }
-
-        for (const x in orderShop.orderShopProduct) {
-          const orderShopProduct = orderShop.orderShopProduct[x]
-
-          const productId = orderShopProduct.productId
-          const [, inquiryProductByIdError] = await inquiryProductById(
-            productId,
-          )
-
-          if (inquiryProductByIdError != '') {
-            return inquiryProductByIdError
-          }
-
-          priceProduct += orderShopProduct.units * orderShopProduct.unitPrice
-        }
-
-        if (orderShop.orderShopAmount != priceProduct) {
-          return 'Validate order false because orderShopAmount is incorrect'
-        }
-
-        priceShop += orderShop.orderShopAmount
-        priceShippingShop += orderShop.shippingPrice
-      }
-
-      if (
-        body.merchandiseSubtotal != priceShop ||
-        body.shippingTotal != priceShippingShop
-      ) {
-        return 'Validate order false because merchandiseSubtotal or shippingTotal are incorrect'
-      }
-
-      this.logger.info(`Done ValidateOrderParamsFunc ${dayjs().diff(start)} ms`)
-      return ''
-    }
-  }
-
   InquiryShopByIdFunc(etm: EntityManager): InquiryShopByIdType {
     return async (shopId: string): Promise<[Shop, string]> => {
       const start = dayjs()
@@ -497,10 +530,10 @@ export class OrderService {
       const start = dayjs()
       const {
         happyVoucherId,
-        merchandiseSubtotal,
-        shippingTotal,
+        totalPriceOfProducts,
+        totalPriceOfShippings,
         discount,
-        amount,
+        totalPrice,
         name,
         address,
         tambon,
@@ -516,10 +549,10 @@ export class OrderService {
       try {
         order = etm.create(Order, {
           happyVoucherId,
-          merchandiseSubtotal,
-          shippingTotal,
+          totalPriceOfProducts,
+          totalPriceOfShippings,
           discount,
-          amount,
+          totalPrice,
           name,
           address,
           tambon,
@@ -538,112 +571,6 @@ export class OrderService {
 
       this.logger.info(`Done InsertOrderToDbFunc ${dayjs().diff(start)} ms`)
       return [order, '']
-    }
-  }
-
-  InsertPaymentByBankToDbFunc(etm: EntityManager): InsertPaymentByBankToDbType {
-    return async (
-      orderId: string,
-      createOrderParams: CreateOrderDto,
-    ): Promise<[Payment, string]> => {
-      const start = dayjs()
-      const {
-        paymentType,
-        bankPaymentId,
-        qrCode,
-        reference,
-      } = createOrderParams
-
-      const status = 'toPay'
-
-      let payment: Payment
-      try {
-        payment = etm.create(Payment, {
-          orderId,
-          status,
-          paymentType,
-          bankPaymentId,
-          qrCode,
-          reference,
-        })
-
-        await etm.save(payment)
-      } catch (error) {
-        return [payment, error.message]
-      }
-
-      this.logger.info(
-        `Done InsertPaymentByBankToDbFunc ${dayjs().diff(start)} ms`,
-      )
-      return [payment, '']
-    }
-  }
-
-  InsertPaymentByHappyPointToDbFunc(
-    etm: EntityManager,
-  ): InsertPaymentByHappyToDbType {
-    return async (
-      orderId: string,
-      happyPointTransactionId: string,
-      createOrderParams: CreateOrderDto,
-    ): Promise<[Payment, string]> => {
-      const start = dayjs()
-      const { paymentType } = createOrderParams
-
-      const status = 'toShip'
-
-      let payment: Payment
-      try {
-        payment = etm.create(Payment, {
-          orderId,
-          status,
-          paymentType,
-          happyPointTransactionId,
-        })
-
-        await etm.save(payment)
-      } catch (error) {
-        return [payment, error.message]
-      }
-
-      this.logger.info(
-        `Done InsertPaymentByHappyPointToDbFunc ${dayjs().diff(start)} ms`,
-      )
-      return [payment, '']
-    }
-  }
-
-  InsertPaymentByEwalletToDbFunc(
-    etm: EntityManager,
-  ): InsertPaymentByEwalletToDbType {
-    return async (
-      orderId: string,
-      walletTransactionId: string,
-      createOrderParams: CreateOrderDto,
-    ): Promise<[Payment, string]> => {
-      const start = dayjs()
-      const { paymentType } = createOrderParams
-
-      const status = 'toShip'
-
-      let payment: Payment
-      try {
-        payment = etm.create(Payment, {
-          orderId,
-          status,
-          paymentType,
-          walletTransactionId,
-        })
-
-        await etm.save(payment)
-      } catch (error) {
-        return [payment, error.message]
-      }
-
-      this.logger.info(
-        `Done InsertPaymentByEwalletToDbFunc ${dayjs().diff(start)} ms`,
-      )
-      return [payment, '']
     }
   }
 
@@ -676,7 +603,7 @@ export class OrderService {
           await insertTransaction
         )(
           walletShop.id,
-          orderShop.orderShopAmount,
+          orderShop.totalPrice,
           0,
           'deposit',
           'deposit',
@@ -698,7 +625,7 @@ export class OrderService {
 
         const [, insertDepositReferenceError] = await (
           await update3rdPartyTransactionReference
-        )(referenceNo, refId, orderShop.orderShopAmount, 'deposit')
+        )(referenceNo, refId, orderShop.totalPrice, 'deposit')
 
         if (insertDepositReferenceError != '') {
           return insertDepositReferenceError
@@ -706,7 +633,7 @@ export class OrderService {
 
         const [, adjustedWalletSellerError] = await (await adjustWallet)(
           walletShop.id,
-          parseFloat(orderShop.orderShopAmount.toString()),
+          parseFloat(orderShop.totalPrice.toString()),
           'deposit',
         )
 
@@ -747,11 +674,11 @@ export class OrderService {
       const start = dayjs()
       const {
         shippingOptionId,
-        orderShopAmount,
+        totalPriceOfProducts,
         shopId,
         shopVoucherId,
         note,
-        shippingPrice,
+        totalPriceOfShippings,
         minDeliverDate,
         maxDeliverDate,
       } = params
@@ -762,11 +689,11 @@ export class OrderService {
       try {
         orderShop = etm.create(OrderShop, {
           shippingOptionId,
-          orderShopAmount,
+          totalPriceOfProducts,
           shopId,
           shopVoucherId,
           note,
-          shippingPrice,
+          totalPriceOfShippings,
           minDeliverDate,
           maxDeliverDate,
           orderId,

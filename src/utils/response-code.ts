@@ -200,6 +200,12 @@ export const UnableToInquiryProductProfileByIdError = _orderError + 10
 export const UnableToUpdateStockToProductError = _orderError + 11
 export const UnableInquiryOrderShops = _orderError + 12
 export const UnableInquiryOrderShopById = _orderError + 13
+export const UnableInquiryShopById = _orderError + 14
+export const UnableInquiryProductById = _orderError + 15
+export const InvalidTotalPriceOfProducts = _orderError + 16
+export const InvalidOrderShopTotal = _orderError + 17
+export const InvalidOrderShopTotalOfProducts = _orderError + 18
+export const InvalidOrderShopTotalOfShipping = _orderError + 19
 
 const _config = 300000
 export const UnableToGetBrandOptions = _config + 1
