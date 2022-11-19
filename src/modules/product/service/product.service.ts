@@ -49,6 +49,7 @@ import {
   InquiryProductListByShopIdType,
   InquiryProductProfileFromDbType,
   ConvertDataToProductProfileLandingPageType,
+  InquiryProductProfileByProductProfileIdFromDbType,
 } from '../type/product.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
@@ -1561,6 +1562,76 @@ export class ProductService {
         },
       )
       return { ...paginateProductProfile, items }
+    }
+  }
+
+  InquiryProductProfileByProductProfileIdHandler(
+    inquiryProductProfileByProductProfileIdFromDb: InquiryProductProfileByProductProfileIdFromDbType,
+  ) {
+    return async (productProfileId: string) => {
+      const start = dayjs()
+
+      const [
+        productProfiles,
+        inquiryProductProfileFromDbError,
+      ] = await inquiryProductProfileByProductProfileIdFromDb(productProfileId)
+
+      if (inquiryProductProfileFromDbError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          inquiryProductProfileFromDbError,
+        )
+      }
+
+      this.logger.info(
+        `Done InquiryProductProfileByProductProfileIdHandler ${dayjs().diff(
+          start,
+        )} ms`,
+      )
+
+      return response(productProfiles)
+    }
+  }
+
+  InquiryProductProfileByProductProfileIdFromDbFunc(
+    etm: EntityManager,
+  ): InquiryProductProfileByProductProfileIdFromDbType {
+    return async (
+      produceProfileId: string,
+    ): Promise<[ProductProfile, string]> => {
+      let productProfiles: SelectQueryBuilder<ProductProfile>
+
+      try {
+        productProfiles = etm
+          .createQueryBuilder(ProductProfile, 'productProfiles')
+          .innerJoinAndMapMany(
+            'productProfiles.products',
+            'productProfiles.products',
+            'products',
+          )
+          .innerJoinAndMapOne(
+            'productProfiles.shop',
+            'productProfiles.shop',
+            'shops',
+          )
+
+          .where('productProfiles.deletedAt IS NULL')
+          .andWhere('productProfiles.id = :produceProfileId', {
+            produceProfileId,
+          })
+          .orderBy('productProfiles.createdAt', 'DESC')
+      } catch (error) {
+        return [undefined, error.message]
+      }
+
+      const result = await productProfiles.getOne()
+
+      if (result) {
+        return [result, '']
+      } else {
+        return [undefined, 'Not fonud productProfile']
+      }
     }
   }
 }

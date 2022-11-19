@@ -1,8 +1,8 @@
 import { Review } from 'src/db/entities/Review'
 import { SelectQueryBuilder } from 'typeorm'
-import { GetReviewQueryDto } from '../dto/review.dto'
+import { GetReviewWithSellerQueryDto } from '../dto/review.dto'
 
-export type InquiryReviewsParams = {
+export type InquiryReviewsWithSellerParams = {
   limit?: number
   page?: number
   isReply?: string
@@ -12,20 +12,29 @@ export type InquiryReviewsParams = {
   endDate?: Date
 }
 
-export type InquiryReviewsByShopIdType = (
-  memberId: string,
-  params: InquiryReviewsParams,
+export type InquiryReviewsWithSellerByShopIdType = (
+  shopId: string,
+  params: InquiryReviewsWithSellerParams,
 ) => [SelectQueryBuilder<Review>, string]
 
 export type InquiryReviewsByReviewIdType = (
-  commentId: string,
+  reviewId: string,
 ) => Promise<[Review, string]>
 
 export type ReplyReviewByReviewIdType = (
-  memberId: string,
+  reviewId: string,
   params: ReplyReviewToDbParams,
 ) => Promise<string>
 
 export type ReplyReviewToDbParams = {
   reply: string
 }
+
+export type InquiryReviewsParams = {
+  limit?: number
+  page?: number
+}
+
+export type InquiryReviewsByShopIdType = (
+  shopId: string,
+) => [SelectQueryBuilder<Review>, string]

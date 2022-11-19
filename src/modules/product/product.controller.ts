@@ -134,4 +134,17 @@ export class ProductController {
       this.productService.ConvertDataToProductProfileLandingPageFunc(),
     )(query)
   }
+
+  @Get(':productProfileId')
+  @Transaction()
+  async getProductByProductId(
+    @Param('productProfileId') productProfileId: string,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.productService.InquiryProductProfileByProductProfileIdHandler(
+      this.productService.InquiryProductProfileByProductProfileIdFromDbFunc(
+        etm,
+      ),
+    )(productProfileId)
+  }
 }

@@ -162,3 +162,7 @@ export type InquiryProductProfileFromDbType = () => Promise<
 export type ConvertDataToProductProfileLandingPageType = (
   paginateProductProfile: Pagination<ProductProfile, IPaginationMeta>,
 ) => Pagination<ProductProfile, IPaginationMeta>
+
+export type InquiryProductProfileByProductProfileIdFromDbType = (
+  produceProfileId: string,
+) => Promise<[ProductProfile, string]>
