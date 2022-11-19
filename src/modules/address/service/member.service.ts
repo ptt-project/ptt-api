@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Address } from 'src/db/entities/Address'
 import { Member, MemberRoleType } from 'src/db/entities/Member'
 import { response } from 'src/utils/response'
-import { EntityManager } from 'typeorm'
+import { EntityManager, In } from 'typeorm'
 import {
   CreateAddressRequestDto,
   MemberUpdateAddressRequestDto,
@@ -32,10 +32,17 @@ import {
   InquiryAddressesByMemberIdType,
   UpdateNotPickupAddressesByMemberIdType,
   UpdateNotReturnItemAddressesByMemberIdType,
+  InquirySellerAddressesByShopIdsType,
 } from '../type/member.type'
+import dayjs from 'dayjs'
+import { PinoLogger } from 'nestjs-pino'
 
 @Injectable()
 export class MemberService {
+  constructor(private readonly logger: PinoLogger) {
+    this.logger.setContext(MemberService.name)
+  }
+
   createAddressHandler(
     updateNotMainAddressByMemberId: Promise<
       UpdateNotMainAddressesByMemberIdType
@@ -519,6 +526,42 @@ export class MemberService {
       }
 
       return [address, '']
+    }
+  }
+
+  InquirySellerAddressesByShopIdsFunc(
+    etm: EntityManager,
+  ): InquirySellerAddressesByShopIdsType {
+    return async (shopIds: string[]): Promise<[Address[], string]> => {
+      const start = dayjs()
+      let addresses: Address[]
+      try {
+        addresses = await etm.find(Address, {
+          where: {
+            member: {
+              shop: {
+                id: In(shopIds),
+                deletedAt: null,
+              },
+              deletedAt: null,
+            },
+            deletedAt: null,
+            isPickup: true,
+          },
+          relations: ['member', 'member.shop'],
+        })
+
+        if (addresses.length != shopIds.length) {
+          return [addresses, 'Seller addresses are not found']
+        }
+      } catch (error) {
+        return [addresses, error.message]
+      }
+
+      this.logger.info(
+        `Done InquirySellerAddressesByShopIdFunc ${dayjs().diff(start)} ms`,
+      )
+      return [addresses, '']
     }
   }
 }

@@ -27,6 +27,7 @@ import { RelationService } from './service/relation.service'
 import {
   GetProductInfoMemberDto,
   GetProductListMemberDto,
+  GetProductShipingDto,
 } from './dto/getProductList.dto'
 import { SearchMemberByUsernameDto } from './dto/search.dto'
 import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
@@ -34,6 +35,8 @@ import { MemberService } from './service/member.service'
 import { OrderService } from './service/order.service'
 import { PasswordService } from './service/password.service'
 import { ProductService } from './service/product.service'
+import { MemberService as AddressMemberService } from '../address/service/member.service'
+import { OrderService as ShippingOrderService } from '../order/service/order.service'
 
 @Auth()
 @Controller('v1/members')
@@ -50,6 +53,8 @@ export class MemberController {
     private readonly otpService: OtpService,
     private readonly walletService: WalletService,
     private readonly redisService: RedisService,
+    private readonly addressMemberService: AddressMemberService,
+    private readonly shippingOrderService: ShippingOrderService,
   ) {}
 
   @Patch('change-password')
@@ -120,6 +125,24 @@ export class MemberController {
     return await this.productService.GetProductBuyerByProductIdsHandler(
       this.productService.InquiryProductInfoByProductIdsFunc(etm),
       this.productService.InquiryMemberProductCurrentPriceFunc(etm),
+    )(member, query)
+  }
+
+  @Post('products/shippings')
+  @Transaction()
+  async getProductShippings(
+    @ReqUser() member: Member,
+    @Body() query: GetProductShipingDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    console.log('products/shippings')
+    return await this.productService.GetProductShippingHandler(
+      this.productService.InquiryProductInfoByProductIdsFunc(etm),
+      this.addressMemberService.InquiryAddressByIdFunc(etm),
+      this.addressMemberService.InquirySellerAddressesByShopIdsFunc(etm),
+      this.productService.RequestProductShippingPriceFunc(
+        this.shippingOrderService.InquiryPriceFromShippopFunc(),
+      )
     )(member, query)
   }
 

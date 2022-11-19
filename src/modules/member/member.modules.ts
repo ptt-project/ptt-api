@@ -12,6 +12,8 @@ import { ProductService } from './service/product.service'
 import { OrderService } from './service/order.service'
 import { LookupService } from '../happy-point/service/lookup.service'
 import { HappyPointService } from '../happy-point/service/happy-point.service'
+import { MemberService as AddressMemberService } from '../address/service/member.service'
+import { OrderService as ShippingOrderService } from '../order/service/order.service'
 import { OtpService } from '../otp/service/otp.service'
 import { WalletService } from '../wallet/service/wallet.service'
 import { MasterConfigModule } from '../master-config/master-config.module'
@@ -50,6 +52,8 @@ import { RedisModule } from 'nestjs-redis'
     HappyPointService,
     OtpService,
     WalletService,
+    AddressMemberService,
+    ShippingOrderService,
   ],
 
   exports: [],
