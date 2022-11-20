@@ -203,6 +203,7 @@ export class MemberController {
   ) {
     return await this.orderService.GetOrderShopsHandler(
       this.orderService.InquiryOrderShopsFunc(etm),
+      this.orderService.PaginateOrderShopsFunc(),
     )(member, query)
   }
 

@@ -198,6 +198,7 @@ export const UnableToUpdateStockToProductError = _orderError + 9
 export const UnableToValidateOrder = _orderError + 10
 export const UnableInquiryOrderShops = _orderError + 11
 export const UnableInquiryOrderShopById = _orderError + 12
+export const UnablePaginateOrderShops = _orderError + 13
 
 
 

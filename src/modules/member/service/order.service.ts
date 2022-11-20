@@ -45,6 +45,7 @@ import {
   UnableInquiryRefIdExistTransactions,
   UnableInserttHappyPointTypeBuyToDb,
   UnableLookupExchangeRate,
+  UnablePaginateOrderShops,
   UnableToInquiryProductByIdError,
   UnableToInquiryProductProfileByIdError,
   UnableToInquiryShopByIdError,
@@ -60,7 +61,7 @@ import {
   WrongCalculatePoint,
 } from 'src/utils/response-code'
 import { internalSeverError } from 'src/utils/response-error'
-import { EntityManager, SelectQueryBuilder } from 'typeorm'
+import { EntityManager, QueryBuilder, SelectQueryBuilder } from 'typeorm'
 import {
   CreateOrderDto,
   GetOrderRequestDto,
@@ -79,6 +80,8 @@ import {
   InsertPaymentByBankToDbType,
   InsertPaymentByEwalletToDbType,
   InsertPaymentByHappyToDbType,
+  OrderShopPaginate,
+  PaginateOrderShopsFuncType,
   UpdatePaymentIdToOrderType,
   UpdateStockToProductType,
   ValidateOrderParamsType,
@@ -556,7 +559,8 @@ export class OrderService {
   }
 
   GetOrderShopsHandler(
-    inquiryOrders: Promise<InquiryOrderShopsFuncType>
+    inquiryOrders: InquiryOrderShopsFuncType,
+    paginateOrderShop: PaginateOrderShopsFuncType,
   ) {
     return async (
       member: Member,
@@ -565,7 +569,7 @@ export class OrderService {
       const start = dayjs()
       const { limit = 10, page = 1, keyword, status } = query
 
-      const [ordersQuery, inquiryOrdersError] = await (await inquiryOrders)(member.id, keyword, status)
+      const [ordersQuery, inquiryOrdersError] = await inquiryOrders(member.id, keyword, status)
 
       if (inquiryOrdersError != '') {
         return response(
@@ -575,18 +579,28 @@ export class OrderService {
         )
       }
 
-      const result = await paginate<OrderShop>(ordersQuery, {
+      const [result, paginateError] = await paginateOrderShop(
+        ordersQuery,
         limit,
         page,
-      })
-      this.logger.info(`Done GetOrdersHandler ${dayjs().diff(start)} ms`)
+      )
+
+      if (paginateError != '') {
+        return response(
+          undefined,
+          UnablePaginateOrderShops,
+          paginateError,
+        )
+      }
+
+      this.logger.info(`Done GetOrderShopsHandler ${dayjs().diff(start)} ms`)
       return response(result)
     }
   }
 
-  async InquiryOrderShopsFunc(
+  InquiryOrderShopsFunc(
     etm: EntityManager,
-  ): Promise<InquiryOrderShopsFuncType> {
+  ): InquiryOrderShopsFuncType {
     return async (memberId: string, keyword?: string, status?: string): Promise<[SelectQueryBuilder<OrderShop>, string]> => {
       const start = dayjs()
       let orderShopsQuery: SelectQueryBuilder<OrderShop>
@@ -619,6 +633,7 @@ export class OrderService {
           const keywordCondition = "(shop.fullName LIKE :keyword OR products.productProfileName LIKE :keyword OR orderShops.orderNumber LIKE :keyword)"
           orderShopsQuery = orderShopsQuery.andWhere(keywordCondition, { keyword: `%${keyword}%` })
         }
+        orderShopsQuery = orderShopsQuery.orderBy('order.createdAt', 'DESC')
 
       } catch(error) {
         return [orderShopsQuery, error.message]
@@ -630,15 +645,81 @@ export class OrderService {
     }
   }
 
+  PaginateOrderShopsFunc(): PaginateOrderShopsFuncType {
+    return async (orderShopsQuery: SelectQueryBuilder<OrderShop>, limit: number, page: number): Promise<[OrderShopPaginate, string]> => {
+      const start = dayjs()
+      let result: OrderShopPaginate = {
+        items: [],
+        meta: {
+          totalItems: 0,
+          itemCount: 0,
+          itemsPerPage: limit,
+          totalPages: 0,
+          currentPage: page,
+        }
+      }
+
+      try {
+        const orderShops = await orderShopsQuery.getMany()
+        const toPayOrderDictionary = orderShops.reduce((dictionary, orderShop) => {
+          if (orderShop.order.status == 'toPay') {
+            if (!dictionary[orderShop.orderId]) {
+              dictionary[orderShop.orderId] = {
+                ...orderShop.order,
+                orderShops: []
+              }
+            }
+            dictionary[orderShop.orderId].orderShops.push(orderShop)
+          }
+
+          return dictionary
+        }, {})
+
+        const toPayItems = Object.keys(toPayOrderDictionary).map(
+          (orderId) => toPayOrderDictionary[orderId]
+        )
+
+        const notTopayItems = orderShops.reduce((result, orderShop) => {
+          if (orderShop.order.status != 'toPay') {
+            result.push(orderShop)
+          }
+
+          return result
+        }, [])
+
+        const items = [...toPayItems, ...notTopayItems]
+        const slicedItem = items.slice((page - 1) * limit, page * limit)
+
+        result = {
+          items: slicedItem,
+          meta: {
+            totalItems: items.length,
+            itemCount: slicedItem.length,
+            itemsPerPage: limit,
+            totalPages: Math.ceil(items.length / limit),
+            currentPage: page,
+          }
+        }
+
+      } catch(error) {
+        return [result, error.message]
+      }
+      this.logger.info(
+        `Done PaginateOrderShopsFunc ${dayjs().diff(start)} ms`,
+      )
+      return [result, '']
+    }
+  }
+
   GetOrderShopByIdHandler(
-    inquiryOrderById: Promise<InquiryOrderShopByIdFuncType>
+    inquiryOrderById: InquiryOrderShopByIdFuncType
   ) {
     return async (
       member: Member,
       orderShopId: string,
     ) => {
       const start = dayjs()
-      const [orderShop, inquiryOrderShopByIdError] = await (await inquiryOrderById)(member.id, orderShopId)
+      const [orderShop, inquiryOrderShopByIdError] = await inquiryOrderById(member.id, orderShopId)
 
       if (inquiryOrderShopByIdError != '') {
         return response(
@@ -653,9 +734,9 @@ export class OrderService {
     }
   }
 
-  async InquiryOrderShopByIdFunc(
+  InquiryOrderShopByIdFunc(
     etm: EntityManager,
-  ): Promise<InquiryOrderShopByIdFuncType> {
+  ): InquiryOrderShopByIdFuncType {
     return async (memberId: string, orderId: string): Promise<[OrderShop, string]> => {
       const start = dayjs()
       let orderShop: OrderShop

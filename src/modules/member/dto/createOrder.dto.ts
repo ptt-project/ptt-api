@@ -11,11 +11,9 @@ import { PaymentType } from 'src/db/entities/Payment'
 
 export class GetOrderRequestDto {
   @IsOptional()
-  @IsNumber()
   limit?: number
 
   @IsOptional()
-  @IsNumber()
   page?: number
 
   @IsOptional() 
