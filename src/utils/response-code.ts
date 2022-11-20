@@ -10,11 +10,11 @@ const _authError = 101000
 export const UnableRegisterEmailAlreayExist = _authError + 1
 export const UnableRegisterUsernameAlreayExist = _authError + 2
 export const UnableInsertMemberToDbError = _authError + 3
-export const UnableInquiryEmailExistByEmailError= _authError + 4
-export const UnableInquiryMemberExistByMobileError= _authError + 5
-export const UnableUpateLoginTokenToDb= _authError + 6
-export const UnableInquiryMemberExistByLoginTokenAndEmailError= _authError + 7
-export const UnableSendMessageToEmailError= _authError + 8
+export const UnableInquiryEmailExistByEmailError = _authError + 4
+export const UnableInquiryMemberExistByMobileError = _authError + 5
+export const UnableUpateLoginTokenToDb = _authError + 6
+export const UnableInquiryMemberExistByLoginTokenAndEmailError = _authError + 7
+export const UnableSendMessageToEmailError = _authError + 8
 export const UnableRegisterMobileAlreayExist = _authError + 9
 
 // login
@@ -130,6 +130,8 @@ export const UnableUpdateProduct = _productError + 17
 export const UnableInquiryProductProfileFromDb = _productError + 18
 export const UnableInquiryProductByProductIds = _productError + 19
 export const UnableToGetProductPrice = _productError + 20
+export const UnableConvertProductProfileToProductProfileListForBuyer =
+  _productError + 6
 
 const _image = 110000
 export const UnableResizeImage = _image + 1

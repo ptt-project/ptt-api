@@ -130,7 +130,8 @@ export class ProductController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.productService.InquiryProductProfileHandler(
-      this.productService.InquiryProductProfileFromDbFunc(etm),
+      this.productService.PreInquiryProductProfileFromDbFunc(etm),
+      this.productService.ExecuteInquiryProductProfileFromDbFunc(),
       this.productService.ConvertDataToProductProfileLandingPageFunc(),
     )(query)
   }
