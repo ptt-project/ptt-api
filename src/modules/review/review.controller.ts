@@ -4,7 +4,7 @@ import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { ReqShop, Seller } from '../auth/auth.decorator'
 import {
   GetReviewQueryDto,
-  GetReviewWithSellerQueryDto,
+  GetReviewOfSellerQueryDto,
   ReplyCommentRequestDto,
 } from './dto/review.dto'
 import { ReviewService } from './service/review.service'
@@ -18,11 +18,11 @@ export class ReviewWithSellerController {
   @Transaction()
   async getReviewsByShopId(
     @ReqShop() shop: Shop,
-    @Query() query: GetReviewWithSellerQueryDto,
+    @Query() query: GetReviewOfSellerQueryDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.reviewService.GetReviewsWithSellerByShopIdHandler(
-      this.reviewService.InquiryReviewsWithSellerByShopIdFunc(etm),
+    return await this.reviewService.GetReviewsOfSellerByShopIdHandler(
+      this.reviewService.InquiryReviewsOfSellerByShopIdFunc(etm),
     )(shop, query)
   }
 
@@ -55,15 +55,15 @@ export class ReviewWithSellerController {
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
-  @Get('shop/:shopId')
+  @Get('products-profile/:productProfileId')
   @Transaction()
-  async getReviewsByShopId(
-    @Param('shopId') shopId: string,
+  async getReviewsByProductProfileId(
+    @Param('productProfileId') productProfileId: string,
     @Query() query: GetReviewQueryDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.reviewService.GetReviewsByShopIdHandler(
-      this.reviewService.InquiryReviewsByShopIdFunc(etm),
-    )(shopId, query)
+    return await this.reviewService.GetReviewsByProductProfileIdHandler(
+      this.reviewService.InquiryReviewsByProductProfileIdFunc(etm),
+    )(productProfileId, query)
   }
 }

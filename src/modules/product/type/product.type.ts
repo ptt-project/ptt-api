@@ -170,6 +170,6 @@ export type ExecutePreInquiryProductProfileFromDbType = (
   page: number,
 ) => Promise<[Pagination<ProductProfile, IPaginationMeta>, string]>
 
-export type InquiryProductProfileByProductProfileIdFromDbType = (
-  produceProfileId: string,
+export type InquiryProductProfileByIdFromDbType = (
+  productProfileId: string,
 ) => Promise<[ProductProfile, string]>

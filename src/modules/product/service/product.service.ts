@@ -49,8 +49,8 @@ import {
   InquiryProductListByShopIdType,
   PreInquiryProductProfileFromDbType,
   ConvertDataToProductProfileLandingPageType,
-  InquiryProductProfileByProductProfileIdFromDbType,
   ExecutePreInquiryProductProfileFromDbType,
+  InquiryProductProfileByIdFromDbType,
 } from '../type/product.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
@@ -1604,8 +1604,8 @@ export class ProductService {
     }
   }
 
-  InquiryProductProfileByProductProfileIdHandler(
-    inquiryProductProfileByProductProfileIdFromDb: InquiryProductProfileByProductProfileIdFromDbType,
+  GetProductProfileByIdHandler(
+    inquiryProductProfileByIdFromDb: InquiryProductProfileByIdFromDbType,
   ) {
     return async (productProfileId: string) => {
       const start = dayjs()
@@ -1613,7 +1613,7 @@ export class ProductService {
       const [
         productProfiles,
         inquiryProductProfileFromDbError,
-      ] = await inquiryProductProfileByProductProfileIdFromDb(productProfileId)
+      ] = await inquiryProductProfileByIdFromDb(productProfileId)
 
       if (inquiryProductProfileFromDbError != '') {
         return response(
@@ -1624,53 +1624,46 @@ export class ProductService {
       }
 
       this.logger.info(
-        `Done InquiryProductProfileByProductProfileIdHandler ${dayjs().diff(
-          start,
-        )} ms`,
+        `Done GetProductProfileByIdHandler ${dayjs().diff(start)} ms`,
       )
 
       return response(productProfiles)
     }
   }
 
-  InquiryProductProfileByProductProfileIdFromDbFunc(
+  InquiryProductDetailByIdFromDbFunc(
     etm: EntityManager,
-  ): InquiryProductProfileByProductProfileIdFromDbType {
+  ): InquiryProductProfileByIdFromDbType {
     return async (
-      produceProfileId: string,
+      productProfileId: string,
     ): Promise<[ProductProfile, string]> => {
-      let productProfiles: SelectQueryBuilder<ProductProfile>
+      let productProfile: ProductProfile[] = []
 
       try {
-        productProfiles = etm
-          .createQueryBuilder(ProductProfile, 'productProfiles')
-          .innerJoinAndMapMany(
-            'productProfiles.products',
-            'productProfiles.products',
-            'products',
-          )
-          .innerJoinAndMapOne(
-            'productProfiles.shop',
-            'productProfiles.shop',
-            'shops',
-          )
-
-          .where('productProfiles.deletedAt IS NULL')
-          .andWhere('productProfiles.id = :produceProfileId', {
-            produceProfileId,
-          })
-          .orderBy('productProfiles.createdAt', 'DESC')
+        productProfile = await etm.findByIds(
+          ProductProfile,
+          [productProfileId],
+          {
+            relations: ['products', 'shop'],
+          },
+        )
       } catch (error) {
         return [undefined, error.message]
       }
 
-      const result = await productProfiles.getOne()
-
-      if (result) {
-        return [result, '']
-      } else {
-        return [undefined, 'Not fonud productProfile']
+      if (!productProfile[0]) {
+        return [undefined, 'Not found product profile']
       }
+
+      if (!productProfile[0].shop) {
+        return [undefined, 'Not found shop']
+      }
+
+      if (!productProfile[0].products) {
+        return [undefined, 'Not found product']
+      }
+
+      return [productProfile[0], '']
     }
   }
 

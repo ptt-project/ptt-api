@@ -142,10 +142,8 @@ export class ProductController {
     @Param('productProfileId') productProfileId: string,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.productService.InquiryProductProfileByProductProfileIdHandler(
-      this.productService.InquiryProductProfileByProductProfileIdFromDbFunc(
-        etm,
-      ),
+    return await this.productService.GetProductProfileByIdHandler(
+      this.productService.InquiryProductDetailByIdFromDbFunc(etm),
     )(productProfileId)
   }
 }
