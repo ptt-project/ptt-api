@@ -85,7 +85,7 @@ export const UnableInsertConditionToDb = _sellerError + 7
 
 // review module
 const _reviewError = 107000
-export const UnableInquiryInquiryReviewsBySellerId = _reviewError + 1
+export const UnableInquiryInquiryReviewsByShopId = _reviewError + 1
 export const UnableInquiryReviewsByReviewId = _reviewError + 2
 export const UnableReplyReviewByReviewId = _reviewError + 3
 
