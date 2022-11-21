@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req } from '@nestjs/common'
+import { Body, Controller, Post, Req, Res } from '@nestjs/common'
 import { AuthService } from './service/auth.service'
 import {
   RegisterRequestDto,
@@ -14,8 +14,13 @@ import { Request } from 'express'
 import { WalletService } from '../wallet/service/wallet.service'
 import { HappyPointService } from '../happy-point/service/happy-point.service'
 import { PasswordService } from '../member/service/password.service'
-import { ForgotPasswordRequestDto, ResetPasswordEmailRequestDto, ResetPasswordMobileRequestDto } from '../member/dto/password.dto'
+import {
+  ForgotPasswordRequestDto,
+  ResetPasswordEmailRequestDto,
+  ResetPasswordMobileRequestDto,
+} from '../member/dto/password.dto'
 import { ShopService } from '../shop/service/shop.service'
+import { response } from 'src/utils/response'
 
 @Controller('v1/auth')
 export class AuthController {
@@ -131,5 +136,13 @@ export class AuthController {
     request.res.setHeader('Set-Cookie', [accessToken, refreshToken])
 
     return longinResponse
+  }
+
+  @Post('logout')
+  async logout(@Req() request) {
+    request.res.clearCookie('AccessToken')
+    request.res.clearCookie('RefreshToken')
+
+    return response(undefined)
   }
 }
