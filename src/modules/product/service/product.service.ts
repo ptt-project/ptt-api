@@ -1637,33 +1637,30 @@ export class ProductService {
     return async (
       productProfileId: string,
     ): Promise<[ProductProfile, string]> => {
-      let productProfile: ProductProfile[] = []
+      let productProfile: ProductProfile
 
       try {
-        productProfile = await etm.findByIds(
-          ProductProfile,
-          [productProfileId],
-          {
-            relations: ['products', 'shop'],
-          },
-        )
+        productProfile = await etm.findOne(ProductProfile, productProfileId, {
+          withDeleted: false,
+          relations: ['products', 'shop'],
+        })
       } catch (error) {
         return [undefined, error.message]
       }
 
-      if (!productProfile[0]) {
+      if (!productProfile) {
         return [undefined, 'Not found product profile']
       }
 
-      if (!productProfile[0].shop) {
+      if (!productProfile.shop) {
         return [undefined, 'Not found shop']
       }
 
-      if (!productProfile[0].products) {
+      if (!productProfile.products) {
         return [undefined, 'Not found product']
       }
 
-      return [productProfile[0], '']
+      return [productProfile, '']
     }
   }
 

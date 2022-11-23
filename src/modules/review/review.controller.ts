@@ -21,8 +21,8 @@ export class ReviewWithSellerController {
     @Query() query: GetReviewOfSellerQueryDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.reviewService.GetReviewsOfSellerByShopIdHandler(
-      this.reviewService.InquiryReviewsOfSellerByShopIdFunc(etm),
+    return await this.reviewService.GetReviewsByShopIdHandler(
+      this.reviewService.InquiryReviewsByShopIdFunc(etm),
     )(shop, query)
   }
 

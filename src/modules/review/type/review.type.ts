@@ -12,7 +12,7 @@ export type InquiryReviewsOfSellerParams = {
   endDate?: Date
 }
 
-export type InquiryReviewsOfSellerByShopIdType = (
+export type InquiryReviewsByShopIdType = (
   shopId: string,
   params: InquiryReviewsOfSellerParams,
 ) => [SelectQueryBuilder<Review>, string]

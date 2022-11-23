@@ -11,7 +11,7 @@ import { EntityManager, SelectQueryBuilder } from 'typeorm'
 import {
   InquiryReviewsByProductProfileIdType,
   InquiryReviewsByReviewIdType,
-  InquiryReviewsOfSellerByShopIdType,
+  InquiryReviewsByShopIdType,
   InquiryReviewsOfSellerParams,
   ReplyReviewByReviewIdType,
   ReplyReviewToDbParams,
@@ -33,24 +33,24 @@ export class ReviewService {
     this.logger.setContext(ReviewService.name)
   }
 
-  GetReviewsOfSellerByShopIdHandler(
-    inquiryReviewsOfSellerByShopId: InquiryReviewsOfSellerByShopIdType,
+  GetReviewsByShopIdHandler(
+    inquiryReviewsByShopId: InquiryReviewsByShopIdType,
   ) {
     return async (shop: Shop, query?: GetReviewOfSellerQueryDto) => {
       const start = dayjs()
       const { id } = shop
       const { limit = 10, page = 1 } = query
 
-      const [
-        reviews,
-        inquiryReviewsOfSellerByShopIdError,
-      ] = inquiryReviewsOfSellerByShopId(id, query)
+      const [reviews, inquiryReviewsByShopIdError] = inquiryReviewsByShopId(
+        id,
+        query,
+      )
 
-      if (inquiryReviewsOfSellerByShopIdError != '') {
+      if (inquiryReviewsByShopIdError != '') {
         response(
           undefined,
           UnableInquiryInquiryReviewsByShopId,
-          inquiryReviewsOfSellerByShopIdError,
+          inquiryReviewsByShopIdError,
         )
       }
 
@@ -66,21 +66,17 @@ export class ReviewService {
       }
 
       this.logger.info(
-        `Done paginate InquiryReviewsOfSellerByShopIdFunc ${dayjs().diff(
-          start,
-        )} ms`,
+        `Done paginate InquiryReviewsByShopIdFunc ${dayjs().diff(start)} ms`,
       )
 
       this.logger.info(
-        `Done GetReviewsOfSellerByShopIdHandler ${dayjs().diff(start)} ms`,
+        `Done GetReviewsByShopIdHandler ${dayjs().diff(start)} ms`,
       )
       return response(result)
     }
   }
 
-  InquiryReviewsOfSellerByShopIdFunc(
-    etm: EntityManager,
-  ): InquiryReviewsOfSellerByShopIdType {
+  InquiryReviewsByShopIdFunc(etm: EntityManager): InquiryReviewsByShopIdType {
     return (
       shopId: string,
       params: InquiryReviewsOfSellerParams,
@@ -136,7 +132,7 @@ export class ReviewService {
       }
 
       this.logger.info(
-        `Done InquiryReviewsOfSellerByShopIdFunc ${dayjs().diff(start)} ms`,
+        `Done InquiryReviewsByShopIdFunc ${dayjs().diff(start)} ms`,
       )
 
       return [reviews, '']
