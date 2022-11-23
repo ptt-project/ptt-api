@@ -51,6 +51,7 @@ export class MemberService {
         gender: member.gender,
         email: member.email,
         imageId: member.imageId,
+        code: member.memberCode,
         invitationToken: this.jwtService.sign(member.memberCode),
       }
     }
