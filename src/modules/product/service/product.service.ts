@@ -50,6 +50,7 @@ import {
   PreInquiryProductProfileFromDbType,
   ConvertDataToProductProfileLandingPageType,
   ExecutePreInquiryProductProfileFromDbType,
+  InquiryProductProfileByIdFromDbType,
 } from '../type/product.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
@@ -1600,6 +1601,66 @@ export class ProductService {
       } catch (error) {
         return [undefined, error.message]
       }
+    }
+  }
+
+  GetProductProfileByIdHandler(
+    inquiryProductProfileByIdFromDb: InquiryProductProfileByIdFromDbType,
+  ) {
+    return async (productProfileId: string) => {
+      const start = dayjs()
+
+      const [
+        productProfiles,
+        inquiryProductProfileFromDbError,
+      ] = await inquiryProductProfileByIdFromDb(productProfileId)
+
+      if (inquiryProductProfileFromDbError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          inquiryProductProfileFromDbError,
+        )
+      }
+
+      this.logger.info(
+        `Done GetProductProfileByIdHandler ${dayjs().diff(start)} ms`,
+      )
+
+      return response(productProfiles)
+    }
+  }
+
+  InquiryProductDetailByIdFromDbFunc(
+    etm: EntityManager,
+  ): InquiryProductProfileByIdFromDbType {
+    return async (
+      productProfileId: string,
+    ): Promise<[ProductProfile, string]> => {
+      let productProfile: ProductProfile
+
+      try {
+        productProfile = await etm.findOne(ProductProfile, productProfileId, {
+          withDeleted: false,
+          relations: ['products', 'shop'],
+        })
+      } catch (error) {
+        return [undefined, error.message]
+      }
+
+      if (!productProfile) {
+        return [undefined, 'Not found product profile']
+      }
+
+      if (!productProfile.shop) {
+        return [undefined, 'Not found shop']
+      }
+
+      if (!productProfile.products) {
+        return [undefined, 'Not found product']
+      }
+
+      return [productProfile, '']
     }
   }
 

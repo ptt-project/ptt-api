@@ -114,6 +114,12 @@ export class ProductProfile {
   @Column({ name: 'like', default: 0, nullable: true })
   like: number
 
+  @Column({ name: 'score', default: 0, nullable: true })
+  score: number
+
+  @Column({ name: 'amount_review', default: 0, nullable: true })
+  amountReview: number
+
   @OneToMany(
     () => Product,
     product => product.productProfile,

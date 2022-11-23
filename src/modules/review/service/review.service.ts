@@ -5,16 +5,23 @@ import {
   UnableInquiryReviewsByReviewId,
   UnableInquiryInquiryReviewsByShopId,
   UnableReplyReviewByReviewId,
+  UnableInquiryInquiryReviewsByProductProfileId,
 } from 'src/utils/response-code'
 import { EntityManager, SelectQueryBuilder } from 'typeorm'
 import {
+  InquiryReviewsByProductProfileIdType,
   InquiryReviewsByReviewIdType,
   InquiryReviewsByShopIdType,
-  InquiryReviewsParams,
+  InquiryReviewsOfSellerParams,
   ReplyReviewByReviewIdType,
   ReplyReviewToDbParams,
+  InquiryReviewsParams,
 } from '../type/review.type'
-import { GetReviewQueryDto, ReplyCommentRequestDto } from '../dto/review.dto'
+import {
+  GetReviewQueryDto,
+  GetReviewOfSellerQueryDto,
+  ReplyCommentRequestDto,
+} from '../dto/review.dto'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
 import { paginate } from 'nestjs-typeorm-paginate'
@@ -29,7 +36,7 @@ export class ReviewService {
   GetReviewsByShopIdHandler(
     inquiryReviewsByShopId: InquiryReviewsByShopIdType,
   ) {
-    return async (shop: Shop, query?: GetReviewQueryDto) => {
+    return async (shop: Shop, query?: GetReviewOfSellerQueryDto) => {
       const start = dayjs()
       const { id } = shop
       const { limit = 10, page = 1 } = query
@@ -72,7 +79,7 @@ export class ReviewService {
   InquiryReviewsByShopIdFunc(etm: EntityManager): InquiryReviewsByShopIdType {
     return (
       shopId: string,
-      params: InquiryReviewsParams,
+      params: InquiryReviewsOfSellerParams,
     ): [SelectQueryBuilder<Review>, string] => {
       const start = dayjs()
       const { startDate, endDate, productName, isReply, star } = params
@@ -81,9 +88,19 @@ export class ReviewService {
       try {
         reviews = etm
           .createQueryBuilder(Review, 'reviews')
-          .innerJoin('reviews.productProfile', 'productProfiles')
+          .innerJoinAndMapOne(
+            'reviews.reviewer',
+            'reviews.reviewer',
+            'reviewers',
+          )
+          .innerJoinAndMapOne(
+            'reviews.productProfile',
+            'reviews.productProfile',
+            'productProfiles',
+          )
           .where('reviews.deletedAt IS NULL')
           .andWhere('reviews.shopId = :shopId', { shopId })
+          .orderBy('reviews.createdAt', 'DESC')
 
         if (startDate) {
           reviews.andWhere('reviews.createdAt >= :startDate', {
@@ -225,6 +242,90 @@ export class ReviewService {
         `Done ReplyReviewByReviewIdToDbFunc ${dayjs().diff(start)} ms`,
       )
       return ''
+    }
+  }
+
+  GetReviewsByProductProfileIdHandler(
+    inquiryReviewsByProductProfileId: InquiryReviewsByProductProfileIdType,
+  ) {
+    return async (productProfileId: string, body?: GetReviewQueryDto) => {
+      const start = dayjs()
+      const { limit = 10, page = 1 } = body
+
+      const [
+        reviews,
+        inquiryReviewsByProductProfileIdError,
+      ] = inquiryReviewsByProductProfileId(productProfileId, body)
+
+      if (inquiryReviewsByProductProfileIdError != '') {
+        response(
+          undefined,
+          UnableInquiryInquiryReviewsByProductProfileId,
+          inquiryReviewsByProductProfileIdError,
+        )
+      }
+
+      let result
+      try {
+        result = await paginate<Review>(reviews, { limit, page })
+      } catch (error) {
+        return response(
+          undefined,
+          UnableInquiryInquiryReviewsByShopId,
+          error.message,
+        )
+      }
+
+      this.logger.info(
+        `Done paginate InquiryReviewsByProductProfileIdFunc ${dayjs().diff(
+          start,
+        )} ms`,
+      )
+
+      this.logger.info(
+        `Done GetReviewsByProductProfileIdHandler ${dayjs().diff(start)} ms`,
+      )
+      return response(result)
+    }
+  }
+
+  InquiryReviewsByProductProfileIdFunc(
+    etm: EntityManager,
+  ): InquiryReviewsByProductProfileIdType {
+    return (
+      productProfileId: string,
+      params: InquiryReviewsParams,
+    ): [SelectQueryBuilder<Review>, string] => {
+      const start = dayjs()
+      const { star } = params
+
+      let reviews: SelectQueryBuilder<Review>
+      try {
+        reviews = etm
+          .createQueryBuilder(Review, 'reviews')
+          .innerJoinAndMapOne(
+            'reviews.reviewer',
+            'reviews.reviewer',
+            'reviewers',
+          )
+          .where('reviews.deletedAt IS NULL')
+          .andWhere('reviews.productProfileId = :productProfileId', {
+            productProfileId,
+          })
+          .orderBy('reviews.createdAt', 'DESC')
+
+        if (star) {
+          reviews.andWhere('reviews.star = :star', { star })
+        }
+      } catch (error) {
+        return [reviews, error.message]
+      }
+
+      this.logger.info(
+        `Done InquiryReviewsByProductProfileIdFunc ${dayjs().diff(start)} ms`,
+      )
+
+      return [reviews, '']
     }
   }
 }

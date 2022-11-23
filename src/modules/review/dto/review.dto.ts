@@ -11,7 +11,7 @@ export class ReplyCommentRequestDto {
   @IsNotEmpty()
   reply: string
 }
-export class GetReviewQueryDto {
+export class GetReviewOfSellerQueryDto {
   @IsOptional()
   limit?: number
 
@@ -34,4 +34,16 @@ export class GetReviewQueryDto {
 
   @IsOptional()
   endDate?: Date
+}
+
+export class GetReviewQueryDto {
+  @IsOptional()
+  limit?: number
+
+  @IsOptional()
+  page?: number
+
+  @IsOptional()
+  @IsIn(['0', '1', '2', '3', '4', '5'])
+  star?: string
 }
