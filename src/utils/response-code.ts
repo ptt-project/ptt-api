@@ -131,7 +131,9 @@ export const UnableInquiryProductProfileFromDb = _productError + 18
 export const UnableInquiryProductByProductIds = _productError + 19
 export const UnableToGetProductPrice = _productError + 20
 export const UnableConvertProductProfileToProductProfileListForBuyer =
-  _productError + 6
+  _productError + 21
+export const UnableToInquiryProductProfileFromDb = _productError + 22
+export const UnableToExecuteInquiryProductProfileFromDb = _productError + 23
 
 const _image = 110000
 export const UnableResizeImage = _image + 1
@@ -192,3 +194,9 @@ export const UnableToGetBrandOptions = _config + 1
 export const UnableToGetPlatformCategoryOptions = _config + 2
 export const UnableToGetBankOptions = _config + 3
 export const UnableToGetAddressOptions = _config + 4
+
+
+const _shopError = 220000
+export const UnableToPreInquiryShopFromDb = _shopError + 1
+export const UnableToExecuteInquiryShopFromDb = _shopError + 2
+export const UnableToConvertDataToShopSearchPage = _shopError + 3

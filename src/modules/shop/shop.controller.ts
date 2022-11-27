@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common'
+import { Body, Controller, Get, Patch, Query } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqShop, ReqUser, Seller } from '../auth/auth.decorator'
-import { UpdateShopInfoRequestDto } from './dto/shop.dto'
+import { SearchShopsDTO, UpdateShopInfoRequestDto } from './dto/shop.dto'
 import { ConditionService } from './service/condition.service'
 import { ShopService } from './service/shop.service'
 
@@ -49,5 +49,19 @@ export class ShopController {
     return await this.conditionService.GetConditionsHandler(
       this.conditionService.InquiryConditionByShopIdFunc(etm),
     )(shop)
+  }
+
+
+  @Get('search')
+  @Transaction()
+  async searchProducts(
+    @Query() query: SearchShopsDTO,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.shopService.SearchShopsHandler(
+      this.shopService.PreInquiryShopBySearchKeywordFromDb(etm),
+      this.shopService.ExecuteInquiryShopFromDbFunc(),
+      this.shopService.ConvertDataToShopSearchPageFunc(),
+    )(query)
   }
 }

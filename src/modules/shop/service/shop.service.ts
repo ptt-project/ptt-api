@@ -4,19 +4,28 @@ import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
 import { Condition } from 'src/db/entities/Condition'
 import { Shop } from 'src/db/entities/Shop'
-import { EntityManager, UpdateResult } from 'typeorm'
+import { EntityManager, Like, SelectQueryBuilder, UpdateResult } from 'typeorm'
 import {
+  UnableToConvertDataToShopSearchPage,
+  UnableToExecuteInquiryShopFromDb,
   UnableToGetConditions,
   UnableToGetShopInfo,
+  UnableToPreInquiryShopFromDb,
   UnableToUpdateShopInfo,
 } from 'src/utils/response-code'
 import { Member } from 'src/db/entities/Member'
 import {
+  ConvertDataToShopSearchPageFuncType,
+  ExecutePreInquiryShopFromDbType,
   GetShopInfoType,
+  PreInquiryShopBySearchKeywordFromDbFuncType,
+  SearchShopResponseType,
   UpdateShopInfoToDbParams,
   UpdateShopTobDbByIdType,
 } from '../type/shop.type'
 import { InquiryConditionByShopIdType } from '../type/condition.type'
+import { IPaginationMeta, paginate, Pagination } from 'nestjs-typeorm-paginate'
+import { SearchShopsDTO } from '../dto/shop.dto'
 
 @Injectable()
 export class ShopService {
@@ -163,6 +172,140 @@ export class ShopService {
         `Done InquiryConditionByShopIdFunc ${dayjs().diff(start)} ms`,
       )
       return [condition, '']
+    }
+  }
+
+  SearchShopsHandler(
+    preInquiryShopBySearchKeywordFromDb: PreInquiryShopBySearchKeywordFromDbFuncType,
+    executePreInquiryShopFromDb: ExecutePreInquiryShopFromDbType,
+    convertDataToShopSearchPage: ConvertDataToShopSearchPageFuncType,
+  ) {
+    return async (query: SearchShopsDTO) => {
+      const {
+        limit,
+        page,
+        keyword,
+      } = query
+      const [
+        shopQuery,
+        errorPreInquiryShopFromDb,
+      ] = preInquiryShopBySearchKeywordFromDb(
+        keyword,
+      )
+
+      if (errorPreInquiryShopFromDb != '') {
+        return response(
+          undefined,
+          UnableToPreInquiryShopFromDb,
+          errorPreInquiryShopFromDb,
+        )
+      }
+
+      const [
+        paginateShop,
+        errorExecuteInquiryShopFromDb,
+      ] = await executePreInquiryShopFromDb(shopQuery, limit, page)
+
+      if (errorExecuteInquiryShopFromDb != '') {
+        return response(
+          undefined,
+          UnableToExecuteInquiryShopFromDb,
+          errorExecuteInquiryShopFromDb,
+        )
+      }
+
+      const [
+        result,
+        errorConvertDataToShopSearchPage,
+      ] = convertDataToShopSearchPage(
+        paginateShop,
+      )
+      if (errorConvertDataToShopSearchPage != '') {
+        return response(
+          undefined,
+          UnableToConvertDataToShopSearchPage,
+          errorConvertDataToShopSearchPage,
+        )
+      }
+
+      return response(result)
+    }
+  }
+
+  PreInquiryShopBySearchKeywordFromDb(
+    etm: EntityManager,
+  ): PreInquiryShopBySearchKeywordFromDbFuncType {
+    return (keyword: string): [SelectQueryBuilder<Shop>, string] => {
+      const start = dayjs()
+      let shopQuery: SelectQueryBuilder<Shop>
+      try {
+        shopQuery = etm.createQueryBuilder(Shop, 'shop')
+        .leftJoinAndSelect('shop.productProfiles', 'productProfiles')
+        .where({
+          shopName: Like(`%${keyword}%`),
+          approvalStatus: 'approved',
+          deletedAt: null,
+        })
+        
+      } catch (error) {
+        return [shopQuery, error.message]
+      }
+
+      this.logger.info(
+        `Done SearchShopFromDbFunc ${dayjs().diff(start)} ms`,
+      )
+      return [shopQuery, '']
+    }
+  }
+
+  ExecuteInquiryShopFromDbFunc(): ExecutePreInquiryShopFromDbType {
+    return async (
+      shopQuery: SelectQueryBuilder<Shop>,
+      limit: number,
+      page: number,
+    ): Promise<[Pagination<Shop, IPaginationMeta>, string]> => {
+      let paginateShop: Pagination<Shop, IPaginationMeta>
+      try {
+        paginateShop = await paginate<Shop>(
+          shopQuery,
+          {
+            limit,
+            page,
+          },
+        )
+      } catch (error) {
+        return [paginateShop, error.message]
+      }
+
+      return [paginateShop, '']
+    }
+  }
+
+  ConvertDataToShopSearchPageFunc(): ConvertDataToShopSearchPageFuncType {
+    return (
+      paginateShop: Pagination<Shop, IPaginationMeta>,
+    ): [Pagination<SearchShopResponseType, IPaginationMeta>, ''] => {
+      try {
+        const items = paginateShop.items.map(
+          (shop: Shop) => {
+
+            return {
+              shopName: shop.shopName,
+              productCount: shop.productProfiles.length,
+              shopScore: shop.shopScore,
+              replyRate: shop.replyRate,
+              profileImagePath: shop.profileImagePath,
+              replyTime: 0,
+              following: 0,
+              follower: 0,
+            }
+          },
+        )
+
+        return [{ ...paginateShop, items }, '']
+      } catch (error) {
+        return [undefined, error.message]
+      }
     }
   }
 }

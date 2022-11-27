@@ -20,6 +20,9 @@ import {
   UnableUpdateProductOption,
   UnableRemoveProductsById,
   UnableUpdateProduct,
+  UnableToInquiryProductProfileFromDb,
+  UnableToExecuteInquiryProductProfileFromDb,
+  UnableConvertProductProfileToProductProfileListForBuyer,
 } from 'src/utils/response-code'
 
 import {
@@ -50,6 +53,7 @@ import {
   PreInquiryProductProfileFromDbType,
   ConvertDataToProductProfileLandingPageType,
   ExecutePreInquiryProductProfileFromDbType,
+  PreInquiryProductProfileBySearchKeywordFromDbType,
 } from '../type/product.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
@@ -58,6 +62,7 @@ import {
   GetProductsDTO,
   UpdateProductProfileRequestDto,
   GetProductListDto,
+  SearchProductsDTO,
 } from '../dto/product.dto'
 
 import { Shop } from 'src/db/entities/Shop'
@@ -68,7 +73,7 @@ import {
 import { ProductOption } from 'src/db/entities/ProductOption'
 import { Product } from 'src/db/entities/Product'
 import { internalSeverError } from 'src/utils/response-error'
-import _ from 'lodash'
+import _, { orderBy } from 'lodash'
 import { paginate, Pagination, IPaginationMeta } from 'nestjs-typeorm-paginate'
 
 @Injectable()
@@ -1483,7 +1488,7 @@ export class ProductService {
       if (errorInquiryProductProfileFromDb != '') {
         return response(
           undefined,
-          UnableInquiryProductProfileByProductProfileId,
+          UnableToInquiryProductProfileFromDb,
           errorInquiryProductProfileFromDb,
         )
       }
@@ -1496,7 +1501,7 @@ export class ProductService {
       if (errorExecuteInquiryProductProfileFromDb != '') {
         return response(
           undefined,
-          UnableInquiryProductProfileByProductProfileId,
+          UnableToExecuteInquiryProductProfileFromDb,
           errorInquiryProductProfileFromDb,
         )
       }
@@ -1510,7 +1515,7 @@ export class ProductService {
       if (errorConvertProductProfileToProductProfileListForBuyer != '') {
         return response(
           undefined,
-          UnableInquiryProductProfileByProductProfileId,
+          UnableConvertProductProfileToProductProfileListForBuyer,
           errorInquiryProductProfileFromDb,
         )
       }
@@ -1617,5 +1622,176 @@ export class ProductService {
         'productProfiles.shop',
         'shops',
       )
+  }
+
+  SearchProductProfileHandler(
+    preInquiryProductProfileBySearchKeywordFromDb: PreInquiryProductProfileBySearchKeywordFromDbType,
+    executeInquiryProductProfileFromDb: ExecutePreInquiryProductProfileFromDbType,
+    convertProductProfileToProductProfileListForBuyer: ConvertDataToProductProfileLandingPageType,
+  ) {
+    return async (query: SearchProductsDTO) => {
+      const {
+        limit,
+        page,
+        keyword,
+        shopId,
+        productScore,
+        shopType,
+        sendFrom,
+        platformCategoryId,
+        minPrice,
+        maxPrice,
+        orderBy
+      } = query
+      const [
+        productProfiles,
+        errorInquiryProductProfileFromDb,
+      ] = preInquiryProductProfileBySearchKeywordFromDb(
+        keyword,
+        shopId,
+        platformCategoryId,
+        sendFrom,
+        minPrice,
+        maxPrice,
+        productScore,
+        shopType,
+        orderBy,
+      )
+
+      if (errorInquiryProductProfileFromDb != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          errorInquiryProductProfileFromDb,
+        )
+      }
+
+      const [
+        paginateProductProfile,
+        errorExecuteInquiryProductProfileFromDb,
+      ] = await executeInquiryProductProfileFromDb(productProfiles, limit, page)
+
+      if (errorExecuteInquiryProductProfileFromDb != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          errorInquiryProductProfileFromDb,
+        )
+      }
+
+      const [
+        result,
+        errorConvertProductProfileToProductProfileListForBuyer,
+      ] = convertProductProfileToProductProfileListForBuyer(
+        paginateProductProfile,
+      )
+      if (errorConvertProductProfileToProductProfileListForBuyer != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          errorInquiryProductProfileFromDb,
+        )
+      }
+
+      return response(result)
+    }
+  }
+
+  PreInquiryProductProfileBySearchKeywordFromDbType(
+    etm: EntityManager,
+  ): PreInquiryProductProfileBySearchKeywordFromDbType {
+    return (
+      keyword: string,
+      shopId?: string,
+      platformCategoryId?: string,
+      sendFrom?: string,
+      minPrice?: number,
+      maxPrice?: number,
+      productScore?: number,
+      shopType?: string,
+      orderBy?: string,
+    ): [SelectQueryBuilder<ProductProfile>, string] => {
+      let productProfiles: SelectQueryBuilder<ProductProfile>
+
+      try {
+        productProfiles = etm
+          .createQueryBuilder(ProductProfile, 'productProfiles')
+
+        productProfiles = this.SelectQueryBuilderJoinAndMapProdcutsAndShop(
+          productProfiles,
+        )
+        productProfiles = productProfiles.where('productProfiles.deletedAt IS NULL')
+          .andWhere('productProfiles.name ILIKE :keyword', {
+            keyword: `%${keyword}%`
+          })
+          .orderBy('productProfiles.createdAt', 'DESC')
+
+        if (shopId) {
+          productProfiles = productProfiles.andWhere(
+            'productProfiles.shopId = :shopId',
+            { shopId }
+          )
+        }
+        
+        if (platformCategoryId) {
+          productProfiles = productProfiles.andWhere(
+            'productProfiles.platformCategoryId = :platformCategoryId',
+            { platformCategoryId }
+          )
+        }
+        
+        if (sendFrom) {
+          productProfiles = productProfiles
+            .leftJoinAndSelect('shops.member', 'member')
+            .leftJoinAndSelect('member.addresses', 'addresses')
+            .andWhere(
+              'addresses.isPickup = True and addresses.province = :sendFrom',
+              { sendFrom }
+            )
+        }
+        
+        if (minPrice) {
+          productProfiles = productProfiles.andWhere(
+            'products.price >= :minPrice',
+            { minPrice }
+          )
+        }
+        
+        if (maxPrice) {
+          productProfiles = productProfiles.andWhere(
+            'products.price <= :maxPrice',
+            { maxPrice }
+          )
+        }
+        
+        if (productScore) {
+          productProfiles = productProfiles.andWhere(
+            'productProfiles.score >= :productScore',
+            { productScore }
+          )
+        }
+        
+        if (shopType) {
+          productProfiles = productProfiles.andWhere(
+            'shops.type = :shopType',
+            { shopType }
+          )
+        }
+        
+        if (orderBy == 'minPrice') {
+          productProfiles = productProfiles.orderBy('products.price', 'ASC')
+        }
+        else if (orderBy == 'maxPrice') {
+          productProfiles = productProfiles.orderBy('products.price', 'DESC')
+        }
+        // else {
+        //   productProfiles = productProfiles.orderBy('productProfiles.updatedAt', 'DESC')
+        // }
+      } catch (error) {
+        return [productProfiles, error.message]
+      }
+
+      return [productProfiles, '']
+    }
   }
 }

@@ -288,3 +288,43 @@ export class GetProductsDTO {
   @IsOptional()
   page?: number
 }
+
+export class SearchProductsDTO {
+  @IsOptional()
+  limit?: number
+
+  @IsOptional()
+  page?: number
+
+  @IsNotEmpty()
+  keyword: string
+
+  @IsOptional()
+  @IsString()
+  shopId?: string
+
+  @IsOptional()
+  @IsString()
+  platformCategoryId?: string
+
+  @IsOptional()
+  @IsString()
+  sendFrom?: string
+
+  @IsOptional()
+  minPrice?: number
+
+  @IsOptional()
+  maxPrice?: number
+
+  @IsOptional()
+  productScore?: number
+
+  @IsOptional()
+  @IsIn(['Normal', 'Mall'])
+  shopType?: string
+
+  @IsOptional()
+  @IsIn(['lastUpdated', 'minPrice', 'maxPrice'])
+  orderBy?: string
+}

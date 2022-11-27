@@ -19,3 +19,14 @@ export class UpdateShopInfoRequestDto {
   @IsString()
   coverImagePath?: string
 }
+
+export class SearchShopsDTO {
+  @IsOptional()
+  limit?: number
+
+  @IsOptional()
+  page?: number
+
+  @IsNotEmpty()
+  keyword: string
+}

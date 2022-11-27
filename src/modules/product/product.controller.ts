@@ -16,6 +16,7 @@ import {
   CreateProductProfileRequestDto,
   GetProductListDto,
   GetProductsDTO,
+  SearchProductsDTO,
   UpdateProductProfileRequestDto,
 } from './dto/product.dto'
 import { ProductService } from './service/product.service'
@@ -131,6 +132,19 @@ export class ProductController {
   ) {
     return await this.productService.InquiryProductProfileHandler(
       this.productService.PreInquiryProductProfileFromDbFunc(etm),
+      this.productService.ExecuteInquiryProductProfileFromDbFunc(),
+      this.productService.ConvertDataToProductProfileLandingPageFunc(),
+    )(query)
+  }
+
+  @Get('search')
+  @Transaction()
+  async searchProducts(
+    @Query() query: SearchProductsDTO,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.productService.SearchProductProfileHandler(
+      this.productService.PreInquiryProductProfileBySearchKeywordFromDbType(etm),
       this.productService.ExecuteInquiryProductProfileFromDbFunc(),
       this.productService.ConvertDataToProductProfileLandingPageFunc(),
     )(query)
