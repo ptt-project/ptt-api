@@ -1488,7 +1488,7 @@ export class ProductService {
       if (errorInquiryProductProfileFromDb != '') {
         return response(
           undefined,
-          UnableToInquiryProductProfileFromDb,
+          UnableInquiryProductProfileByProductProfileId,
           errorInquiryProductProfileFromDb,
         )
       }
@@ -1501,7 +1501,7 @@ export class ProductService {
       if (errorExecuteInquiryProductProfileFromDb != '') {
         return response(
           undefined,
-          UnableToExecuteInquiryProductProfileFromDb,
+          UnableInquiryProductProfileByProductProfileId,
           errorInquiryProductProfileFromDb,
         )
       }
@@ -1515,7 +1515,7 @@ export class ProductService {
       if (errorConvertProductProfileToProductProfileListForBuyer != '') {
         return response(
           undefined,
-          UnableConvertProductProfileToProductProfileListForBuyer,
+          UnableInquiryProductProfileByProductProfileId,
           errorInquiryProductProfileFromDb,
         )
       }
@@ -1661,7 +1661,7 @@ export class ProductService {
       if (errorInquiryProductProfileFromDb != '') {
         return response(
           undefined,
-          UnableInquiryProductProfileByProductProfileId,
+          UnableToInquiryProductProfileFromDb,
           errorInquiryProductProfileFromDb,
         )
       }
@@ -1674,7 +1674,7 @@ export class ProductService {
       if (errorExecuteInquiryProductProfileFromDb != '') {
         return response(
           undefined,
-          UnableInquiryProductProfileByProductProfileId,
+          UnableToExecuteInquiryProductProfileFromDb,
           errorInquiryProductProfileFromDb,
         )
       }
@@ -1688,7 +1688,7 @@ export class ProductService {
       if (errorConvertProductProfileToProductProfileListForBuyer != '') {
         return response(
           undefined,
-          UnableInquiryProductProfileByProductProfileId,
+          UnableConvertProductProfileToProductProfileListForBuyer,
           errorInquiryProductProfileFromDb,
         )
       }
@@ -1724,7 +1724,7 @@ export class ProductService {
           .andWhere('productProfiles.name ILIKE :keyword', {
             keyword: `%${keyword}%`
           })
-          .orderBy('productProfiles.createdAt', 'DESC')
+          .orderBy('productProfiles.updatedAt', 'DESC')
 
         if (shopId) {
           productProfiles = productProfiles.andWhere(
@@ -1766,7 +1766,7 @@ export class ProductService {
         
         if (productScore) {
           productProfiles = productProfiles.andWhere(
-            'productProfiles.score >= :productScore',
+            'productProfiles.productScore >= :productScore',
             { productScore }
           )
         }
@@ -1784,9 +1784,6 @@ export class ProductService {
         else if (orderBy == 'maxPrice') {
           productProfiles = productProfiles.orderBy('products.price', 'DESC')
         }
-        // else {
-        //   productProfiles = productProfiles.orderBy('productProfiles.updatedAt', 'DESC')
-        // }
       } catch (error) {
         return [productProfiles, error.message]
       }
