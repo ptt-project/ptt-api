@@ -134,6 +134,8 @@ export class Member extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'member_id' })
   order: Order[]
+
+  @OneToMany(
     () => Review,
     review => review.reviewer,
   )
