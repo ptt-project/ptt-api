@@ -46,6 +46,20 @@ export class HappyPointContoller {
     )(happyPoint)
   }
 
+  @Post('lookup/order')
+  @Transaction()
+  async lookupForOrderController(
+    @ReqHappyPoint() happyPoint: HappyPoint,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    const redis = this.redisService.getClient()
+
+    return await this.lookupService.LookupForCreateOrderHandler(
+      this.masterConfigService.InquiryMasterConfigFunc(etm),
+      this.lookupService.SetCacheLookupToRedisFunc(redis),
+    )(happyPoint)
+  }
+
   @Post('buy')
   @Transaction()
   async buyHappyPoitnController(
@@ -131,8 +145,11 @@ export class HappyPointContoller {
 
   @Get('balance')
   @Transaction()
-  async getBalanceHappyPoint(@ReqHappyPoint() happyPoint: HappyPoint) {
-    return response({ balance: happyPoint.balance })
+  async getBalanceHappyPoint(
+    @ReqHappyPoint() happyPoint: HappyPoint,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await response({ balance: happyPoint.balance })
   }
 
   @Get('history')

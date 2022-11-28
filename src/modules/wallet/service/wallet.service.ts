@@ -31,6 +31,10 @@ import {
   InquiryWalletByShopIdType,
   ValidateCalculateWithdrawAndFeeFuncType,
   InquiryRefIdExistInTransactionType,
+  AdjustWalletToBuyerType,
+  AdjustWalletToBuyerParams,
+  AdjustWalletToSellerType,
+  AdjustWalletToSellerParams,
 } from '../type/wallet.type'
 
 import { PinoLogger } from 'nestjs-pino'
@@ -59,6 +63,7 @@ import { InqueryBankAccountFormDbFuncType } from '../../bankAccount/type/bankAcc
 import { GetCacheLookupToRedisType } from '../type/lookup.type'
 import { internalSeverError } from 'src/utils/response-error'
 import { genUuid } from 'src/utils/helpers'
+import { OrderShop } from 'src/db/entities/OrderShop'
 
 @Injectable()
 export class WalletService {
@@ -452,7 +457,7 @@ export class WalletService {
             deletedAt: null,
           },
           lock: {
-            mode: "pessimistic_write"
+            mode: 'pessimistic_write',
           },
         })
         const note: TransactionNote =
@@ -519,7 +524,10 @@ export class WalletService {
             type == 'buy' || type == 'buy_happy_point' || type == 'withdraw'
               ? 'debit'
               : 'credit',
-          status: type == 'deposit' ? 'success' : 'pending', // Todo: mockup before connect to payment api
+          status:
+            type == 'deposit' || type == 'buy' || type == 'sell'
+              ? 'success'
+              : 'pending', // Todo: mockup before connect to payment api
         })
         walletTransaction = await etm.save(walletTransaction)
       } catch (error) {
@@ -692,6 +700,91 @@ export class WalletService {
       }
 
       return ''
+    }
+  }
+
+  AdjustWalletToSellerFunc(
+    inquiryWalletByShopId: InquiryWalletByShopIdType,
+    insertTransaction: Promise<InsertTransactionToDbFuncType>,
+    adjustWallet: Promise<AdjustWalletFuncType>,
+  ): AdjustWalletToSellerType {
+    return async (params: AdjustWalletToSellerParams): Promise<string> => {
+      const start = dayjs()
+
+      const { orderShops } = params
+
+      for (const orderShop of orderShops) {
+        const { shopId, totalPriceOfProducts, code } = orderShop
+
+        const [
+          walletShop,
+          inquiryWalletByShopIdError,
+        ] = await inquiryWalletByShopId(shopId)
+
+        if (inquiryWalletByShopIdError != '') {
+          return inquiryWalletByShopIdError
+        }
+
+        const [, insertTransactionError] = await (await insertTransaction)(
+          walletShop.id,
+          totalPriceOfProducts,
+          0,
+          code,
+          'sell',
+          undefined,
+          orderShop.id,
+        )
+
+        if (insertTransactionError != '') {
+          return insertTransactionError
+        }
+
+        const [, adjustedWalletSellerError] = await (await adjustWallet)(
+          walletShop.id,
+          parseFloat(totalPriceOfProducts.toString()),
+          'sell',
+        )
+
+        if (adjustedWalletSellerError != '') {
+          return adjustedWalletSellerError
+        }
+      }
+
+      this.logger.info(
+        `Done AdjustWalletToSellerFunc ${dayjs().diff(start)} ms`,
+      )
+      return ''
+    }
+  }
+
+  AdjustWalletToBuyerFunc(
+    insertTransaction: Promise<InsertTransactionToDbFuncType>,
+    adjustWallet: Promise<AdjustWalletFuncType>,
+  ): AdjustWalletToBuyerType {
+    return async (
+      params: AdjustWalletToBuyerParams,
+    ): Promise<[WalletTransaction, string]> => {
+      const { walletId, totalPrice, code } = params
+
+      const [walletTransaction, insertTransactionError] = await (
+        await insertTransaction
+      )(walletId, totalPrice, 0, code, 'buy')
+
+      if (insertTransactionError != '') {
+        return [walletTransaction, insertTransactionError]
+      }
+
+      const [, adjustWalletError] = await (await adjustWallet)(
+        walletId,
+        totalPrice,
+        'buy',
+      )
+
+      if (adjustWalletError != '') {
+        return [walletTransaction, adjustWalletError]
+      }
+
+      return [walletTransaction, '']
     }
   }
 }

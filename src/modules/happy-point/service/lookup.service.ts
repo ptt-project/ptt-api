@@ -85,6 +85,62 @@ export class LookupService {
     }
   }
 
+  LookupForCreateOrderHandler(
+    inquiryMasterConfig: Promise<InquiryMasterConfigType>,
+    setCacheLookupToRedis: Promise<SetCacheLookupToRedisFunc>,
+  ) {
+    return async (happyPoint: HappyPoint) => {
+      const [masterConfig, isErrorInquiryMasterConfig] = await (
+        await inquiryMasterConfig
+      )()
+      if (isErrorInquiryMasterConfig != '') {
+        return response(
+          undefined,
+          UnableInquiryMasterConfig,
+          isErrorInquiryMasterConfig,
+        )
+      }
+      const {
+        exchangeRate,
+        happyPointBuyRate,
+        happyPointSellRate,
+        happyPointTransferRate,
+      } = masterConfig.config
+      const happyPointFeePercent = 0
+
+      const params: Lookup = {
+        happyPointBuyRate,
+        happyPointSellRate,
+        happyPointFeePercent,
+        happyPointTransferRate,
+        refId: genUuid(),
+        happyPointId: happyPoint.id,
+      }
+
+      const isErrorsetCacheLookupToRedis = await (await setCacheLookupToRedis)(
+        params,
+      )
+
+      if (isErrorsetCacheLookupToRedis != '') {
+        return response(
+          undefined,
+          UnableInsertLookupToDb,
+          isErrorsetCacheLookupToRedis,
+        )
+      }
+
+      const { refId } = params
+      return response({
+        refId,
+        exchangeRate,
+        happyPointBuyRate,
+        happyPointSellRate,
+        happyPointFeePercent,
+        happyPointTransferRate,
+      })
+    }
+  }
+
   async GetCacheLookupToRedisFunc(
     redis: Redis,
   ): Promise<GetCacheLookupToRedisType> {

@@ -17,14 +17,7 @@ import { ShippingOption } from './ShippingOption'
 import { Shop } from './Shop'
 import { WalletTransaction } from './WalletTransaction'
 
-export type OrderShopStatusType =
-  | 'toPay'
-  | 'toShip'
-  | 'toReceive'
-  | 'complated'
-  | 'cancelled'
-  | 'return'
-  | 'refund'
+export type OrderShopStatusType = 'BOOKING' | 'SHIPPING' | 'COMPLETE' | 'CANCEL'
 @Entity({ name: 'order_shops' })
 export class OrderShop extends AppEntity {
   @Column({ name: 'order_id', nullable: false })
@@ -39,7 +32,7 @@ export class OrderShop extends AppEntity {
   @Column({ name: 'shop_id', nullable: false })
   shopId: string
 
-  @Column({ name: 'shipping_option_id', nullable: false })
+  @Column({ name: 'shipping_option_id', nullable: true })
   shippingOptionId: string
 
   @Column({
@@ -103,15 +96,7 @@ export class OrderShop extends AppEntity {
   @Column({
     name: 'status',
     type: 'enum',
-    enum: [
-      'toPay',
-      'toShip',
-      'toReceive',
-      'complated',
-      'cancelled',
-      'return',
-      'refund',
-    ],
+    enum: ['BOOKING', 'SHIPPING', 'COMPLETE', 'CANCEL'],
     nullable: false,
   })
   status: OrderShopStatusType

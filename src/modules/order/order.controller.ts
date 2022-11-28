@@ -11,7 +11,9 @@ import { OtpService } from '../otp/service/otp.service'
 import { WalletService } from '../wallet/service/wallet.service'
 import { CreateOrderDto, GetOrderRequestDto } from './dto/createOrder.dto'
 import { OrderService } from './service/order.service'
-import { PaymentService } from './service/payment.service'
+import { PaymentService } from '../payment/service/payment.service'
+import { ShopService } from './service/shop.service'
+import { ProductService } from './service/product.service'
 
 @Auth()
 @Controller('v1/order')
@@ -24,9 +26,10 @@ export class OrderController {
     private readonly walletService: WalletService,
     private readonly redisService: RedisService,
     private readonly paymentService: PaymentService,
+    private readonly productService: ProductService,
+    private readonly shopService: ShopService,
   ) {}
 
-  @Auth()
   @Post('')
   @Transaction()
   async createOrder(
@@ -39,14 +42,14 @@ export class OrderController {
     const redis = this.redisService.getClient()
     return await this.orderService.CheckoutHandler(
       this.orderService.CreateOrderToDbFunc(
-        this.orderService.InquiryShopByIdFunc(etm),
-        this.orderService.InquiryProductByIdFunc(etm),
+        this.shopService.InquiryShopByIdFunc(etm),
+        this.productService.InquiryProductByIdFunc(etm),
         this.orderService.InsertOrderToDbFunc(etm),
         this.orderService.InsertOrderShopToDbFunc(etm),
         this.orderService.InsertOrderShopProductFunc(
-          this.orderService.InquiryProductByIdFunc(etm),
+          this.productService.InquiryProductByIdFunc(etm),
           this.orderService.UpdateStockToProductFunc(etm),
-          this.orderService.InquiryProductProfileByIdFunc(etm),
+          this.productService.InquiryProductProfileByIdFunc(etm),
           this.orderService.InsertOrderShopProductToDbFunc(etm),
         ),
       ),
@@ -60,19 +63,15 @@ export class OrderController {
         this.happyService.InsertHappyPointTransactionToDbFunc(etm),
         this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
       ),
-      this.walletService.InsertTransactionToDbFunc(etm),
-      this.walletService.InsertReferenceToDbFunc(etm),
-      this.walletService.UpdateReferenceToDbFunc(etm),
-      this.walletService.AdjustWalletInDbFunc(etm),
-      this.paymentService.InsertPaymentByBankToDbFunc(etm),
-      this.paymentService.InsertPaymentByHappyPointToDbFunc(etm),
-      this.paymentService.InsertPaymentByEwalletToDbFunc(etm),
-      this.orderService.UpdatePaymentIdToOrderFunc(etm),
-      this.orderService.AdjustWalletToSellerFunc(
+      this.walletService.AdjustWalletToBuyerFunc(
+        this.walletService.InsertTransactionToDbFunc(etm),
+        this.walletService.AdjustWalletInDbFunc(etm),
+      ),
+      this.paymentService.InsertPaymentToDbFunc(etm),
+      this.orderService.UpdatePaymentIdAndStatusToOrderFunc(etm),
+      this.walletService.AdjustWalletToSellerFunc(
         this.walletService.InquiryWalletByShopIdFunc(etm),
         this.walletService.InsertTransactionToDbFunc(etm),
-        this.walletService.InsertReferenceToDbFunc(etm),
-        this.walletService.UpdateReferenceToDbFunc(etm),
         this.walletService.AdjustWalletInDbFunc(etm),
       ),
     )(wallet, happyPoint, member, body)

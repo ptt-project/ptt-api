@@ -1,12 +1,7 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
-<<<<<<< Updated upstream
-    project: 'tsconfig.json',
-    tsconfigRootDir : __dirname, 
-=======
     project: "tsconfig.json",
->>>>>>> Stashed changes
     sourceType: 'module',
   },
   plugins: ['@typescript-eslint/eslint-plugin'],
@@ -20,11 +15,7 @@ module.exports = {
     node: true,
     jest: true,
   },
-<<<<<<< Updated upstream
-  ignorePatterns: ['.eslintrc.js'],
-=======
   ignorePatterns: ["tsconfig.json"],
->>>>>>> Stashed changes
   rules: {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',

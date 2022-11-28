@@ -1,43 +1,19 @@
 import { Injectable } from '@nestjs/common'
-
 import { PinoLogger } from 'nestjs-pino'
 
 import {
-  AddressToShippop,
-  AdjustWalletToSellerType,
   CreateOrderToDbType,
   InquiryOrderShopByIdFuncType,
   InquiryOrderShopsFuncType,
-  InquiryPriceFromShippopType,
-  InquiryProducProfiletByIdType,
-  InquiryProductByIdType,
   InquiryShopByIdType,
   InsertOrderShopProductToDbType,
   InsertOrderShopProductType,
   InsertOrderShopToDbType,
   InsertOrderToDbType,
-  InsertPaymentByBankToDbType,
-  InsertPaymentByEwalletToDbType,
-  InsertPaymentByHappyToDbType,
-  ProductForShippopGetPrice,
-  ShippopGetPriceDetail,
-  ShippopGetPriceResponse,
-  UpdatePaymentIdToOrderType,
+  UpdatePaymentIdAndStatusToOrderType,
   UpdateStockToProductType,
-  ValidateOrderParamsType,
 } from '../type/order.type'
-
-import { ContentType, createFormData } from 'src/utils/api/tools'
-import { api } from 'src/utils/api'
-import dayjs from 'dayjs'
 import { InquiryVerifyOtpType } from 'src/modules/otp/type/otp.type'
-import {
-  AdjustWalletFuncType,
-  InquiryWalletByShopIdType,
-  InsertReferenceToDbFuncType,
-  InsertTransactionToDbFuncType,
-  UpdateReferenceToDbFuncType,
-} from 'src/modules/wallet/type/wallet.type'
 import {
   DebitHappyPointTransactionParams,
   DebitHappyPointType,
@@ -46,6 +22,7 @@ import { Wallet } from 'src/db/entities/Wallet'
 import { HappyPoint } from 'src/db/entities/HappyPoint'
 import { Member } from 'src/db/entities/Member'
 import {
+  ErrorValidateParamsForPayment,
   InvalidOrderShopTotalOfProducts,
   InvalidOrderShopTotalOfShipping,
   InvalidTotalPriceOfProducts,
@@ -53,21 +30,17 @@ import {
   UnableInquiryOrderShops,
   UnableInquiryProductById,
   UnableInquiryShopById,
+  UnableToAdjustWalletToBuyer,
   UnableToAdjustWalletToSeller,
   UnableToInsertOrder,
   UnableToInsertOrderShop,
   UnableToInsertOrderShopProduct,
-  UnableToInsertPayment,
-  UnableToUpdatePaymentIdToOrder,
-  UnableToValidateOrder,
+  UnableToUpdatePaymentIdAndStatusToOrder,
 } from 'src/utils/response-code'
-import { internalSeverError } from 'src/utils/response-error'
 import { verifyOtpRequestDto } from 'src/modules/otp/dto/otp.dto'
 import { response } from 'src/utils/response'
 import { EntityManager, SelectQueryBuilder } from 'typeorm'
-import { Order } from 'src/db/entities/Order'
-import { Payment } from 'src/db/entities/Payment'
-import { Shop } from 'src/db/entities/Shop'
+import { Order, OrderStatusType } from 'src/db/entities/Order'
 import { OrderShop } from 'src/db/entities/OrderShop'
 import { Product } from 'src/db/entities/Product'
 import { ProductProfile } from 'src/db/entities/ProductProfile'
@@ -79,6 +52,23 @@ import {
   OrderShopProductDto,
 } from '../dto/createOrder.dto'
 import { paginate } from 'nestjs-typeorm-paginate'
+import { InsertPaymentToDbType } from 'src/modules/payment/type/payment.type'
+import {
+  AdjustWalletToBuyerParams,
+  AdjustWalletToBuyerType,
+  AdjustWalletToSellerParams,
+  AdjustWalletToSellerType,
+} from 'src/modules/wallet/type/wallet.type'
+
+import { InsertPaymentParams } from '../../payment/type/payment.type'
+import { PaymentStatusType } from 'src/db/entities/Payment'
+import {
+  InquiryProducProfiletByIdType,
+  InquiryProductByIdParams,
+  InquiryProductByIdType,
+} from '../type/product.type'
+import { genOrderNumber } from 'src/utils/helpers'
+import dayjs from 'dayjs'
 
 @Injectable()
 export class OrderService {
@@ -90,14 +80,9 @@ export class OrderService {
     createOrderTodb: CreateOrderToDbType,
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
     debitHappyPoint: DebitHappyPointType,
-    insertTransaction: Promise<InsertTransactionToDbFuncType>,
-    insertTransactionReference: Promise<InsertReferenceToDbFuncType>,
-    update3rdPartyTransactionReference: Promise<UpdateReferenceToDbFuncType>,
-    adjustWallet: Promise<AdjustWalletFuncType>,
-    insertPaymentByBankToDb: InsertPaymentByBankToDbType,
-    insertPaymentByHappyToDb: InsertPaymentByHappyToDbType,
-    insertPaymentByEwalletToDb: InsertPaymentByEwalletToDbType,
-    updatePaymentIdToOrder: UpdatePaymentIdToOrderType,
+    adjustWalletToBuyer: AdjustWalletToBuyerType,
+    insertPaymentToDb: InsertPaymentToDbType,
+    updatePaymentIdAndStatusToOrder: UpdatePaymentIdAndStatusToOrderType,
     adjustWalletToSeller: AdjustWalletToSellerType,
   ) {
     return async (
@@ -110,7 +95,7 @@ export class OrderService {
 
       const [
         order,
-        orderShopList,
+        orderShops,
         errorCodeCreateOrderTodb,
         errorMessageCreateOrderTodb,
       ] = await createOrderTodb(member.id, body)
@@ -123,196 +108,147 @@ export class OrderService {
         )
       }
 
-      let paymentOrder
-      if (body.paymentType == 'bank') {
-        if (body.bankPaymentId && body.qrCode && body.reference) {
-          const [payment, insertPaymentError] = await insertPaymentByBankToDb(
-            order.id,
-            body,
-          )
+      let errorMessage = ''
+      let paymentableId = ''
+      let orderStatus: OrderStatusType = 'WAITING_PAYMENT'
+      let statusPayment: PaymentStatusType = 'COMPLETED'
 
-          if (insertPaymentError != '') {
-            return internalSeverError(UnableToInsertPayment, insertPaymentError)
-          }
-          paymentOrder = payment
-        } else {
-          return internalSeverError(
-            UnableToInsertPayment,
-            'bankPaymentId, qrCode and reference not null',
-          )
+      const {
+        paymentType,
+        reference,
+        qrCode,
+        refId,
+        refCode,
+        otpCode,
+        totalPrice,
+        amountOfHappyPoint,
+      } = body
+
+      if (paymentType == 'BANK') {
+        if (!reference) {
+          errorMessage = 'reference not null'
+        } else if (!qrCode) {
+          errorMessage = 'qrCode not null'
         }
-      } else if (body.paymentType == 'happyPoint') {
-        if (
-          body.amountSell &&
-          body.point &&
-          body.refId &&
-          body.totalAmount &&
-          body.feeAmount &&
-          body.refCode &&
-          body.otpCode
-        ) {
-          if (happyPoint.balance < body.point) {
-            return internalSeverError(
-              UnableToInsertPayment,
-              'Insufficient funds',
-            )
-          }
 
-          const verifyOtpData: verifyOtpRequestDto = {
-            reference: member.mobile,
-            refCode: body.refCode,
-            otpCode: body.otpCode,
-          }
+        statusPayment = 'WAITING_PAYMENT'
+        paymentableId = reference
+      } else if (paymentType == 'HAPPYPOINT') {
+        if (!amountOfHappyPoint) {
+          errorMessage = 'amountOfHappyPoint not null'
+        } else if (!refId) {
+          errorMessage = 'refId not null'
+        } else if (!refCode) {
+          errorMessage = 'refCode not null'
+        } else if (!otpCode) {
+          errorMessage = 'refCode not null'
+        }
 
-          const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
-            await inquiryVerifyOtp
-          )(verifyOtpData)
+        const verifyOtpData: verifyOtpRequestDto = {
+          reference: member.mobile,
+          refCode: refCode,
+          otpCode: otpCode,
+        }
 
-          if (verifyOtpErrorCode != 0) {
-            return response(
-              undefined,
-              verifyOtpErrorCode,
-              verifyOtpErrorMessege,
-            )
-          }
+        const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
+          await inquiryVerifyOtp
+        )(verifyOtpData)
 
-          const params: DebitHappyPointTransactionParams = {
-            point: body.point,
-            totalAmount: body.totalAmount,
-            feeAmount: body.feeAmount,
-            amount: body.amountSell,
-            refId: body.refId,
-            transactionType: 'PAYMENT',
-            orderId: order.id,
-          }
+        if (verifyOtpErrorCode != 0) {
+          return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
+        }
 
-          const [
-            respHappyPoint,
+        const params: DebitHappyPointTransactionParams = {
+          refId,
+          point: amountOfHappyPoint,
+          feeAmount: 0,
+          orderId: order.id,
+          totalAmount: totalPrice,
+          amount: totalPrice,
+          transactionType: 'PAYMENT',
+        }
+
+        const [
+          respHappyPoint,
+          errorCodeDebitHappyPoint,
+          errorMessageDebitHappyPoint,
+        ] = await debitHappyPoint(happyPoint, params)
+
+        if (errorCodeDebitHappyPoint != 0) {
+          return response(
+            undefined,
             errorCodeDebitHappyPoint,
             errorMessageDebitHappyPoint,
-          ] = await debitHappyPoint(happyPoint, params)
-
-          if (errorCodeDebitHappyPoint != 0) {
-            return response(
-              undefined,
-              errorCodeDebitHappyPoint,
-              errorMessageDebitHappyPoint,
-            )
-          }
-
-          const [payment, insertPaymentError] = await insertPaymentByHappyToDb(
-            order.id,
-            respHappyPoint.id,
-            body,
-          )
-
-          if (insertPaymentError != '') {
-            return internalSeverError(UnableToInsertPayment, insertPaymentError)
-          }
-
-          paymentOrder = payment
-        } else {
-          return internalSeverError(
-            UnableToInsertPayment,
-            'amountSell, point, refId, totalAmount, feeAmount, refCode and otpCode not null',
           )
         }
-      } else if (body.paymentType == 'ewallet') {
-        if (body.amountSell && body.refId) {
-          if (wallet.balance < body.amountSell) {
-            return internalSeverError(
-              UnableToInsertPayment,
-              'Insufficient funds',
-            )
-          }
 
-          const params = {
-            walletId: wallet.id,
-            amount: body.amountSell,
-            thirdPtReferenceNo: body.refId,
-            detail: 'buy',
-          }
+        orderStatus = 'PAID'
+        paymentableId = respHappyPoint.id
+      } else if (paymentType == 'EWALLET') {
+        const adjustWalletToBuyerParams: AdjustWalletToBuyerParams = {
+          totalPrice,
+          code: order.code,
+          walletId: wallet.id,
+        }
 
-          const [walletTransaction, insertTransactionError] = await (
-            await insertTransaction
-          )(params.walletId, params.amount, 0, params.detail, 'buy')
-
-          if (insertTransactionError != '') {
-            return [undefined, insertTransactionError]
-          }
-
-          const [referenceNo, insertReferenceError] = await (
-            await insertTransactionReference
-          )(walletTransaction)
-
-          if (insertReferenceError != '') {
-            return [undefined, insertReferenceError]
-          }
-
-          const [, insertDepositReferenceError] = await (
-            await update3rdPartyTransactionReference
-          )(
-            referenceNo,
-            params.thirdPtReferenceNo,
-            params.amount,
-            params.detail,
-          )
-
-          if (insertDepositReferenceError != '') {
-            return [undefined, insertDepositReferenceError]
-          }
-
-          const [, adjustWalletError] = await (await adjustWallet)(
-            params.walletId,
-            params.amount,
-            'buy',
-          )
-
-          if (adjustWalletError != '') {
-            return [undefined, adjustWalletError]
-          }
-
-          const [
-            payment,
-            insertPaymentError,
-          ] = await insertPaymentByEwalletToDb(
-            order.id,
-            walletTransaction.id,
-            body,
-          )
-
-          if (insertPaymentError != '') {
-            return internalSeverError(UnableToInsertPayment, insertPaymentError)
-          }
-
-          paymentOrder = payment
-        } else {
-          return internalSeverError(
-            UnableToInsertPayment,
-            'amountSell and refId not null',
+        const [
+          walletTransaction,
+          errorAdjustWalletToBuyer,
+        ] = await adjustWalletToBuyer(adjustWalletToBuyerParams)
+        if (errorAdjustWalletToBuyer != '') {
+          return response(
+            undefined,
+            UnableToAdjustWalletToBuyer,
+            errorAdjustWalletToBuyer,
           )
         }
+
+        orderStatus = 'PAID'
+        paymentableId = walletTransaction.id
       }
 
-      const updatePaymentIdToOrderError = await updatePaymentIdToOrder(
+      if (errorMessage != '') {
+        return response(undefined, ErrorValidateParamsForPayment, errorMessage)
+      }
+
+      const insertPaymentParams: InsertPaymentParams = {
+        qrCode,
+        orderId: order.id,
+        status: statusPayment,
+        paymentableType: paymentType,
+        paymentableId,
+      }
+
+      const [payment, errorInsertPaymentToDb] = await insertPaymentToDb(
+        insertPaymentParams,
+      )
+      if (errorInsertPaymentToDb != '') {
+      }
+
+      const updatePaymentIdAndStatusToOrderError = await updatePaymentIdAndStatusToOrder(
         order.id,
-        paymentOrder.id,
+        payment.id,
+        orderStatus,
       )
 
-      if (updatePaymentIdToOrderError != '') {
-        return internalSeverError(
-          UnableToUpdatePaymentIdToOrder,
-          updatePaymentIdToOrderError,
+      if (updatePaymentIdAndStatusToOrderError != '') {
+        return response(
+          undefined,
+          UnableToUpdatePaymentIdAndStatusToOrder,
+          updatePaymentIdAndStatusToOrderError,
         )
+      }
+      const paramsAdjustWalletToSeller: AdjustWalletToSellerParams = {
+        orderShops,
       }
 
       const adjustWalletToSellerError = await adjustWalletToSeller(
-        orderShopList,
-        body.refId,
+        paramsAdjustWalletToSeller,
       )
 
       if (adjustWalletToSellerError != '') {
-        return internalSeverError(
+        return response(
+          undefined,
           UnableToAdjustWalletToSeller,
           adjustWalletToSellerError,
         )
@@ -374,12 +310,20 @@ export class OrderService {
         orderShopList.push(orderShop)
 
         let priceProduct = 0
-        for (const x in orderShopRequest.orderShopProduct) {
-          const orderShopProductRequest = orderShopRequest.orderShopProduct[x]
-
-          const productId = orderShopProductRequest.productId
-          const [, inquiryProductByIdError] = await inquiryProductById(
+        for (const orderShopProductRequest of orderShopRequest.orderShopProduct) {
+          const {
             productId,
+            productOptions1,
+            productOptions2,
+          } = orderShopProductRequest
+
+          const paramsInquiryProductById: InquiryProductByIdParams = {
+            productId,
+            productOptions1,
+            productOptions2,
+          }
+          const [, inquiryProductByIdError] = await inquiryProductById(
+            paramsInquiryProductById,
           )
 
           if (inquiryProductByIdError != '') {
@@ -412,7 +356,7 @@ export class OrderService {
             orderShopProductRequest.units * orderShopProductRequest.unitPrice
         }
 
-        if (orderShop.orderShopAmount != priceProduct) {
+        if (orderShop.totalPriceOfProducts != priceProduct) {
           return [
             order,
             orderShopList,
@@ -420,10 +364,10 @@ export class OrderService {
             'Validate order false because orderShopAmount is incorrect',
           ]
         }
-        priceShop += orderShop.orderShopAmount
-        priceShippingShop += orderShop.shippingPrice
+        priceShop += orderShop.totalPriceOfProducts
+        priceShippingShop += orderShop.totalPriceOfShippings
 
-        if (body.merchandiseSubtotal != priceShop) {
+        if (body.totalPriceOfProducts != priceShop) {
           return [
             order,
             orderShopList,
@@ -432,7 +376,7 @@ export class OrderService {
           ]
         }
 
-        if (body.shippingTotal != priceShippingShop) {
+        if (body.totalPriceOfShippings != priceShippingShop) {
           return [
             order,
             orderShopList,
@@ -454,8 +398,16 @@ export class OrderService {
     return async (orderShopId: string, params: OrderShopProductDto) => {
       const start = dayjs()
 
+      const { productId, productOptions1, productOptions2 } = params
+
+      const paramsInquiryProductById: InquiryProductByIdParams = {
+        productId,
+        productOptions1,
+        productOptions2,
+      }
+
       const [product, inquiryProductByIdError] = await inquiryProductById(
-        params.productId,
+        paramsInquiryProductById,
       )
 
       if (inquiryProductByIdError != '') {
@@ -503,25 +455,6 @@ export class OrderService {
     }
   }
 
-  InquiryShopByIdFunc(etm: EntityManager): InquiryShopByIdType {
-    return async (shopId: string): Promise<[Shop, string]> => {
-      const start = dayjs()
-      let shop: Shop
-      try {
-        shop = await etm.findOne(Shop, shopId, { withDeleted: false })
-      } catch (error) {
-        return error.message
-      }
-
-      if (!shop) {
-        return [, 'Not found shop']
-      }
-
-      this.logger.info(`Done InquiryShopByIdFunc ${dayjs().diff(start)} ms`)
-      return [shop, '']
-    }
-  }
-
   InsertOrderToDbFunc(etm: EntityManager): InsertOrderToDbType {
     return async (
       memberId: string,
@@ -543,8 +476,6 @@ export class OrderService {
         mobile,
       } = createOrderParams
 
-      const status = 'toPay'
-
       let order: Order
       try {
         order = etm.create(Order, {
@@ -561,7 +492,8 @@ export class OrderService {
           postcode,
           mobile,
           memberId,
-          status,
+          code: genOrderNumber(),
+          status: 'WAITING_PAYMENT',
         })
 
         await etm.save(order)
@@ -574,93 +506,27 @@ export class OrderService {
     }
   }
 
-  AdjustWalletToSellerFunc(
-    inquiryWalletByShopId: InquiryWalletByShopIdType,
-    insertTransaction: Promise<InsertTransactionToDbFuncType>,
-    insertTransactionReference: Promise<InsertReferenceToDbFuncType>,
-    update3rdPartyTransactionReference: Promise<UpdateReferenceToDbFuncType>,
-    adjustWallet: Promise<AdjustWalletFuncType>,
-  ): AdjustWalletToSellerType {
+  UpdatePaymentIdAndStatusToOrderFunc(
+    etm: EntityManager,
+  ): UpdatePaymentIdAndStatusToOrderType {
     return async (
-      orderShopList: OrderShop[],
-      refId: string,
+      orderId: string,
+      paymentId: string,
+      status: OrderStatusType,
     ): Promise<string> => {
       const start = dayjs()
-
-      for (const x in orderShopList) {
-        const orderShop = orderShopList[x]
-
-        const [
-          walletShop,
-          inquiryWalletByShopIdError,
-        ] = await inquiryWalletByShopId(orderShop.shopId)
-
-        if (inquiryWalletByShopIdError != '') {
-          return inquiryWalletByShopIdError
-        }
-
-        const [walletTransaction, insertTransactionError] = await (
-          await insertTransaction
-        )(
-          walletShop.id,
-          orderShop.totalPrice,
-          0,
-          'deposit',
-          'deposit',
-          undefined,
-          orderShop.id,
-        )
-
-        if (insertTransactionError != '') {
-          return insertTransactionError
-        }
-
-        const [referenceNo, insertReferenceError] = await (
-          await insertTransactionReference
-        )(walletTransaction)
-
-        if (insertReferenceError != '') {
-          return insertReferenceError
-        }
-
-        const [, insertDepositReferenceError] = await (
-          await update3rdPartyTransactionReference
-        )(referenceNo, refId, orderShop.totalPrice, 'deposit')
-
-        if (insertDepositReferenceError != '') {
-          return insertDepositReferenceError
-        }
-
-        const [, adjustedWalletSellerError] = await (await adjustWallet)(
-          walletShop.id,
-          parseFloat(orderShop.totalPrice.toString()),
-          'deposit',
-        )
-
-        if (adjustedWalletSellerError != '') {
-          return adjustedWalletSellerError
-        }
-      }
-
-      this.logger.info(
-        `Done AdjustWalletToSellerFunc ${dayjs().diff(start)} ms`,
-      )
-      return ''
-    }
-  }
-
-  UpdatePaymentIdToOrderFunc(etm: EntityManager): UpdatePaymentIdToOrderType {
-    return async (orderId: string, paymentId: string): Promise<string> => {
-      const start = dayjs()
       try {
-        await etm.update(Order, orderId, { paymentId })
+        await etm.update(Order, orderId, {
+          status,
+          paymentId,
+        })
       } catch (error) {
         console.log('error.message : ', error.message)
         return error.message
       }
 
       this.logger.info(
-        `Done UpdatePaymentIdToOrderFunc ${dayjs().diff(start)} ms`,
+        `Done UpdatePaymentIdAndStatusToOrderFunc ${dayjs().diff(start)} ms`,
       )
       return ''
     }
@@ -673,6 +539,7 @@ export class OrderService {
     ): Promise<[OrderShop, string]> => {
       const start = dayjs()
       const {
+        totalPrice,
         shippingOptionId,
         totalPriceOfProducts,
         shopId,
@@ -681,13 +548,15 @@ export class OrderService {
         totalPriceOfShippings,
         minDeliverDate,
         maxDeliverDate,
+        discount,
       } = params
 
-      const status = 'toPay'
+      const status = 'BOOKING'
 
       let orderShop: OrderShop
       try {
         orderShop = etm.create(OrderShop, {
+          totalPrice,
           shippingOptionId,
           totalPriceOfProducts,
           shopId,
@@ -698,6 +567,8 @@ export class OrderService {
           maxDeliverDate,
           orderId,
           status,
+          discount: discount ? discount : 0,
+          code: genOrderNumber(),
         })
 
         await etm.save(orderShop)
@@ -707,52 +578,6 @@ export class OrderService {
 
       this.logger.info(`Done InsertOrderShopToDbFunc ${dayjs().diff(start)} ms`)
       return [orderShop, '']
-    }
-  }
-
-  InquiryProductByIdFunc(etm: EntityManager): InquiryProductByIdType {
-    return async (productId: string): Promise<[Product, string]> => {
-      const start = dayjs()
-      let product: Product
-      try {
-        product = await etm.findOne(Product, productId, { withDeleted: false })
-      } catch (error) {
-        return [product, error.message]
-      }
-
-      if (!product) {
-        return [product, 'Not found product']
-      }
-
-      this.logger.info(`Done InquiryProductByIdFunc ${dayjs().diff(start)} ms`)
-      return [product, '']
-    }
-  }
-
-  InquiryProductProfileByIdFunc(
-    etm: EntityManager,
-  ): InquiryProducProfiletByIdType {
-    return async (
-      productProfileId: string,
-    ): Promise<[ProductProfile, string]> => {
-      const start = dayjs()
-      let productProfile: ProductProfile
-      try {
-        productProfile = await etm.findOne(ProductProfile, productProfileId, {
-          withDeleted: false,
-        })
-      } catch (error) {
-        return [productProfile, error.message]
-      }
-
-      if (!productProfile) {
-        return [productProfile, 'Not found productProfile']
-      }
-
-      this.logger.info(
-        `Done InquiryProductProfileByIdFunc ${dayjs().diff(start)} ms`,
-      )
-      return [productProfile, '']
     }
   }
 
@@ -768,15 +593,20 @@ export class OrderService {
       const {
         unitPrice,
         units,
-        productProfileName,
-        productProfileImage,
         productId,
         productOptions1,
         productOptions2,
       } = params
 
-      const status = 'toPay'
+      console.log('productProfile', productProfile)
+
       const productProfileJson = JSON.stringify(productProfile)
+
+      const productProfileName = productProfile.name
+      const productProfileImage =
+        productProfile.imageIds && productProfile.imageIds.length > 0
+          ? productProfile.imageIds[0]
+          : undefined
 
       let orderShopProduct: OrderShopProduct
       try {
@@ -788,7 +618,6 @@ export class OrderService {
           productId,
           productOptions1,
           productOptions2,
-          status,
           orderShopId,
           productProfileJson,
         })
@@ -823,90 +652,6 @@ export class OrderService {
         `Done UpdateStockToProductFunc ${dayjs().diff(start)} ms`,
       )
       return ''
-    }
-  }
-
-  InquiryPriceFromShippopFunc(): InquiryPriceFromShippopType {
-    return async (
-      fromAddress: AddressToShippop,
-      toAddress: AddressToShippop,
-      products: ProductForShippopGetPrice[],
-    ): Promise<ShippopGetPriceDetail[]> => {
-      const start = dayjs()
-      const resp: ShippopGetPriceDetail[] = []
-
-      const product = {
-        weight: 0,
-        width: 0,
-        length: 0,
-        height: 0,
-      }
-
-      for (const p of products) {
-        product.weight += p.weight
-        product.width += p.width
-        product.length += p.length
-        product.height += p.height
-      }
-
-      const params = {
-        api_key: process.env.SHIPPOP_API_KEY,
-        data: [
-          {
-            from: {
-              name: fromAddress.name,
-              address: fromAddress.address,
-              district: fromAddress.tambon,
-              state: fromAddress.district,
-              province: fromAddress.province,
-              postcode: fromAddress.postcode,
-              tel: fromAddress.mobile,
-            },
-            to: {
-              name: toAddress.name,
-              address: toAddress.address,
-              district: toAddress.tambon,
-              state: toAddress.district,
-              province: toAddress.province,
-              postcode: toAddress.postcode,
-              tel: toAddress.mobile,
-            },
-            parcel: {
-              name: products[0].name,
-              weight: product.weight.toString(),
-              width: product.width.toString(),
-              length: product.length.toString(),
-              height: product.height.toString(),
-            },
-          },
-        ],
-      }
-
-      const formDataParams = createFormData(params)
-      const { data } = await api.shippop.post<ShippopGetPriceResponse>(
-        'pricelist/',
-        formDataParams,
-        {
-          contentType: ContentType.FORMDATA,
-        },
-      )
-
-      if (data.data[0].tP2) {
-        resp.push(data.data[0].tP2)
-      }
-
-      if (data.data[0].eMST) {
-        resp.push(data.data[0].eMST)
-      }
-
-      if (data.data[0].kRYP) {
-        resp.push(data.data[0].kRYP)
-      }
-
-      this.logger.info(
-        `Done InquiryPriceFromShippopFunc ${dayjs().diff(start)} ms`,
-      )
-      return resp
     }
   }
 

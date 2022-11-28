@@ -1,4 +1,4 @@
-import { Order } from 'src/db/entities/Order'
+import { Order, OrderStatusType } from 'src/db/entities/Order'
 import { OrderShop } from 'src/db/entities/OrderShop'
 import { OrderShopProduct } from 'src/db/entities/OrderShopProduct'
 import { Payment } from 'src/db/entities/Payment'
@@ -12,48 +12,6 @@ import {
   OrderShopProductDto,
 } from '../dto/createOrder.dto'
 
-export type ShippopGetPriceDetail = {
-  courierCode: string
-  price: string
-  estimateTime: string
-  available: boolean
-  remark: string
-  errCode: string
-  courierName: string
-  priceFuelSurcharge?: number
-}
-
-export type ShippopGetPriceResponse = {
-  status: boolean
-  data: ShippopGetPriceDetail
-}
-
-export type AddressToShippop = {
-  name: string
-  mobile: string
-  province: string
-  tambon: string
-  district: string
-  postcode: string
-  address: string
-  lat?: number
-  lng?: number
-}
-
-export type ProductForShippopGetPrice = {
-  name: string
-  weight: number
-  width: number
-  length: number
-  height: number
-}
-
-export type InquiryPriceFromShippopType = (
-  fromAddress: AddressToShippop,
-  toAddress: AddressToShippop,
-  products: ProductForShippopGetPrice[],
-) => Promise<ShippopGetPriceDetail[]>
-
 export type InsertOrderToDbType = (
   memberId: string,
   createOrderParams: CreateOrderDto,
@@ -64,21 +22,10 @@ export type InsertPaymentByBankToDbType = (
   createOrderParams: CreateOrderDto,
 ) => Promise<[Payment, string]>
 
-export type InsertPaymentByHappyToDbType = (
+export type UpdatePaymentIdAndStatusToOrderType = (
   orderId: string,
-  happyPointTransactionId: string,
-  createOrderParams: CreateOrderDto,
-) => Promise<[Payment, string]>
-
-export type InsertPaymentByEwalletToDbType = (
-  orderId: string,
-  walletTransactionId: string,
-  createOrderParams: CreateOrderDto,
-) => Promise<[Payment, string]>
-
-export type UpdatePaymentIdToOrderType = (
-  orderId: string,
-  paymentId?: string,
+  paymentId: string,
+  status: OrderStatusType,
 ) => Promise<string>
 
 export type InquiryShopByIdType = (shopId: string) => Promise<[Shop, string]>
@@ -87,14 +34,6 @@ export type InsertOrderShopToDbType = (
   orderId: string,
   params: OrderShopDto,
 ) => Promise<[OrderShop, string]>
-
-export type InquiryProductByIdType = (
-  productId: string,
-) => Promise<[Product, string]>
-
-export type InquiryProducProfiletByIdType = (
-  productProfileId: string,
-) => Promise<[ProductProfile, string]>
 
 export type InsertOrderShopProductToDbType = (
   orderShopId: string,
@@ -117,11 +56,6 @@ export type InsertOrderShopProductType = (
   orderShopId: string,
   params: OrderShopProductDto,
 ) => Promise<[OrderShopProduct, string]>
-
-export type AdjustWalletToSellerType = (
-  orderShopList: OrderShop[],
-  refId: string,
-) => Promise<string>
 
 export type InquiryOrderShopByIdFuncType = (
   memberId: string,

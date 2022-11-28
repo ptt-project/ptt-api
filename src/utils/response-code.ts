@@ -131,6 +131,8 @@ export const UnableUpdateProduct = _productError + 17
 export const UnableInquiryProductProfileFromDb = _productError + 18
 export const UnableInquiryProductByProductIds = _productError + 19
 export const UnableToGetProductPrice = _productError + 20
+export const UnableConvertProductProfileToProductProfileListForBuyer =
+  _productError + 6
 
 const _image = 110000
 export const UnableResizeImage = _image + 1
@@ -191,7 +193,7 @@ export const UnableToInsertOrder = _orderError + 1
 export const UnableToInsertOrderShop = _orderError + 2
 export const UnableToInsertOrderShopProduct = _orderError + 3
 export const UnableToInsertPayment = _orderError + 4
-export const UnableToUpdatePaymentIdToOrder = _orderError + 5
+export const UnableToUpdatePaymentIdAndStatusToOrder = _orderError + 5
 export const UnableToValidateOrder = _orderError + 6
 export const UnableToAdjustWalletToSeller = _orderError + 7
 export const UnableToInquiryShopByIdError = _orderError + 8
@@ -206,6 +208,8 @@ export const InvalidTotalPriceOfProducts = _orderError + 16
 export const InvalidOrderShopTotal = _orderError + 17
 export const InvalidOrderShopTotalOfProducts = _orderError + 18
 export const InvalidOrderShopTotalOfShipping = _orderError + 19
+export const UnableToAdjustWalletToBuyer = _orderError + 20
+export const ErrorValidateParamsForPayment = _orderError + 21
 
 const _config = 300000
 export const UnableToGetBrandOptions = _config + 1

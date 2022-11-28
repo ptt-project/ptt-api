@@ -20,6 +20,7 @@ import { OrderModule } from '../order/order.module'
 import { OrderService } from '../order/service/order.service'
 import { ConditionService } from '../shop/service/condition.service'
 import { CreateConditionConsoleService } from './service/create-condition.service'
+import { ShippopService } from '../order/service/shippop.service'
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { CreateConditionConsoleService } from './service/create-condition.servic
     MobileService,
     RegisterService,
     OrderService,
+    ShippopService,
     ConditionService,
     CreateConditionConsoleService,
   ],

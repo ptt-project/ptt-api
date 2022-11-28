@@ -41,11 +41,9 @@ export class CreateOrderDto {
   happyVoucherId?: string
 
   @IsString()
+  @IsIn(['BANK', 'HAPPYPOINT', 'EWALLET', 'CASHONDELIVERY'])
   @IsNotEmpty()
   paymentType: PaymentType
-
-  @IsOptional()
-  bankPaymentId?: string
 
   @IsOptional()
   qrCode?: string
@@ -54,13 +52,7 @@ export class CreateOrderDto {
   reference?: string
 
   @IsOptional()
-  point?: number
-
-  @IsOptional()
-  totalAmount?: number
-
-  @IsOptional()
-  feeAmount?: number
+  amountOfHappyPoint?: number
 
   @IsOptional()
   refId?: string
@@ -129,11 +121,15 @@ export class OrderShopDto {
 
   @IsNumber()
   @IsNotEmpty()
+  totalPrice: number
+
+  @IsNumber()
+  @IsNotEmpty()
   totalPriceOfProducts: number
 
   @IsNumber()
   @IsNotEmpty()
-  shippingOptionId: string
+  shippingOptionId?: string
 
   @IsNumber()
   @IsNotEmpty()
@@ -142,6 +138,9 @@ export class OrderShopDto {
   @IsNotEmpty()
   @IsISO8601()
   minDeliverDate: Date
+
+  @IsOptional()
+  discount?: number
 
   @IsNotEmpty()
   @IsISO8601()
@@ -159,13 +158,6 @@ export class OrderShopProductDto {
   @IsNumber()
   @IsNotEmpty()
   productId: string
-
-  @IsString()
-  @IsNotEmpty()
-  productProfileName: string
-
-  @IsOptional()
-  productProfileImage?: string
 
   @IsOptional()
   productOptions1?: string

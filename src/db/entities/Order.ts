@@ -13,18 +13,15 @@ import { Member } from './Member'
 import { OrderShop } from './OrderShop'
 import { Payment } from './Payment'
 
-export type OrderStatusType =
-  | 'toPay'
-  | 'toShip'
-  | 'toReceive'
-  | 'complated'
-  | 'cancelled'
-  | 'return'
-  | 'refund'
+export type OrderStatusType = 'WAITING_PAYMENT' | 'PAID' | 'CANCELLED'
+
 @Entity({ name: 'orders' })
 export class Order extends AppEntity {
   @Column({ name: 'member_id', nullable: false })
   memberId: string
+
+  @Column({ name: 'code', nullable: false })
+  code: string
 
   @Column({ name: 'happy_voucher_id', nullable: true })
   happyVoucherId?: string
@@ -97,15 +94,7 @@ export class Order extends AppEntity {
   @Column({
     name: 'status',
     type: 'enum',
-    enum: [
-      'toPay',
-      'toShip',
-      'toReceive',
-      'complated',
-      'cancelled',
-      'return',
-      'refund',
-    ],
+    enum: ['WAITING_PAYMENT', 'PAID', 'CANCELLED'],
     nullable: false,
   })
   status: OrderStatusType
