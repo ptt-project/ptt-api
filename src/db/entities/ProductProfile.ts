@@ -14,8 +14,12 @@ import { CategoryProductProfile } from './CategoryProductProfile'
 import { PlatformCategory } from './PlatformCategory'
 import { Product } from './Product'
 import { ProductOption } from './ProductOption'
+import { Review } from './Review'
 import { Shop } from './Shop'
-import { transformerDayjsToDate, transformerDecimalToNumber } from 'src/utils/entity-transform'
+import {
+  transformerDayjsToDate,
+  transformerDecimalToNumber,
+} from 'src/utils/entity-transform'
 
 export type ConditionType = 'old' | 'new'
 export type ProductProfileStatusType = 'public' | 'hidden' | 'out of stock'
@@ -163,4 +167,11 @@ export class ProductProfile {
 
   @DeleteDateColumn({ name: 'deleted_at', transformer: transformerDayjsToDate })
   deletedAt: Date
+
+  @OneToMany(
+    () => Review,
+    review => review.productProfile,
+  )
+  @JoinColumn({ referencedColumnName: 'product_profile_id' })
+  reviews: Review[]
 }

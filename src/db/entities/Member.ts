@@ -1,11 +1,20 @@
 import { transformerDayjsToDate } from 'src/utils/entity-transform'
-import { Column, Entity, OneToOne, OneToMany, JoinColumn, ManyToOne, Generated } from 'typeorm'
+import {
+  Column,
+  Entity,
+  OneToOne,
+  OneToMany,
+  JoinColumn,
+  ManyToOne,
+  Generated,
+} from 'typeorm'
 import { Address } from './Address'
 import { AppEntity } from './AppEntity'
 import { HappyPoint } from './HappyPoint'
 import { BankAccount } from './BankAccount'
 import { Mobile } from './Mobile'
 import { Order } from './Order'
+import { Review } from './Review'
 import { Shop } from './Shop'
 import { Wallet } from './Wallet'
 
@@ -75,7 +84,7 @@ export class Member extends AppEntity {
 
   @Column({ name: 'relationIds', type: 'simple-json', default: [] })
   relationIds: string[]
-  
+
   @Column({ name: 'image_id', nullable: true })
   imageId: string
 
@@ -125,4 +134,9 @@ export class Member extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'member_id' })
   order: Order[]
+    () => Review,
+    review => review.reviewer,
+  )
+  @JoinColumn({ referencedColumnName: 'member_id' })
+  reviews: Review[]
 }
