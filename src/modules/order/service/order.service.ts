@@ -10,6 +10,8 @@ import {
   InsertOrderShopProductType,
   InsertOrderShopToDbType,
   InsertOrderToDbType,
+  OrderShopPaginate,
+  PaginateOrderShopsFuncType,
   UpdatePaymentIdAndStatusToOrderType,
   UpdateStockToProductType,
 } from '../type/order.type'
@@ -30,6 +32,7 @@ import {
   UnableInquiryOrderShops,
   UnableInquiryProductById,
   UnableInquiryShopById,
+  UnablePaginateOrderShops,
   UnableToAdjustWalletToBuyer,
   UnableToAdjustWalletToSeller,
   UnableToInsertOrder,
@@ -655,45 +658,57 @@ export class OrderService {
     }
   }
 
-  GetOrderShopsHandler(inquiryOrders: Promise<InquiryOrderShopsFuncType>) {
-    return async (member: Member, query: GetOrderRequestDto) => {
+  GetOrderShopsHandler(
+    inquiryOrders: InquiryOrderShopsFuncType,
+    paginateOrderShop: PaginateOrderShopsFuncType,
+  ) {
+    return async (
+      member: Member,
+      query: GetOrderRequestDto,
+    ) => {
       const start = dayjs()
       const { limit = 10, page = 1, keyword, status } = query
 
-      const [ordersQuery, inquiryOrdersError] = await (await inquiryOrders)(
-        member.id,
-        keyword,
-        status,
-      )
+      const [ordersQuery, inquiryOrdersError] = await inquiryOrders(member.id, keyword, status)
 
       if (inquiryOrdersError != '') {
-        return response(undefined, UnableInquiryOrderShops, inquiryOrdersError)
+        return response(
+          undefined,
+          UnableInquiryOrderShops,
+          inquiryOrdersError,
+        )
       }
 
-      const result = await paginate<OrderShop>(ordersQuery, {
+      const [result, paginateError] = await paginateOrderShop(
+        ordersQuery,
         limit,
         page,
-      })
-      this.logger.info(`Done GetOrdersHandler ${dayjs().diff(start)} ms`)
+      )
+
+      if (paginateError != '') {
+        return response(
+          undefined,
+          UnablePaginateOrderShops,
+          paginateError,
+        )
+      }
+
+      this.logger.info(`Done GetOrderShopsHandler ${dayjs().diff(start)} ms`)
       return response(result)
     }
   }
 
-  async InquiryOrderShopsFunc(
+  InquiryOrderShopsFunc(
     etm: EntityManager,
-  ): Promise<InquiryOrderShopsFuncType> {
-    return async (
-      memberId: string,
-      keyword?: string,
-      status?: string,
-    ): Promise<[SelectQueryBuilder<OrderShop>, string]> => {
+  ): InquiryOrderShopsFuncType {
+    return async (memberId: string, keyword?: string, status?: string): Promise<[SelectQueryBuilder<OrderShop>, string]> => {
       const start = dayjs()
       let orderShopsQuery: SelectQueryBuilder<OrderShop>
-      const condition: any = {
+      const condition:any = {
         order: {
           memberId,
           deletedAt: null,
-        },
+        }
       }
 
       if (status) {
@@ -715,28 +730,96 @@ export class OrderService {
           ])
           .where(condition)
         if (keyword) {
-          const keywordCondition =
-            '(shop.fullName LIKE :keyword OR products.productProfileName LIKE :keyword OR orderShops.orderNumber LIKE :keyword)'
-          orderShopsQuery = orderShopsQuery.andWhere(keywordCondition, {
-            keyword: `%${keyword}%`,
-          })
+          const keywordCondition = "(shop.fullName LIKE :keyword OR products.productProfileName LIKE :keyword OR orderShops.orderNumber LIKE :keyword)"
+          orderShopsQuery = orderShopsQuery.andWhere(keywordCondition, { keyword: `%${keyword}%` })
         }
-      } catch (error) {
+        orderShopsQuery = orderShopsQuery.orderBy('order.createdAt', 'DESC')
+
+      } catch(error) {
         return [orderShopsQuery, error.message]
       }
-      this.logger.info(`Done InquiryOrderShopsFunc ${dayjs().diff(start)} ms`)
+      this.logger.info(
+        `Done InquiryOrderShopsFunc ${dayjs().diff(start)} ms`,
+      )
       return [orderShopsQuery, '']
     }
   }
 
-  GetOrderShopByIdHandler(
-    inquiryOrderById: Promise<InquiryOrderShopByIdFuncType>,
-  ) {
-    return async (member: Member, orderShopId: string) => {
+  PaginateOrderShopsFunc(): PaginateOrderShopsFuncType {
+    return async (orderShopsQuery: SelectQueryBuilder<OrderShop>, limit: number, page: number): Promise<[OrderShopPaginate, string]> => {
       const start = dayjs()
-      const [orderShop, inquiryOrderShopByIdError] = await (
-        await inquiryOrderById
-      )(member.id, orderShopId)
+      let result: OrderShopPaginate = {
+        items: [],
+        meta: {
+          totalItems: 0,
+          itemCount: 0,
+          itemsPerPage: limit,
+          totalPages: 0,
+          currentPage: page,
+        }
+      }
+
+      try {
+        const orderShops = await orderShopsQuery.getMany()
+        const toPayOrderDictionary = orderShops.reduce((dictionary, orderShop) => {
+          if (orderShop.order.status == 'WAITING_PAYMENT') {
+            if (!dictionary[orderShop.orderId]) {
+              dictionary[orderShop.orderId] = {
+                ...orderShop.order,
+                orderShops: []
+              }
+            }
+            dictionary[orderShop.orderId].orderShops.push(orderShop)
+          }
+
+          return dictionary
+        }, {})
+
+        const toPayItems = Object.keys(toPayOrderDictionary).map(
+          (orderId) => toPayOrderDictionary[orderId]
+        )
+
+        const notTopayItems = orderShops.reduce((result, orderShop) => {
+          if (orderShop.order.status != 'WAITING_PAYMENT') {
+            result.push(orderShop)
+          }
+
+          return result
+        }, [])
+
+        const items = [...toPayItems, ...notTopayItems]
+        const slicedItem = items.slice((page - 1) * limit, page * limit)
+
+        result = {
+          items: slicedItem,
+          meta: {
+            totalItems: items.length,
+            itemCount: slicedItem.length,
+            itemsPerPage: limit,
+            totalPages: Math.ceil(items.length / limit),
+            currentPage: page,
+          }
+        }
+
+      } catch(error) {
+        return [result, error.message]
+      }
+      this.logger.info(
+        `Done PaginateOrderShopsFunc ${dayjs().diff(start)} ms`,
+      )
+      return [result, '']
+    }
+  }
+
+  GetOrderShopByIdHandler(
+    inquiryOrderById: InquiryOrderShopByIdFuncType
+  ) {
+    return async (
+      member: Member,
+      orderShopId: string,
+    ) => {
+      const start = dayjs()
+      const [orderShop, inquiryOrderShopByIdError] = await inquiryOrderById(member.id, orderShopId)
 
       if (inquiryOrderShopByIdError != '') {
         return response(
@@ -751,42 +834,38 @@ export class OrderService {
     }
   }
 
-  async InquiryOrderShopByIdFunc(
+  InquiryOrderShopByIdFunc(
     etm: EntityManager,
-  ): Promise<InquiryOrderShopByIdFuncType> {
-    return async (
-      memberId: string,
-      orderId: string,
-    ): Promise<[OrderShop, string]> => {
+  ): InquiryOrderShopByIdFuncType {
+    return async (memberId: string, orderId: string): Promise<[OrderShop, string]> => {
       const start = dayjs()
       let orderShop: OrderShop
 
       try {
-        orderShop = await etm
-          .createQueryBuilder(OrderShop, 'orderShops')
-          .innerJoin(`orderShops.orderShopProduct`, 'products')
-          .leftJoin(`orderShops.shop`, 'shop')
-          .leftJoin(`orderShops.order`, 'order')
-          .select([
-            'orderShops',
-            'order',
-            'products',
-            'shop.id',
-            'shop.shopName',
-          ])
-          .where({
-            id: orderId,
-            order: {
-              memberId,
-            },
-            deletedAt: null,
-          })
-          .getOne()
+        orderShop = await etm.createQueryBuilder(OrderShop, 'orderShops')
+        .innerJoin(`orderShops.orderShopProduct`, 'products')
+        .leftJoin(`orderShops.shop`, 'shop')
+        .leftJoin(`orderShops.order`, 'order')
+        .select([
+          'orderShops',
+          'order',
+          'products',
+          'shop.id',
+          'shop.shopName',
+        ])
+        .where({
+          id: orderId,
+          order: {
+            memberId
+          },
+          deletedAt: null,
+        }).getOne()
 
         if (!orderShop) {
-          return [orderShop, 'Order-shop is not found']
+          return [orderShop, "Order-shop is not found"]
         }
-      } catch (error) {
+        
+      } catch(error) {
         return [orderShop, error.message]
       }
       this.logger.info(

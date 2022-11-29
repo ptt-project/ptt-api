@@ -68,6 +68,23 @@ export type InquiryOrderShopsFuncType = (
   status?: string,
 ) => Promise<[SelectQueryBuilder<OrderShop>, string]>
 
+export type OrderShopPaginate = {
+  items: (OrderShop | Order)[],
+  meta: {
+    totalItems: number,
+    itemCount: number,
+    itemsPerPage: number,
+    totalPages: number,
+    currentPage: number,
+  }
+}
+
+export type PaginateOrderShopsFuncType = (
+  orderShops: SelectQueryBuilder<OrderShop>,
+  limit: number,
+  page: number,
+) => Promise<[OrderShopPaginate, string]>
+
 export type CreateOrderToDbType = (
   memberId: string,
   body: CreateOrderDto,

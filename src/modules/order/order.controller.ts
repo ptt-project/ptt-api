@@ -86,6 +86,7 @@ export class OrderController {
   ) {
     return await this.orderService.GetOrderShopsHandler(
       this.orderService.InquiryOrderShopsFunc(etm),
+      this.orderService.PaginateOrderShopsFunc(),
     )(member, query)
   }
 

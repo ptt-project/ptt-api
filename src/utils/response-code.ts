@@ -210,6 +210,7 @@ export const InvalidOrderShopTotalOfProducts = _orderError + 18
 export const InvalidOrderShopTotalOfShipping = _orderError + 19
 export const UnableToAdjustWalletToBuyer = _orderError + 20
 export const ErrorValidateParamsForPayment = _orderError + 21
+export const UnablePaginateOrderShops = _orderError + 22
 
 const _config = 300000
 export const UnableToGetBrandOptions = _config + 1
