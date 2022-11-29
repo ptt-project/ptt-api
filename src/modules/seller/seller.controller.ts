@@ -4,12 +4,11 @@ import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser, Seller } from '../auth/auth.decorator'
 
 import { RegisterService } from './service/register.service'
-import {
-  RegisterSellerRequestDto,
-} from './dto/seller.dto'
 import { WalletService } from '../wallet/service/wallet.service'
 import { ShopService } from '../shop/service/shop.service'
 import { UpdateShopInfoRequestDto } from '../shop/dto/shop.dto'
+import { RegisterSellerRequestDto } from './dto/seller.dto'
+import { ConditionService } from '../shop/service/condition.service'
 
 @Auth()
 @Controller('v1/sellers')
@@ -18,6 +17,7 @@ export class SellerController {
     private readonly registerService: RegisterService,
     private readonly shopService: ShopService,
     private readonly walletService: WalletService,
+    private readonly conditionService: ConditionService,
   ) {}
 
   @Post('/register')
@@ -30,10 +30,11 @@ export class SellerController {
     return await this.registerService.RegisterSellerHandler(
       this.registerService.ValidateSellerDataFunc(etm),
       this.registerService.InsertShopToDbFunc(etm),
+      this.conditionService.InsertConditionToDbFunc(etm),
       this.registerService.CreateTablePartitionOfProductProfileToDbFunc(etm),
       this.walletService.InsertWalletToDbFunc(etm),
       this.registerService.updateShopWalletFunc(etm),
-      )(member, body)
+    )(member, body)
   }
 
   @Patch('/register/resubmit')

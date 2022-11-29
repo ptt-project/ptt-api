@@ -16,6 +16,7 @@ export type InsertHappyPointToDbParams = {
   exchangeRate: number
   fromHappyPointId: string
   toHappyPointId?: string
+  orderId?: string
   amount?: number
   fee?: number
   totalAmount?: number
@@ -104,3 +105,18 @@ export type UpdateCreditLimitTransferToDbType = (
   happyPoint: HappyPoint,
   point: number,
 ) => Promise<string>
+
+export type DebitHappyPointTransactionParams = {
+  point: number
+  totalAmount: number
+  feeAmount: number
+  amount: number
+  refId: string
+  transactionType: 'SELL' | 'PAYMENT'
+  orderId?: string
+}
+
+export type DebitHappyPointType = (
+  happyPoint: HappyPoint,
+  body: DebitHappyPointTransactionParams,
+) => Promise<[HappyPoint, number, string]>

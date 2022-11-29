@@ -155,10 +155,17 @@ export type InquiryProductListByShopIdType = (
   query: GetProductListDto,
 ) => Promise<[SelectQueryBuilder<ProductProfile>, string]>
 
-export type InquiryProductProfileFromDbType = () => Promise<
-  [SelectQueryBuilder<ProductProfile>, string]
->
+export type PreInquiryProductProfileFromDbType = () => [
+  SelectQueryBuilder<ProductProfile>,
+  string,
+]
 
 export type ConvertDataToProductProfileLandingPageType = (
   paginateProductProfile: Pagination<ProductProfile, IPaginationMeta>,
-) => Pagination<ProductProfile, IPaginationMeta>
+) => [Pagination<ProductProfile, IPaginationMeta>, string]
+
+export type ExecutePreInquiryProductProfileFromDbType = (
+  productProfiles: SelectQueryBuilder<ProductProfile>,
+  limit: number,
+  page: number,
+) => Promise<[Pagination<ProductProfile, IPaginationMeta>, string]>

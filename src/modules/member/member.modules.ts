@@ -9,7 +9,6 @@ import { MemberController } from './member.controller'
 import { MemberService } from './service/member.service'
 import { PasswordService } from './service/password.service'
 import { ProductService } from './service/product.service'
-import { OrderService } from './service/order.service'
 import { LookupService } from '../happy-point/service/lookup.service'
 import { HappyPointService } from '../happy-point/service/happy-point.service'
 import { OtpService } from '../otp/service/otp.service'
@@ -29,7 +28,6 @@ import { WalletService } from '../wallet/service/wallet.service'
     RelationService,
     ProductService,
     MemberEmailService,
-    OrderService,
     LookupService,
     HappyPointService,
     OtpService,

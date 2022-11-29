@@ -6,6 +6,7 @@ import { OrderShop } from './OrderShop'
 import { Product } from './Product'
 import { ProductProfile } from './ProductProfile'
 import { Wallet } from './Wallet'
+import { Review } from './Review'
 
 export type ShopType = 'Normal' | 'Mall'
 export type ApprovalType = 'requested' | 'rejected' | 'approved'
@@ -57,11 +58,11 @@ export class Shop extends AppEntity {
   @Column({ name: 'note', nullable: true, length: 1000 })
   note: string
 
-  @Column({ name: 'corperate_name', nullable: true, length: 50 })
-  corperateName: string
+  @Column({ name: 'corporate_name', nullable: true, length: 50 })
+  corporateName: string
 
-  @Column({ name: 'corperate_id', nullable: true, length: 20 })
-  corperateId: string
+  @Column({ name: 'corporate_id', nullable: true, length: 20 })
+  corporateId: string
 
   @Column({
     name: 'approval_status',
@@ -183,6 +184,13 @@ export class Shop extends AppEntity {
   )
   @JoinColumn({ referencedColumnName: 'shop_id' })
   orderShop: OrderShop[]
+
+  @OneToMany(
+    () => Review,
+    review => review.shop,
+  )
+  @JoinColumn({ referencedColumnName: 'shop_id' })
+  reviews: Review[]
 
   @OneToOne(
     () => Condition,

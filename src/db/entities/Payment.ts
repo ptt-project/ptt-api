@@ -1,43 +1,49 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
-import { AppEntity } from "./AppEntity";
-import { BankPayment } from "./BankPayment";
-import { Order } from "./Order";
-import { WalletTransaction } from "./WalletTransaction";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm'
+import { AppEntity } from './AppEntity'
+import { BankPayment } from './BankPayment'
+import { Order } from './Order'
+import { WalletTransaction } from './WalletTransaction'
 
-export type PaymentType = 'bank' | 'happyPoint' | 'ewallet' | 'cashOnDelivery'
-export type PaymentStatusType = 'toPay' | 'toShip' | 'toReceive' | 'complated' | 'cancelled' | 'return' | 'refund'
+export type PaymentType = 'BANK' | 'HAPPYPOINT' | 'EWALLET' | 'CASHONDELIVERY'
+export type PaymentStatusType =
+  | 'WAITING_PAYMENT'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'RETURN'
+  | 'REFUND'
 @Entity({ name: 'payments' })
 export class Payment extends AppEntity {
   @Column({ name: 'order_id', nullable: true })
   orderId: string
 
-  @Column({
-    name: 'payment_type', 
-    type: 'enum',
-    enum: ['bank', 'happyPoint', 'ewallet', 'cashOnDelivery'],
-    nullable: false,
-  })
-  paymentType: PaymentType
-
-  @Column({ name: 'bank_payment_id', nullable: true })
-  bankPaymentId?: string
+  @Column({ name: 'reference', nullable: true })
+  reference?: string
 
   @Column({ name: 'qr_code', nullable: true })
   qrCode?: string
 
-  @Column({ name: 'reference', nullable: true })
-  reference?: string
-
-  @Column({ name: 'happy_point_transaction_id', nullable: true })
-  happyPointTransactionId?: string
-
-  @Column({ name: 'wallet_transaction_id', nullable: true })
-  walletTransactionId?: string
+  @Column({
+    name: 'paymentable_id',
+    type: 'uuid',
+    nullable: false,
+  })
+  paymentableId: string
 
   @Column({
-    name: 'status', 
+    name: 'paymentable_type',
     type: 'enum',
-    enum: ['toPay', 'toShip', 'toReceive', 'complated', 'cancelled', 'return', 'refund'],
+    enum: ['BANK', 'HAPPYPOINT', 'EWALLET', 'CASHONDELIVERY'],
+    nullable: false,
+  })
+  paymentableType: PaymentType
+
+  @Column({ name: 'bank_payment_id', nullable: true })
+  bankPaymentId?: string
+
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enum: ['WAITING_PAYMENT', 'COMPLETED', 'CANCELLED', 'RETURN', 'REFUND'],
     nullable: false,
   })
   status: PaymentStatusType

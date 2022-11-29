@@ -30,12 +30,14 @@ export const ReqShop = createParamDecorator((data, ctx: ExecutionContext) => {
 
 export const ReqWallet = createParamDecorator((data, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest()
-  return request.user.wallets[0]
+  return request.user.wallets.find(wallet => !wallet.shopId)
 })
 
 export const ReqHappyPoint = createParamDecorator(
   (data, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest()
+    console.log('request.user', request.user)
+    console.log('happyPoints', request.user.happyPoints[0])
     return request.user.happyPoints[0]
   },
 )

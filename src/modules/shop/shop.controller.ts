@@ -4,14 +4,15 @@ import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqShop, ReqUser, Seller } from '../auth/auth.decorator'
 import { UpdateShopInfoRequestDto } from './dto/shop.dto'
+import { ConditionService } from './service/condition.service'
 import { ShopService } from './service/shop.service'
 
 @Auth()
-@Seller()
 @Controller('v1/shops')
 export class ShopController {
   constructor(
     private readonly shopService: ShopService,
+    private readonly conditionService: ConditionService,
   ) {}
 
   @Get('/shop-info')
@@ -25,6 +26,7 @@ export class ShopController {
     )(member)
   }
 
+  @Seller()
   @Patch('/shop-info')
   @Transaction()
   async updateShopoInfo(
@@ -36,15 +38,16 @@ export class ShopController {
       this.shopService.UpdateShopByMemberIdFunc(etm),
     )(member, body)
   }
-  
+
+  @Seller()
   @Get('/conditions')
   @Transaction()
   async getConditions(
     @ReqShop() shop: Shop,
     @TransactionManager() etm: EntityManager,
   ) {
-    return await this.shopService.GetConditionsHandler(
-      this.shopService.InquiryConditionByShopIdFunc(etm),
+    return await this.conditionService.GetConditionsHandler(
+      this.conditionService.InquiryConditionByShopIdFunc(etm),
     )(shop)
   }
 }

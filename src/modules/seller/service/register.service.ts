@@ -7,6 +7,7 @@ import { RegisterSellerRequestDto } from '../dto/seller.dto'
 import {
   InvalidSellerRegister,
   UnableCreatePartitionOfProductProfile,
+  UnableInsertConditionToDb,
   UnableInsertShopToDb,
   UnableToInsertWallet,
   UnableToUpdateShopWallet,
@@ -22,8 +23,12 @@ import { Shop } from 'src/db/entities/Shop'
 
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
-import { CreateTablePartitionOfProductProfileToDbType, UpdateShopWalletFuncType } from '../type/register.type'
+import {
+  CreateTablePartitionOfProductProfileToDbType,
+  UpdateShopWalletFuncType,
+} from '../type/register.type'
 import { InsertWalletToDbFuncType } from 'src/modules/wallet/type/wallet.type'
+import { InsertConditionToDbFuncType } from 'src/modules/shop/type/condition.type'
 
 @Injectable()
 export class RegisterService {
@@ -34,6 +39,7 @@ export class RegisterService {
   RegisterSellerHandler(
     validateSellerData: Promise<ValidateSellerRegisterType>,
     insertShopToDb: Promise<InsertShopToDbType>,
+    insertConditionToDb: Promise<InsertConditionToDbFuncType>,
     createTablePartitionOfProductProfileToDb: CreateTablePartitionOfProductProfileToDbType,
     insertWalletToDb: Promise<InsertWalletToDbFuncType>,
     updateShopWalletToDb: Promise<UpdateShopWalletFuncType>,
@@ -56,10 +62,23 @@ export class RegisterService {
         ...body,
         memberId,
       }
+
       const [shop, insertShopToDbError] = await (await insertShopToDb)(params)
 
       if (insertShopToDbError != '') {
         return response(undefined, UnableInsertShopToDb, insertShopToDbError)
+      }
+
+      const [, insertConditionToDbError] = await (await insertConditionToDb)(
+        shop,
+      )
+
+      if (insertConditionToDbError != '') {
+        return response(
+          undefined,
+          UnableInsertConditionToDb,
+          insertConditionToDbError,
+        )
       }
 
       const isErrorCreateTablePartitionOfProductProfileToDb = await createTablePartitionOfProductProfileToDb(
@@ -81,12 +100,15 @@ export class RegisterService {
         return response(undefined, UnableToInsertWallet, insertWalletToDbError)
       }
 
-      const [updatedShop, updateShopWalletToDbError] = await (await updateShopWalletToDb)(
-        shop,
-        wallet.id
-      )
+      const [updatedShop, updateShopWalletToDbError] = await (
+        await updateShopWalletToDb
+      )(shop, wallet.id)
       if (updateShopWalletToDbError != '') {
-        return response(undefined, UnableToUpdateShopWallet, updateShopWalletToDbError)
+        return response(
+          undefined,
+          UnableToUpdateShopWallet,
+          updateShopWalletToDbError,
+        )
       }
 
       this.logger.info(`Done registerSellerHandler ${dayjs().diff(start)} ms`)
@@ -155,7 +177,7 @@ export class RegisterService {
             },
             {
               deletedAt: null,
-              corperateId: params.corperateId,
+              corporateId: params.corporateId,
             },
           ],
         })
@@ -169,17 +191,17 @@ export class RegisterService {
           if (shop.mobile === params.mobile) {
             return 'mobile is alredy used'
           }
-          if (shop.corperateId === params.corperateId) {
-            return 'corperateId is alredy used'
+          if (shop.corporateId === params.corporateId) {
+            return 'corporateId is alredy used'
           }
         }
         if (
           params.type === 'Mall' &&
-          (!params.corperateId ||
-            !params.corperateName ||
+          (!params.corporateId ||
+            !params.corporateName ||
             !params.mallApplicantRole)
         ) {
-          return 'corperateId, corperateName and mallApplicantRole are required for Mall shop'
+          return 'corporateId, corporateName and mallApplicantRole are required for Mall shop'
         }
       } catch (error) {
         return error.message
@@ -208,8 +230,8 @@ export class RegisterService {
           instagram: params.instagram,
           socialMedia: params.socialMedia,
           note: params.note,
-          corperateId: params.corperateId,
-          corperateName: params.corperateName,
+          corporateId: params.corporateId,
+          corporateName: params.corporateName,
           mallApplicantRole: params.mallApplicantRole,
           mallOfflineShopDetail: params.mallOfflineShopDetail,
           mallShopDescription: params.mallShopDescription,
@@ -271,8 +293,8 @@ export class RegisterService {
         shop.instagram = params.instagram
         shop.socialMedia = params.socialMedia
         shop.note = params.note
-        shop.corperateId = params.corperateId
-        shop.corperateName = params.corperateName
+        shop.corporateId = params.corporateId
+        shop.corporateName = params.corporateName
         shop.mallApplicantRole = params.mallApplicantRole
         shop.mallOfflineShopDetail = params.mallOfflineShopDetail
         shop.mallShopDescription = params.mallShopDescription
@@ -288,7 +310,9 @@ export class RegisterService {
     }
   }
 
-  async updateShopWalletFunc(etm: EntityManager): Promise<UpdateShopWalletFuncType> {
+  async updateShopWalletFunc(
+    etm: EntityManager,
+  ): Promise<UpdateShopWalletFuncType> {
     return async (shop: Shop, walletId: string): Promise<[Shop, string]> => {
       const start = dayjs()
 

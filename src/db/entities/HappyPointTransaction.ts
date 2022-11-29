@@ -2,8 +2,9 @@ import { Column, Entity, JoinColumn, ManyToOne, Index } from 'typeorm'
 import { AppEntity } from './AppEntity'
 import { HappyPoint } from './HappyPoint'
 import { transformerDecimalToNumber } from 'src/utils/entity-transform'
+import { Order } from './Order'
 
-export type HappyPointTransactionType = 'BUY' | 'SELL' | 'TRANSFER'
+export type HappyPointTransactionType = 'BUY' | 'SELL' | 'TRANSFER' | 'PAYMENT'
 export type HappyPointTransactionNote = 'CREDIT' | 'DEBIT'
 export type HappyPointTransactionStatusType =
   | 'SUCCESS'
@@ -22,7 +23,7 @@ export class HappyPointTransaction extends AppEntity {
   @Column({
     name: 'type',
     type: 'enum',
-    enum: ['BUY', 'SELL', 'TRANSFER'],
+    enum: ['BUY', 'SELL', 'TRANSFER', 'PAYMENT'],
     nullable: false,
   })
   type: HappyPointTransactionType
@@ -122,6 +123,9 @@ export class HappyPointTransaction extends AppEntity {
   })
   feePoint?: number
 
+  @Column({ name: 'order_id', type: 'uuid', nullable: true })
+  orderId?: string
+
   @ManyToOne(
     () => HappyPoint,
     HappyPoint => HappyPoint.transactions,
@@ -136,4 +140,11 @@ export class HappyPointTransaction extends AppEntity {
   )
   @JoinColumn({ name: 'to_happy_point_id', referencedColumnName: 'id' })
   toHappyPoint: HappyPoint
+
+  @ManyToOne(
+    () => Order,
+    order => order.happyPointTransactins,
+  )
+  @JoinColumn({ name: 'order_id', referencedColumnName: 'id' })
+  order: Order
 }

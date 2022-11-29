@@ -46,6 +46,20 @@ export class HappyPointContoller {
     )(happyPoint)
   }
 
+  @Post('lookup/order')
+  @Transaction()
+  async lookupForOrderController(
+    @ReqHappyPoint() happyPoint: HappyPoint,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    const redis = this.redisService.getClient()
+
+    return await this.lookupService.LookupForCreateOrderHandler(
+      this.masterConfigService.InquiryMasterConfigFunc(etm),
+      this.lookupService.SetCacheLookupToRedisFunc(redis),
+    )(happyPoint)
+  }
+
   @Post('buy')
   @Transaction()
   async buyHappyPoitnController(
@@ -86,19 +100,21 @@ export class HappyPointContoller {
 
     return await this.happyService.SellHappyPointHandler(
       this.otpService.InquiryVerifyOtpFunc(etm),
-      this.lookupService.InquiryRefIdExistInTransactionFunc(etm),
-      this.lookupService.GetCacheLookupToRedisFunc(redis),
-      this.happyService.ValidateCalculateFeeAmountFunc(),
-      this.happyService.ValidateCalculatePointByExchangeAndAmountFunc(),
-      this.happyService.ValidateCalculateAmountFunc(),
-      this.happyService.InsertHappyPointTransactionToDbFunc(etm),
+      this.happyService.DebitHappyPointFunc(
+        this.lookupService.InquiryRefIdExistInTransactionFunc(etm),
+        this.lookupService.GetCacheLookupToRedisFunc(redis),
+        this.happyService.ValidateCalculateFeeAmountFunc(),
+        this.happyService.ValidateCalculatePointByExchangeAndAmountFunc(),
+        this.happyService.ValidateCalculateAmountFunc(),
+        this.happyService.InsertHappyPointTransactionToDbFunc(etm),
+        this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
+      ),
       this.walletService.RequestInteranlWalletTransactionService(
         this.walletService.InsertTransactionToDbFunc(etm),
         this.walletService.InsertReferenceToDbFunc(etm),
         this.walletService.UpdateReferenceToDbFunc(etm),
         this.walletService.AdjustWalletInDbFunc(etm),
       ),
-      this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
     )(wallet, happyPoint, member, body)
   }
 
@@ -129,8 +145,11 @@ export class HappyPointContoller {
 
   @Get('balance')
   @Transaction()
-  async getBalanceHappyPoint(@ReqHappyPoint() happyPoint: HappyPoint) {
-    return response({ balance: happyPoint.balance })
+  async getBalanceHappyPoint(
+    @ReqHappyPoint() happyPoint: HappyPoint,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await response({ balance: happyPoint.balance })
   }
 
   @Get('history')

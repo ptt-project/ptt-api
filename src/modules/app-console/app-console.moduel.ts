@@ -10,16 +10,17 @@ import { ProductService } from '../product/service/product.service'
 import { EmailModule } from '../email/email.module'
 import { HappyPointModule } from '../happy-point/happy-point.module'
 import { HappyPointService } from '../happy-point/service/happy-point.service'
-import { InitialAppConsoleService } from './initial-app.service'
+import { InitialAppConsoleService } from './service/initial-app.service'
 import { OtpModule } from '../otp/otp.modules'
 import { MobileModule } from '../mobile/mobile.modules'
 import { OtpService } from '../otp/service/otp.service'
 import { MobileService } from '../mobile/service/mobile.service'
 import { RegisterService } from '../seller/service/register.service'
-import { MemberModule } from '../member/member.modules'
-import { MemberService } from '../member/service/member.service'
 import { OrderModule } from '../order/order.module'
 import { OrderService } from '../order/service/order.service'
+import { ConditionService } from '../shop/service/condition.service'
+import { CreateConditionConsoleService } from './service/create-condition.service'
+import { ShippopService } from '../order/service/shippop.service'
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { OrderService } from '../order/service/order.service'
     MobileModule,
     HappyPointModule,
     OrderModule,
+    SellerModule,
   ],
   providers: [
     AppConsoleService,
@@ -45,6 +47,9 @@ import { OrderService } from '../order/service/order.service'
     MobileService,
     RegisterService,
     OrderService,
+    ShippopService,
+    ConditionService,
+    CreateConditionConsoleService,
   ],
 })
 export class AppConsoleModule {}

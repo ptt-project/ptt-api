@@ -61,4 +61,9 @@ export class ValidateRegisterRequestDto {
   @IsNotEmpty()
   @MaxLength(20)
   username: string
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(10)
+  mobile: string
 }

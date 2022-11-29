@@ -15,7 +15,6 @@ import {
   InsertProductProfileToDbParams,
   InsertProductsToDbParams,
 } from '../../product/type/product.type'
-import { genUuid } from 'src/utils/helpers'
 import { MasterConfig, MasterConfigType } from 'src/db/entities/MasterConfig'
 import { OtpService } from 'src/modules/otp/service/otp.service'
 import { MobileService } from 'src/modules/mobile/service/mobile.service'
@@ -24,6 +23,7 @@ import { RegisterSellerRequestDto } from 'src/modules/seller/dto/seller.dto'
 import { Member } from 'src/db/entities/Member'
 import { Wallet } from 'src/db/entities/Wallet'
 import { Shop } from 'src/db/entities/Shop'
+import { ConditionService } from 'src/modules/shop/service/condition.service'
 
 @Console()
 export class MockDataConsoleService {
@@ -35,6 +35,7 @@ export class MockDataConsoleService {
     private readonly otpService: OtpService,
     private readonly mobileService: MobileService,
     private readonly happyPointService: HappyPointService,
+    private readonly conditionService: ConditionService,
   ) {}
 
   @Command({
@@ -121,6 +122,7 @@ export class MockDataConsoleService {
     await this.authService.RegisterHandler(
       this.otpService.InquiryVerifyOtpFunc(etm),
       this.authService.InquiryMemberExistFunc(etm),
+      this.authService.ValidateMobileUsedFunc(etm),
       this.authService.ValidateInviteTokenFunc(etm),
       this.authService.InsertMemberToDbFunc(etm),
       this.mobileService.AddMobileFunc(etm),
@@ -141,14 +143,15 @@ export class MockDataConsoleService {
       instagram: '@myshop',
       socialMedia: '@myshop',
       note: '',
-      corperateName: 's',
-      corperateId: 'ss2',
+      corporateName: 's',
+      corporateId: 'ss2',
       type: 'Mall',
       mallApplicantRole: 'Exclusive Distributor',
     }
     await this.regiserSellerService.RegisterSellerHandler(
       this.regiserSellerService.ValidateSellerDataFunc(etm),
       this.regiserSellerService.InsertShopToDbFunc(etm),
+      this.conditionService.InsertConditionToDbFunc(etm),
       this.regiserSellerService.CreateTablePartitionOfProductProfileToDbFunc(
         etm,
       ),
@@ -266,13 +269,15 @@ export class MockDataConsoleService {
     const shop = await etm.findOne(Shop, { order: { createdAt: 'DESC' } })
 
     const platformCategory = etm.create(PlatformCategory, {
-      name: 'platform-category01',
+      nameEn: 'platform-category01',
+      nameTh: 'ประเภทสินค้า01',
       status: 'active',
     })
     await etm.save(platformCategory)
 
     const brand = etm.create(Brand, {
-      name: 'brand01',
+      nameTh: 'brand01',
+      nameEn: 'brand01',
     })
     await etm.save(brand)
 

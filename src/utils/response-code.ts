@@ -10,11 +10,12 @@ const _authError = 101000
 export const UnableRegisterEmailAlreayExist = _authError + 1
 export const UnableRegisterUsernameAlreayExist = _authError + 2
 export const UnableInsertMemberToDbError = _authError + 3
-export const UnableInquiryEmailExistByEmailError= _authError + 4
-export const UnableInquiryMemberExistByMobileError= _authError + 5
-export const UnableUpateLoginTokenToDb= _authError + 6
-export const UnableInquiryMemberExistByLoginTokenAndEmailError= _authError + 7
-export const UnableSendMessageToEmailError= _authError + 8
+export const UnableInquiryEmailExistByEmailError = _authError + 4
+export const UnableInquiryMemberExistByMobileError = _authError + 5
+export const UnableUpateLoginTokenToDb = _authError + 6
+export const UnableInquiryMemberExistByLoginTokenAndEmailError = _authError + 7
+export const UnableSendMessageToEmailError = _authError + 8
+export const UnableRegisterMobileAlreayExist = _authError + 9
 
 // login
 export const UnableLoginUsernameDoNotAlreayExist = _authError + 4
@@ -81,10 +82,11 @@ export const UnableToGetShopInfo = _sellerError + 4
 export const UnableToUpdateShopInfo = _sellerError + 5
 export const UnableCreatePartitionOfProductProfile = _sellerError + 6
 export const UnableToUpdateShopWallet = _sellerError + 7
+export const UnableInsertConditionToDb = _sellerError + 8
 
 // review module
 const _reviewError = 107000
-export const UnableInquiryInquiryReviewsBySellerId = _reviewError + 1
+export const UnableInquiryInquiryReviewsByShopId = _reviewError + 1
 export const UnableInquiryReviewsByReviewId = _reviewError + 2
 export const UnableReplyReviewByReviewId = _reviewError + 3
 
@@ -129,6 +131,8 @@ export const UnableUpdateProduct = _productError + 17
 export const UnableInquiryProductProfileFromDb = _productError + 18
 export const UnableInquiryProductByProductIds = _productError + 19
 export const UnableToGetProductPrice = _productError + 20
+export const UnableConvertProductProfileToProductProfileListForBuyer =
+  _productError + 6
 
 const _image = 110000
 export const UnableResizeImage = _image + 1
@@ -184,24 +188,29 @@ export const UnableUpdateResetLimitTransfer = _happyPoint + 23
 export const UnableUpdateDebitLimitTransferToDb = _happyPoint + 24
 export const UnableInquiryHappyPointTransactionToDb = _happyPoint + 25
 
-
 const _orderError = 116000
 export const UnableToInsertOrder = _orderError + 1
 export const UnableToInsertOrderShop = _orderError + 2
 export const UnableToInsertOrderShopProduct = _orderError + 3
 export const UnableToInsertPayment = _orderError + 4
-export const UnableToUpdatePaymentIdToOrder = _orderError + 5
-export const UnableToInquiryShopByIdError = _orderError + 6
-export const UnableToInquiryProductByIdError = _orderError + 7
-export const UnableToInquiryProductProfileByIdError = _orderError + 8
-export const UnableToUpdateStockToProductError = _orderError + 9
-export const UnableToValidateOrder = _orderError + 10
-export const UnableInquiryOrderShops = _orderError + 11
-export const UnableInquiryOrderShopById = _orderError + 12
-export const UnablePaginateOrderShops = _orderError + 13
-
-
-
+export const UnableToUpdatePaymentIdAndStatusToOrder = _orderError + 5
+export const UnableToValidateOrder = _orderError + 6
+export const UnableToAdjustWalletToSeller = _orderError + 7
+export const UnableToInquiryShopByIdError = _orderError + 8
+export const UnableToInquiryProductByIdError = _orderError + 9
+export const UnableToInquiryProductProfileByIdError = _orderError + 10
+export const UnableToUpdateStockToProductError = _orderError + 11
+export const UnableInquiryOrderShops = _orderError + 12
+export const UnableInquiryOrderShopById = _orderError + 13
+export const UnableInquiryShopById = _orderError + 14
+export const UnableInquiryProductById = _orderError + 15
+export const InvalidTotalPriceOfProducts = _orderError + 16
+export const InvalidOrderShopTotal = _orderError + 17
+export const InvalidOrderShopTotalOfProducts = _orderError + 18
+export const InvalidOrderShopTotalOfShipping = _orderError + 19
+export const UnableToAdjustWalletToBuyer = _orderError + 20
+export const ErrorValidateParamsForPayment = _orderError + 21
+export const UnablePaginateOrderShops = _orderError + 22
 
 const _config = 300000
 export const UnableToGetBrandOptions = _config + 1

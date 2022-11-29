@@ -15,8 +15,8 @@ export type InsertShopToDbParams = {
   instagram?: string
   socialMedia?: string
   note?: string
-  corperateId?: string
-  corperateName?: string
+  corporateId?: string
+  corporateName?: string
   mallApplicantRole?: MallApplicantRoleType
   mallOfflineShopDetail?: string
   mallShopDescription?: string
@@ -34,8 +34,8 @@ export type UpdateShopToDbParams = {
   instagram?: string
   socialMedia?: string
   note?: string
-  corperateId?: string
-  corperateName?: string
+  corporateId?: string
+  corporateName?: string
   mallApplicantRole?: MallApplicantRoleType
   mallOfflineShopDetail?: string
   mallShopDescription?: string
@@ -57,6 +57,3 @@ export type UpdateShopTobDbByIdType = (
   params: UpdateShopInfoRequestDto,
 ) => Promise<string>
 
-export type InquiryConditionByShopIdType = (
-  shopId: string,
-) => Promise<[Condition, string]>

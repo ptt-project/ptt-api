@@ -20,7 +20,6 @@ import { LookupService } from '../happy-point/service/lookup.service'
 import { OtpService } from '../otp/service/otp.service'
 import { WalletService } from '../wallet/service/wallet.service'
 import { ChagnePasswordRequestDto } from './dto/password.dto'
-import { CreateOrderDto, GetOrderRequestDto } from './dto/createOrder.dto'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
 import { GetRelationRequestDto } from './dto/relation.dto'
 import { RelationService } from './service/relation.service'
@@ -31,7 +30,6 @@ import {
 import { SearchMemberByUsernameDto } from './dto/search.dto'
 import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
 import { MemberService } from './service/member.service'
-import { OrderService } from './service/order.service'
 import { PasswordService } from './service/password.service'
 import { ProductService } from './service/product.service'
 
@@ -44,7 +42,6 @@ export class MemberController {
     private readonly relationService: RelationService,
     private readonly emailService: MemberEmailService,
     private readonly productService: ProductService,
-    private readonly orderService: OrderService,
     private readonly lookupService: LookupService,
     private readonly happyService: HappyPointService,
     private readonly otpService: OtpService,
@@ -145,77 +142,5 @@ export class MemberController {
     return await this.memberService.SearchUserByUsernameHandler(
       this.memberService.InquiryMemberByUsernameFunc(etm),
     )(query)
-  }
-
-  @Auth()
-  @Post('order')
-  @Transaction()
-  async createOrder(
-    @ReqWallet() wallet: Wallet,
-    @ReqHappyPoint() happyPoint: HappyPoint,
-    @ReqUser() member: Member,
-    @Body() body: CreateOrderDto,
-    @TransactionManager() etm: EntityManager,
-  ) {
-    const redis = this.redisService.getClient()
-
-    return await this.orderService.CheckoutHandler(
-      this.orderService.ValidateOrderParamsFunc(),
-      this.orderService.InsertOrderToDbFunc(etm),
-      this.orderService.InsertPaymentByBankToDbFunc(etm),
-      this.otpService.InquiryVerifyOtpFunc(etm),
-      this.lookupService.InquiryRefIdExistInTransactionFunc(etm),
-      this.lookupService.GetCacheLookupToRedisFunc(redis),
-      this.happyService.ValidateCalculateFeeAmountFunc(),
-      this.happyService.ValidateCalculatePointByExchangeAndAmountFunc(),
-      this.happyService.ValidateCalculateAmountFunc(),
-      this.happyService.InsertHappyPointTransactionToDbFunc(etm),
-      this.walletService.RequestInteranlWalletTransactionService(
-        this.walletService.InsertTransactionToDbFunc(etm),
-        this.walletService.InsertReferenceToDbFunc(etm),
-        this.walletService.UpdateReferenceToDbFunc(etm),
-        this.walletService.AdjustWalletInDbFunc(etm),
-      ),
-      this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
-      this.walletService.InsertTransactionToDbFunc(etm),
-      this.walletService.InsertReferenceToDbFunc(etm),
-      this.walletService.UpdateReferenceToDbFunc(etm),
-      this.walletService.AdjustWalletInDbFunc(etm),
-      this.orderService.InsertPaymentByEwalletToDbFunc(etm),
-      this.orderService.InsertPaymentByHappyPointToDbFunc(etm),
-      this.orderService.UpdatePaymentIdToOrderFunc(etm),
-      this.orderService.InquiryShopByIdFunc(etm),
-      this.orderService.InsertOrderShopToDbFunc(etm),
-      this.walletService.InquiryWalletByShopIdFunc(etm),
-      this.orderService.InquiryProductByIdFunc(etm),
-      this.orderService.UpdateStockToProductFunc(etm),
-      this.orderService.InquiryProductProfileByIdFunc(etm),
-      this.orderService.InsertOrderShopProductToDbFunc(etm),
-    )(wallet, happyPoint, member, body)
-  }
-
-  @Get('order-shops')
-  @Transaction()
-  async getOrderShops(
-    @ReqUser() member: Member,
-    @Query() query: GetOrderRequestDto,
-    @TransactionManager() etm: EntityManager,
-  ) {
-    return await this.orderService.GetOrderShopsHandler(
-      this.orderService.InquiryOrderShopsFunc(etm),
-      this.orderService.PaginateOrderShopsFunc(),
-    )(member, query)
-  }
-
-  @Get('order-shops/:orderShopId')
-  @Transaction()
-  async getOrderShopById(
-    @Param('orderShopId') orderShopId: string,
-    @ReqUser() member: Member,
-    @TransactionManager() etm: EntityManager,
-  ) {
-    return await this.orderService.GetOrderShopByIdHandler(
-      this.orderService.InquiryOrderShopByIdFunc(etm),
-    )(member, orderShopId)
   }
 }

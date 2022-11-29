@@ -47,8 +47,9 @@ import {
   DeleteProductOptionByIdType,
   UpdateProductOptionsToDbType,
   InquiryProductListByShopIdType,
-  InquiryProductProfileFromDbType,
+  PreInquiryProductProfileFromDbType,
   ConvertDataToProductProfileLandingPageType,
+  ExecutePreInquiryProductProfileFromDbType,
 } from '../type/product.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
@@ -1075,9 +1076,9 @@ export class ProductService {
           }
 
           if (newProducts.length > 0) {
-            const [createNewProducts, createProductsError] = await (
-              await createProducts
-            )(newProducts)
+            const [, createProductsError] = await (await createProducts)(
+              newProducts,
+            )
 
             if (createProductsError != '') {
               return response(
@@ -1125,7 +1126,7 @@ export class ProductService {
             },
           )
 
-          const [products, createProductsError] = await (await createProducts)(
+          const [, createProductsError] = await (await createProducts)(
             newProducts,
           )
 
@@ -1169,7 +1170,7 @@ export class ProductService {
           },
         ]
 
-        const [products, createProductsError] = await (await createProducts)(
+        const [, createProductsError] = await (await createProducts)(
           newProducts,
         )
 
@@ -1468,14 +1469,16 @@ export class ProductService {
   }
 
   InquiryProductProfileHandler(
-    inquiryProductProfileFromDb: Promise<InquiryProductProfileFromDbType>,
-    convertProductProfileToProductProfileLandingPage: ConvertDataToProductProfileLandingPageType,
+    preInquiryProductProfileFromDb: PreInquiryProductProfileFromDbType,
+    executeInquiryProductProfileFromDb: ExecutePreInquiryProductProfileFromDbType,
+    convertProductProfileToProductProfileListForBuyer: ConvertDataToProductProfileLandingPageType,
   ) {
     return async (query: GetProductsDTO) => {
       const { limit, page } = query
-      const [productProfiles, errorInquiryProductProfileFromDb] = await (
-        await inquiryProductProfileFromDb
-      )()
+      const [
+        productProfiles,
+        errorInquiryProductProfileFromDb,
+      ] = preInquiryProductProfileFromDb()
 
       if (errorInquiryProductProfileFromDb != '') {
         return response(
@@ -1485,44 +1488,52 @@ export class ProductService {
         )
       }
 
-      const paginateProductProfile = await paginate<ProductProfile>(
-        productProfiles,
-        {
-          limit,
-          page,
-        },
-      )
+      const [
+        paginateProductProfile,
+        errorExecuteInquiryProductProfileFromDb,
+      ] = await executeInquiryProductProfileFromDb(productProfiles, limit, page)
 
-      const result = convertProductProfileToProductProfileLandingPage(
+      if (errorExecuteInquiryProductProfileFromDb != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          errorInquiryProductProfileFromDb,
+        )
+      }
+
+      const [
+        result,
+        errorConvertProductProfileToProductProfileListForBuyer,
+      ] = convertProductProfileToProductProfileListForBuyer(
         paginateProductProfile,
       )
+      if (errorConvertProductProfileToProductProfileListForBuyer != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          errorInquiryProductProfileFromDb,
+        )
+      }
 
       return response(result)
     }
   }
 
-  async InquiryProductProfileFromDbFunc(
+  PreInquiryProductProfileFromDbFunc(
     etm: EntityManager,
-  ): Promise<InquiryProductProfileFromDbType> {
-    return async (): Promise<[SelectQueryBuilder<ProductProfile>, string]> => {
+  ): PreInquiryProductProfileFromDbType {
+    return (): [SelectQueryBuilder<ProductProfile>, string] => {
       let productProfiles: SelectQueryBuilder<ProductProfile>
 
       try {
         productProfiles = etm
           .createQueryBuilder(ProductProfile, 'productProfiles')
-          .innerJoinAndMapMany(
-            'productProfiles.products',
-            'productProfiles.products',
-            'products',
-          )
-          .innerJoinAndMapOne(
-            'productProfiles.shop',
-            'productProfiles.shop',
-            'shops',
-          )
-
           .where('productProfiles.deletedAt IS NULL')
           .orderBy('productProfiles.createdAt', 'DESC')
+
+        productProfiles = this.SelectQueryBuilderJoinAndMapProdcutsAndShop(
+          productProfiles,
+        )
       } catch (error) {
         return [productProfiles, error.message]
       }
@@ -1531,36 +1542,80 @@ export class ProductService {
     }
   }
 
+  ExecuteInquiryProductProfileFromDbFunc(): ExecutePreInquiryProductProfileFromDbType {
+    return async (
+      productProfiles: SelectQueryBuilder<ProductProfile>,
+      limit: number,
+      page: number,
+    ): Promise<[Pagination<ProductProfile, IPaginationMeta>, string]> => {
+      let paginateProductProfile: Pagination<ProductProfile, IPaginationMeta>
+      try {
+        paginateProductProfile = await paginate<ProductProfile>(
+          productProfiles,
+          {
+            limit,
+            page,
+          },
+        )
+      } catch (error) {
+        return [paginateProductProfile, error.message]
+      }
+
+      return [paginateProductProfile, '']
+    }
+  }
+
   ConvertDataToProductProfileLandingPageFunc(): ConvertDataToProductProfileLandingPageType {
     return (
       paginateProductProfile: Pagination<ProductProfile, IPaginationMeta>,
-    ): Pagination<ProductProfile, IPaginationMeta> => {
-      const items = paginateProductProfile.items.map(
-        (productProfile: ProductProfile) => {
-          const { shop, products } = productProfile
-          let amountSold = 0
-          let price = Number.MAX_VALUE
-          console.log('products', products)
-          for (const product of products) {
-            amountSold += product.amountSold
+    ): [Pagination<ProductProfile, IPaginationMeta>, ''] => {
+      try {
+        const items = paginateProductProfile.items.map(
+          (productProfile: ProductProfile) => {
+            const { shop, products } = productProfile
+            let amountSold = 0
+            let price = Number.MAX_VALUE
 
-            if (price > product.price) {
-              price = product.price
+            for (const product of products) {
+              amountSold += product.amountSold
+
+              if (price > product.price) {
+                price = product.price
+              }
             }
-          }
 
-          return {
-            ...productProfile,
-            amountSold,
-            price,
-            isRecommended: shop.isRecommended,
-            scoreCount: shop.scoreCount,
-            shop: undefined,
-            products: undefined,
-          }
-        },
-      )
-      return { ...paginateProductProfile, items }
+            return {
+              ...productProfile,
+              amountSold,
+              price,
+              isRecommended: shop.isRecommended,
+              scoreCount: shop.scoreCount,
+              shop: undefined,
+              products: undefined,
+            }
+          },
+        )
+
+        return [{ ...paginateProductProfile, items }, '']
+      } catch (error) {
+        return [undefined, error.message]
+      }
     }
+  }
+
+  private SelectQueryBuilderJoinAndMapProdcutsAndShop(
+    productProfiles: SelectQueryBuilder<ProductProfile>,
+  ) {
+    return productProfiles
+      .innerJoinAndMapMany(
+        'productProfiles.products',
+        'productProfiles.products',
+        'products',
+      )
+      .innerJoinAndMapOne(
+        'productProfiles.shop',
+        'productProfiles.shop',
+        'shops',
+      )
   }
 }

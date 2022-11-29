@@ -16,13 +16,21 @@ export class GetOrderRequestDto {
   @IsOptional()
   page?: number
 
-  @IsOptional() 
-  @IsString() 
+  @IsOptional()
+  @IsString()
   keyword?: string
 
-  @IsOptional() 
+  @IsOptional()
   @IsString()
-  @IsIn(['toPay', 'toShip', 'toReceive', 'complated', 'cancelled', 'return', 'refund'])
+  @IsIn([
+    'toPay',
+    'toShip',
+    'toReceive',
+    'complated',
+    'cancelled',
+    'return',
+    'refund',
+  ])
   status?: string
 }
 
@@ -31,11 +39,9 @@ export class CreateOrderDto {
   happyVoucherId?: string
 
   @IsString()
+  @IsIn(['BANK', 'HAPPYPOINT', 'EWALLET', 'CASHONDELIVERY'])
   @IsNotEmpty()
   paymentType: PaymentType
-
-  @IsOptional()
-  bankPaymentId?: string
 
   @IsOptional()
   qrCode?: string
@@ -44,16 +50,7 @@ export class CreateOrderDto {
   reference?: string
 
   @IsOptional()
-  point?: number
-
-  @IsOptional()
-  totalAmount?: number
-
-  @IsOptional()
-  feeAmount?: number
-
-  @IsOptional()
-  amountSell?: number
+  amountOfHappyPoint?: number
 
   @IsOptional()
   refId?: string
@@ -66,18 +63,18 @@ export class CreateOrderDto {
 
   @IsNumber()
   @IsNotEmpty()
-  merchandiseSubtotal: number
+  totalPriceOfProducts: number
 
   @IsNumber()
   @IsNotEmpty()
-  shippingTotal: number
+  totalPriceOfShippings: number
 
   @IsOptional()
   discount?: number
 
   @IsNumber()
   @IsNotEmpty()
-  amount: number
+  totalPrice: number
 
   @IsString()
   @IsNotEmpty()
@@ -122,19 +119,26 @@ export class OrderShopDto {
 
   @IsNumber()
   @IsNotEmpty()
-  orderShopAmount: number
+  totalPrice: number
 
   @IsNumber()
   @IsNotEmpty()
-  shippingOptionId: string
+  totalPriceOfProducts: number
 
   @IsNumber()
   @IsNotEmpty()
-  shippingPrice: number
+  shippingOptionId?: string
+
+  @IsNumber()
+  @IsNotEmpty()
+  totalPriceOfShippings: number
 
   @IsNotEmpty()
   @IsISO8601()
   minDeliverDate: Date
+
+  @IsOptional()
+  discount?: number
 
   @IsNotEmpty()
   @IsISO8601()
@@ -152,13 +156,6 @@ export class OrderShopProductDto {
   @IsNumber()
   @IsNotEmpty()
   productId: string
-
-  @IsString()
-  @IsNotEmpty()
-  productProfileName: string
-
-  @IsOptional()
-  productProfileImage?: string
 
   @IsOptional()
   productOptions1?: string

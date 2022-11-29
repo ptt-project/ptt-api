@@ -56,6 +56,8 @@ import {
   UpdateResetLimitTransferType,
   UpdateDebitLimitTransferToDbType,
   UpdateCreditLimitTransferToDbType,
+  DebitHappyPointType,
+  DebitHappyPointTransactionParams,
 } from '../type/happy-point.type'
 import { RedisService } from 'nestjs-redis'
 import { GetCacheLookupToRedisType } from '../type/lookup.type'
@@ -207,14 +209,8 @@ export class HappyPointService {
 
   SellHappyPointHandler(
     inquiryVerifyOtp: Promise<InquiryVerifyOtpType>,
-    inquiryRefIdExistTransaction: Promise<InquiryRefIdExistInTransactionType>,
-    getLookupToRedis: Promise<GetCacheLookupToRedisType>,
-    validateFeeAmount: Promise<ValidateCalculateFeeAmountType>,
-    validatePoint: Promise<ValidateCalculatePointByExchangeAndAmountType>,
-    validateAmount: Promise<ValidateCalculateAmountType>,
-    insertHappyPointTypeBuyToDb: Promise<InsertHappyPointTypeBuyToDbType>,
+    debitHappyPoint: DebitHappyPointType,
     updateWalletToDb: Promise<RequestInteranlWalletTransactionServiceFuncType>,
-    updateDebitBalanceMemberToDb: Promise<UpdateCreditBalanceToDbType>,
   ) {
     return async (
       wallet: Wallet,
@@ -222,113 +218,36 @@ export class HappyPointService {
       member: Member,
       body: SellHappyPointRequestDto,
     ) => {
-      const start = dayjs()
-      const { id: happyPointId } = happyPoint
-      const { amount, point, refId, totalAmount, feeAmount } = body
-
       const verifyOtpData: verifyOtpRequestDto = {
         reference: member.mobile,
         refCode: body.refCode,
         otpCode: body.otpCode,
       }
+      const { point, amount, refId } = body
       const [verifyOtpErrorCode, verifyOtpErrorMessege] = await (
         await inquiryVerifyOtp
       )(verifyOtpData)
 
       if (verifyOtpErrorCode != 0) {
-        return response(undefined, verifyOtpErrorCode, verifyOtpErrorMessege)
+        return [undefined, verifyOtpErrorCode, verifyOtpErrorMessege]
       }
 
+      const params: DebitHappyPointTransactionParams = {
+        ...body,
+        transactionType: 'SELL',
+      }
       const [
-        statusErrorInquiryRefIdExistTransaction,
-        errorMessageInquiryRefIdExistTransaction,
-      ] = await (await inquiryRefIdExistTransaction)(refId)
+        respHappyPoint,
+        errorCodeDebitHappyPoint,
+        errorMessageDebitHappyPoint,
+      ] = await debitHappyPoint(happyPoint, params)
 
-      if (errorMessageInquiryRefIdExistTransaction != '') {
-        if (statusErrorInquiryRefIdExistTransaction === 200) {
-          return response(
-            undefined,
-            UnableDuplicateRefId,
-            errorMessageInquiryRefIdExistTransaction,
-          )
-        } else {
-          return internalSeverError(
-            UnableInquiryRefIdExistTransactions,
-            errorMessageInquiryRefIdExistTransaction,
-          )
-        }
-      }
-
-      const [lookup, isErrorGetLookupToRedis] = await (await getLookupToRedis)(
-        refId,
-      )
-      if (isErrorGetLookupToRedis != '') {
+      if (errorCodeDebitHappyPoint != 0) {
         return response(
           undefined,
-          UnableLookupExchangeRate,
-          isErrorGetLookupToRedis,
+          errorCodeDebitHappyPoint,
+          errorMessageDebitHappyPoint,
         )
-      }
-      const { happyPointSellRate, happyPointFeePercent } = lookup
-
-      const isErrorValidateFeeAmount = await (await validateFeeAmount)(
-        totalAmount,
-        happyPointFeePercent,
-        feeAmount,
-      )
-      if (isErrorValidateFeeAmount != '') {
-        return response(
-          undefined,
-          ComplicatedFeeAmount,
-          isErrorValidateFeeAmount,
-        )
-      }
-
-      const iseErrorValidatePoint = await (await validatePoint)(
-        totalAmount,
-        happyPointSellRate,
-        point,
-      )
-      if (iseErrorValidatePoint != '') {
-        return response(undefined, WrongCalculatePoint, iseErrorValidatePoint)
-      }
-
-      const iseErrorValidateAmount = await (await validateAmount)(
-        totalAmount,
-        feeAmount,
-        amount,
-      )
-      if (iseErrorValidateAmount != '') {
-        return response(undefined, WrongCalculateAmount, iseErrorValidateAmount)
-      }
-
-      const parmasInsertHappyTransaction: InsertHappyPointToDbParams = {
-        refId,
-        amount,
-        point,
-        fee: happyPointFeePercent,
-        exchangeRate: happyPointSellRate,
-        fromHappyPointId: happyPointId,
-        totalAmount: amount,
-        type: 'SELL',
-        note: 'DEBIT',
-        status: 'SUCCESS',
-      }
-      const [, isErrorInsertHappyTransaction] = await (
-        await insertHappyPointTypeBuyToDb
-      )(parmasInsertHappyTransaction)
-
-      if (isErrorInsertHappyTransaction != '') {
-        return response(
-          undefined,
-          UnableInserttHappyPointTypeBuyToDb,
-          isErrorInsertHappyTransaction,
-        )
-      }
-
-      const parmasUpdateCreditMember: UpdateBalanceToDbParams = {
-        happyPoint,
-        point,
       }
 
       const [, requestSellHappyPointError] = await (await updateWalletToDb)(
@@ -339,11 +258,131 @@ export class HappyPointService {
         `Sell HappyPoint ${point} point.`,
       )
       if (requestSellHappyPointError != '') {
-        return response(
+        return [
           undefined,
           UpdateWalletWithBuyHappyPoint,
           requestSellHappyPointError,
-        )
+        ]
+      }
+
+      return response(respHappyPoint)
+    }
+  }
+
+  DebitHappyPointFunc(
+    inquiryRefIdExistTransaction: Promise<InquiryRefIdExistInTransactionType>,
+    getLookupToRedis: Promise<GetCacheLookupToRedisType>,
+    validateFeeAmount: Promise<ValidateCalculateFeeAmountType>,
+    validatePoint: Promise<ValidateCalculatePointByExchangeAndAmountType>,
+    validateAmount: Promise<ValidateCalculateAmountType>,
+    insertHappyPointTypeBuyToDb: Promise<InsertHappyPointTypeBuyToDbType>,
+    updateDebitBalanceMemberToDb: Promise<UpdateDebitBalanceToDbType>,
+  ): DebitHappyPointType {
+    return async (
+      happyPoint: HappyPoint,
+      body: DebitHappyPointTransactionParams,
+    ) => {
+      const start = dayjs()
+
+      const { id: happyPointId } = happyPoint
+      const {
+        amount,
+        point,
+        refId,
+        totalAmount,
+        feeAmount,
+        transactionType,
+        orderId,
+      } = body
+
+      const [
+        statusErrorInquiryRefIdExistTransaction,
+        errorMessageInquiryRefIdExistTransaction,
+      ] = await (await inquiryRefIdExistTransaction)(refId)
+
+      if (errorMessageInquiryRefIdExistTransaction != '') {
+        if (statusErrorInquiryRefIdExistTransaction === 200) {
+          return [
+            undefined,
+            UnableDuplicateRefId,
+            errorMessageInquiryRefIdExistTransaction,
+          ]
+        } else {
+          return [
+            undefined,
+            UnableInquiryRefIdExistTransactions,
+            errorMessageInquiryRefIdExistTransaction,
+          ]
+        }
+      }
+
+      const [lookup, isErrorGetLookupToRedis] = await (await getLookupToRedis)(
+        refId,
+      )
+      if (isErrorGetLookupToRedis != '') {
+        return [undefined, UnableLookupExchangeRate, isErrorGetLookupToRedis]
+      }
+      const { happyPointSellRate, happyPointFeePercent } = lookup
+
+      const isErrorValidateFeeAmount = await (await validateFeeAmount)(
+        totalAmount,
+        happyPointFeePercent,
+        feeAmount,
+      )
+      if (isErrorValidateFeeAmount != '') {
+        return [undefined, ComplicatedFeeAmount, isErrorValidateFeeAmount]
+      }
+
+      const iseErrorValidatePoint = await (await validatePoint)(
+        totalAmount,
+        happyPointSellRate,
+        point,
+      )
+      if (iseErrorValidatePoint != '') {
+        return [undefined, WrongCalculatePoint, iseErrorValidatePoint]
+      }
+
+      const iseErrorValidateAmount = await (await validateAmount)(
+        totalAmount,
+        feeAmount,
+        amount,
+      )
+      if (iseErrorValidateAmount != '') {
+        return [undefined, WrongCalculateAmount, iseErrorValidateAmount]
+      }
+
+      const parmasInsertHappyTransaction: InsertHappyPointToDbParams = {
+        refId,
+        amount,
+        point,
+        fee: happyPointFeePercent,
+        exchangeRate: happyPointSellRate,
+        fromHappyPointId: happyPointId,
+        totalAmount: amount,
+        type: transactionType,
+        note: 'DEBIT',
+        status: 'SUCCESS',
+      }
+
+      if (transactionType == 'PAYMENT') {
+        parmasInsertHappyTransaction.orderId = orderId
+      }
+
+      const [, isErrorInsertHappyTransaction] = await (
+        await insertHappyPointTypeBuyToDb
+      )(parmasInsertHappyTransaction)
+
+      if (isErrorInsertHappyTransaction != '') {
+        return [
+          undefined,
+          UnableInserttHappyPointTypeBuyToDb,
+          isErrorInsertHappyTransaction,
+        ]
+      }
+
+      const parmasUpdateCreditMember: UpdateBalanceToDbParams = {
+        happyPoint,
+        point,
       }
 
       const [updateBalaceMember, isErrorUpdateDebitBalanceMemberToDb] = await (
@@ -351,15 +390,15 @@ export class HappyPointService {
       )(parmasUpdateCreditMember)
 
       if (isErrorUpdateDebitBalanceMemberToDb != '') {
-        return response(
+        return [
           undefined,
           UnableUpdateDebitBalanceMemberToDb,
           isErrorUpdateDebitBalanceMemberToDb,
-        )
+        ]
       }
 
-      this.logger.info(`Done SellHappyPointHandler ${dayjs().diff(start)} ms`)
-      return response(updateBalaceMember)
+      this.logger.info(`Done DebitHappyPointType ${dayjs().diff(start)} ms`)
+      return [updateBalaceMember, 0, '']
     }
   }
 
@@ -677,8 +716,23 @@ export class HappyPointService {
   ): Promise<UpdateCreditBalanceToDbType> {
     return async (params: UpdateBalanceToDbParams) => {
       const start = dayjs()
-      const { happyPoint, point } = params
+      const {
+        happyPoint: { id },
+        point,
+      } = params
+      let happyPoint: HappyPoint
+
       try {
+        happyPoint = await etm.findOne(HappyPoint, {
+          where: {
+            id,
+            deletedAt: null,
+          },
+          lock: {
+            mode: 'pessimistic_write',
+          },
+        })
+
         const newBalance = point + happyPoint.balance
         console.log('newBalance = point + happyPoint.balance', newBalance)
 
@@ -702,13 +756,27 @@ export class HappyPointService {
   ): Promise<UpdateDebitBalanceToDbType> {
     return async (params: UpdateBalanceToDbParams) => {
       const start = dayjs()
-      const { happyPoint, point } = params
-
-      if (happyPoint.balance < point) {
-        return [happyPoint, 'point not enough for transfer']
-      }
+      const {
+        happyPoint: { id },
+        point,
+      } = params
+      let happyPoint: HappyPoint
 
       try {
+        happyPoint = await etm.findOne(HappyPoint, {
+          where: {
+            id,
+            deletedAt: null,
+          },
+          lock: {
+            mode: 'pessimistic_write',
+          },
+        })
+
+        if (happyPoint.balance < point) {
+          return [happyPoint, 'point not enough for process']
+        }
+
         const newBalance = happyPoint.balance - point
         console.log('newBalance = happyPoint.balance - point', newBalance)
 
