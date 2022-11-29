@@ -8,7 +8,8 @@ import { Product } from "src/db/entities/Product";
 import { ProductProfile } from "src/db/entities/ProductProfile";
 import { Shop } from "src/db/entities/Shop";
 import { InquiryAddressByIdType, InquirySellerAddressesByShopIdsType } from "src/modules/address/type/member.type";
-import { InquiryPriceFromShippopType } from "src/modules/order/type/order.type";
+import { InquiryPriceFromShippopType } from "src/modules/order/type/shippop.type";
+import { convertEstimateTimeToMinAndMaxDate } from "src/utils/helpers";
 import { response } from "src/utils/response";
 import {
   UnableInquiryAddressById,
@@ -215,8 +216,11 @@ export class ProductService {
                 () => (productProfileDictionary[product.productId])
               ))]
           }, [])
-          const shipping = await inquiryPriceFromShippop(sellerAddress, buyerAddress, shippingProducts)
-          shippings[shop.shopId]= shipping
+          const shippingDetails = await inquiryPriceFromShippop(sellerAddress, buyerAddress, shippingProducts)
+          shippings[shop.shopId]= shippingDetails.map(shipping => ({
+            ...shipping,
+            ...convertEstimateTimeToMinAndMaxDate(shipping.estimateTime),
+          }))
           
         }
       } catch (error) {
