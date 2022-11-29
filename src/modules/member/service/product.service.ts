@@ -2,22 +2,32 @@ import { Injectable } from "@nestjs/common";
 import dayjs from "dayjs";
 import { PinoLogger } from "nestjs-pino";
 import { paginate } from "nestjs-typeorm-paginate";
+import { Address } from "src/db/entities/Address";
 import { Member } from "src/db/entities/Member";
 import { Product } from "src/db/entities/Product";
 import { ProductProfile } from "src/db/entities/ProductProfile";
+import { Shop } from "src/db/entities/Shop";
+import { InquiryAddressByIdType, InquirySellerAddressesByShopIdsType } from "src/modules/address/type/member.type";
+import { InquiryPriceFromShippopType } from "src/modules/order/type/shippop.type";
+import { convertEstimateTimeToMinAndMaxDate } from "src/utils/helpers";
 import { response } from "src/utils/response";
 import {
+  UnableInquiryAddressById,
   UnableInquiryProductByProductIds,
   UnableInquiryProductProfileByProductProfileId,
   UnableToGetProductPrice,
+  UnableToInquirySellerAddressesByShopIds,
+  UnableToRequestShippingPrice,
 } from "src/utils/response-code";
 import { EntityManager, SelectQueryBuilder } from "typeorm";
-import { GetProductInfoMemberDto, GetProductListMemberDto } from "../dto/getProductList.dto";
+import { GetProductInfoMemberDto, GetProductListMemberDto, GetProductShipingDto, ShopShipping } from "../dto/getProductList.dto";
 import {
   InquiryMemberProductCurrentPriceFuncType,
   InquiryProductInfoByProductIdsType,
   InquiryProductListByShopIdType,
   ProductPrice,
+  RequestProductShippingPriceFuncType,
+  ShippingPrice,
 } from "../type/product.type";
 
 
@@ -100,6 +110,125 @@ export class ProductService {
 
       this.logger.info(`Done GetProductBuyerByProductIdsHandler ${dayjs().diff(start)} ms`)
       return response(productPrice)
+    }
+  }
+
+  GetProductShippingHandler(
+    inquiryProductInfoByProductIds: Promise<InquiryProductInfoByProductIdsType>,
+    inquiryAddressById: Promise<InquiryAddressByIdType>,
+    inquirySellerAddressesByShopIds: InquirySellerAddressesByShopIdsType,
+    requestProductShippingPrice: RequestProductShippingPriceFuncType,
+    ) {
+    return async (member: Member, query: GetProductShipingDto) => {
+      const start = dayjs()
+
+      const {addressId, shops} = query
+
+      const productIds = shops.reduce((mem, shop) => {
+        return [...mem, ...shop.products.map(product => product.productId)]
+      }, [])
+      const shopIds = shops.map(shop => shop.shopId)
+
+      const [products, inquiryProductPInfoByProductIdsError] = await (
+        await inquiryProductInfoByProductIds
+      )({productIds})
+
+      if (inquiryProductPInfoByProductIdsError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductByProductIds,
+          inquiryProductPInfoByProductIdsError,
+        )
+      }
+
+      const [memberAddress, inquiryAddressByIdError] = await (
+        await inquiryAddressById
+      )(addressId)
+
+      if (inquiryAddressByIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryAddressById,
+          inquiryAddressByIdError,
+        )
+      }
+
+      const [sellerAddresses, inquirySellerAddressesByShopIdsError] = 
+        await inquirySellerAddressesByShopIds(shopIds)
+      
+      if (inquirySellerAddressesByShopIdsError != '') {
+        return response(
+          undefined,
+          UnableToInquirySellerAddressesByShopIds,
+          inquirySellerAddressesByShopIdsError,
+        )
+      }
+
+      const [shippings, requestShippingPriceError] = await requestProductShippingPrice(
+        shops,
+        products,
+        memberAddress,
+        sellerAddresses
+      )
+
+      if (requestShippingPriceError != '') {
+        return response(
+          undefined,
+          UnableToRequestShippingPrice,
+          requestShippingPriceError,
+        )
+      }
+      
+      this.logger.info(`Done GetProductShippingHandler ${dayjs().diff(start)} ms`)
+      return response(shippings)
+    }
+  }
+
+  RequestProductShippingPriceFunc(
+    inquiryPriceFromShippop: InquiryPriceFromShippopType
+  ): RequestProductShippingPriceFuncType {
+    return async (
+      shops: ShopShipping[],
+      products: Product[],
+      buyerAddress: Address,
+      sellerAddresses: Address[]
+    ):Promise<[ShippingPrice, string]> => {
+      const start = dayjs()
+      
+      const shippings:ShippingPrice = {}
+      try {
+        const productProfileDictionary = products.reduce((dictionary, product) => {
+          dictionary[product.id] = product.productProfile
+          return dictionary
+        }, {})
+
+        const sellerAddressDictionary = sellerAddresses.reduce((dictionary, sellerAddress) => {
+          dictionary[sellerAddress.member.shop.id] = sellerAddress
+          return dictionary
+        }, {})
+
+        for (const shop of shops) {
+          const sellerAddress = sellerAddressDictionary[shop.shopId]
+          const shippingProducts = shop.products.reduce((productList, product) => {
+            return [
+              ...productList,
+              ...(new Array(product.productUnits).fill(0).map(
+                () => (productProfileDictionary[product.productId])
+              ))]
+          }, [])
+          const shippingDetails = await inquiryPriceFromShippop(sellerAddress, buyerAddress, shippingProducts)
+          shippings[shop.shopId]= shippingDetails.map(shipping => ({
+            ...shipping,
+            ...convertEstimateTimeToMinAndMaxDate(shipping.estimateTime),
+          }))
+          
+        }
+      } catch (error) {
+        return [shippings, error.message]
+      }
+
+      this.logger.info(`Done RequestShippingPriceFunc ${dayjs().diff(start)} ms`)
+      return [shippings, '']
     }
   }
   

@@ -1,8 +1,10 @@
+import { Address } from 'src/db/entities/Address'
 import { Member } from 'src/db/entities/Member'
 import { Product } from 'src/db/entities/Product'
 import { ProductProfile } from 'src/db/entities/ProductProfile'
+import { ShippopGetPriceDetail } from 'src/modules/order/type/shippop.type'
 import { SelectQueryBuilder } from 'typeorm'
-import { GetProductInfoMemberDto, GetProductListMemberDto } from '../dto/getProductList.dto'
+import { GetProductInfoMemberDto, GetProductListMemberDto, ShopShipping } from '../dto/getProductList.dto'
 
 export type ProductPrice = {
   productId: number,
@@ -30,3 +32,12 @@ export type InquiryMemberProductCurrentPriceFuncType = (
   member: Member,
   products: Product[],
 )=> Promise<[Record<number, ProductPrice>, string]>
+
+export type ShippingPrice = Record<string, ShippopGetPriceDetail[]>
+
+export type RequestProductShippingPriceFuncType = (
+  shops: ShopShipping[],
+  products: Product[],
+  buyerAddress: Address,
+  sellerAddresses: Address[]
+) => Promise<[ShippingPrice, string]>

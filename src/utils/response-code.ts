@@ -72,6 +72,7 @@ export const UnableInquiryAddressById = _addressError + 6
 export const UnableInquiryAddressesByMemberId = _addressError + 7
 export const UnableUpdatePickupAddressByMemberId = _addressError + 8
 export const UnableUpdateReturnItemAddressByMemberId = _addressError + 9
+export const UnableToInquirySellerAddressesByShopIds = _addressError + 10
 
 // seller module
 const _sellerError = 106000
@@ -131,6 +132,7 @@ export const UnableUpdateProduct = _productError + 17
 export const UnableInquiryProductProfileFromDb = _productError + 18
 export const UnableInquiryProductByProductIds = _productError + 19
 export const UnableToGetProductPrice = _productError + 20
+export const UnableToRequestShippingPrice = _productError + 21
 export const UnableConvertProductProfileToProductProfileListForBuyer =
   _productError + 6
 

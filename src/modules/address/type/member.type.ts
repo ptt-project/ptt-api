@@ -75,3 +75,7 @@ export type UpdateNotReturnItemAddressesByMemberIdType = (
   memberId: string,
   role: MemberRoleType,
 ) => Promise<string>
+
+export type InquirySellerAddressesByShopIdsType = (
+  shopIds: string[],
+) => Promise<[Address[], string]>

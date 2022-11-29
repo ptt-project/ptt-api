@@ -11,8 +11,10 @@ import { PasswordService } from './service/password.service'
 import { ProductService } from './service/product.service'
 import { LookupService } from '../happy-point/service/lookup.service'
 import { HappyPointService } from '../happy-point/service/happy-point.service'
+import { MemberService as AddressMemberService } from '../address/service/member.service'
 import { OtpService } from '../otp/service/otp.service'
 import { WalletService } from '../wallet/service/wallet.service'
+import { ShippopService } from '../order/service/shippop.service'
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { WalletService } from '../wallet/service/wallet.service'
     HappyPointService,
     OtpService,
     WalletService,
+    AddressMemberService,
+    ShippopService,
   ],
 
   exports: [],
