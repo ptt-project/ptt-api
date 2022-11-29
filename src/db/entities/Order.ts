@@ -1,3 +1,4 @@
+import { transformerDecimalToNumber } from 'src/utils/entity-transform'
 import {
   Column,
   Entity,
@@ -12,18 +13,15 @@ import { Member } from './Member'
 import { OrderShop } from './OrderShop'
 import { Payment } from './Payment'
 
-export type OrderStatusType =
-  | 'toPay'
-  | 'toShip'
-  | 'toReceive'
-  | 'complated'
-  | 'cancelled'
-  | 'return'
-  | 'refund'
+export type OrderStatusType = 'WAITING_PAYMENT' | 'PAID' | 'CANCELLED'
+
 @Entity({ name: 'orders' })
 export class Order extends AppEntity {
   @Column({ name: 'member_id', nullable: false })
   memberId: string
+
+  @Column({ name: 'code', nullable: false })
+  code: string
 
   @Column({ name: 'happy_voucher_id', nullable: true })
   happyVoucherId?: string
@@ -32,24 +30,35 @@ export class Order extends AppEntity {
   paymentId?: string
 
   @Column({
-    name: 'merchandise_subtotal',
+    name: 'totalPrice',
     nullable: false,
     type: 'decimal',
     precision: 12,
     scale: 2,
     default: 0,
+    transformer: transformerDecimalToNumber,
   })
-  merchandiseSubtotal: number
+  totalPrice: number
 
   @Column({
-    name: 'shipping_total',
+    name: 'total_price_of_products',
     nullable: false,
     type: 'decimal',
     precision: 12,
     scale: 2,
-    default: 0,
+    transformer: transformerDecimalToNumber,
   })
-  shippingTotal: number
+  totalPriceOfProducts: number
+
+  @Column({
+    name: 'total_price_of_shippings',
+    nullable: false,
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    transformer: transformerDecimalToNumber,
+  })
+  totalPriceOfShippings: number
 
   @Column({
     name: 'discount',
@@ -57,19 +66,9 @@ export class Order extends AppEntity {
     type: 'decimal',
     precision: 12,
     scale: 2,
-    default: 0,
+    transformer: transformerDecimalToNumber,
   })
   discount: number
-
-  @Column({
-    name: 'amount',
-    nullable: false,
-    type: 'decimal',
-    precision: 12,
-    scale: 2,
-    default: 0,
-  })
-  amount: number
 
   @Column({ name: 'name', nullable: false })
   name: string
@@ -95,15 +94,7 @@ export class Order extends AppEntity {
   @Column({
     name: 'status',
     type: 'enum',
-    enum: [
-      'toPay',
-      'toShip',
-      'toReceive',
-      'complated',
-      'cancelled',
-      'return',
-      'refund',
-    ],
+    enum: ['WAITING_PAYMENT', 'PAID', 'CANCELLED'],
     nullable: false,
   })
   status: OrderStatusType

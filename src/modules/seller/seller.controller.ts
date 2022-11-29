@@ -1,9 +1,12 @@
-import { Body, Controller, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Get, Patch, Post } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
-import { Auth, ReqUser } from '../auth/auth.decorator'
+import { Auth, ReqUser, Seller } from '../auth/auth.decorator'
 
 import { RegisterService } from './service/register.service'
+import { WalletService } from '../wallet/service/wallet.service'
+import { ShopService } from '../shop/service/shop.service'
+import { UpdateShopInfoRequestDto } from '../shop/dto/shop.dto'
 import { RegisterSellerRequestDto } from './dto/seller.dto'
 import { ConditionService } from '../shop/service/condition.service'
 
@@ -12,6 +15,8 @@ import { ConditionService } from '../shop/service/condition.service'
 export class SellerController {
   constructor(
     private readonly registerService: RegisterService,
+    private readonly shopService: ShopService,
+    private readonly walletService: WalletService,
     private readonly conditionService: ConditionService,
   ) {}
 
@@ -27,6 +32,8 @@ export class SellerController {
       this.registerService.InsertShopToDbFunc(etm),
       this.conditionService.InsertConditionToDbFunc(etm),
       this.registerService.CreateTablePartitionOfProductProfileToDbFunc(etm),
+      this.walletService.InsertWalletToDbFunc(etm),
+      this.registerService.updateShopWalletFunc(etm),
     )(member, body)
   }
 
@@ -40,6 +47,31 @@ export class SellerController {
     return await this.registerService.ResubmitRegisterSellerHandler(
       this.registerService.ValidateSellerDataFunc(etm),
       this.registerService.ResubmitShopToDbFunc(etm),
+    )(member, body)
+  }
+
+  @Seller()
+  @Get('/shop-info')
+  @Transaction()
+  async getShopoInfo(
+    @ReqUser() member: Member,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.shopService.GetShopInfoHandler(
+      this.shopService.InquiryShopByMemberIdFunc(etm),
+    )(member)
+  }
+
+  @Seller()
+  @Patch('/shop-info')
+  @Transaction()
+  async updateShopoInfo(
+    @ReqUser() member: Member,
+    @Body() body: UpdateShopInfoRequestDto,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.shopService.UpdateShopInfoHandler(
+      this.shopService.UpdateShopByMemberIdFunc(etm),
     )(member, body)
   }
 }

@@ -2,7 +2,7 @@ import { Address } from 'src/db/entities/Address'
 import { Member } from 'src/db/entities/Member'
 import { Product } from 'src/db/entities/Product'
 import { ProductProfile } from 'src/db/entities/ProductProfile'
-import { ShippopGetPriceDetail } from 'src/modules/order/type/order.type'
+import { ShippopGetPriceDetail } from 'src/modules/order/type/shippop.type'
 import { SelectQueryBuilder } from 'typeorm'
 import { GetProductInfoMemberDto, GetProductListMemberDto, ShopShipping } from '../dto/getProductList.dto'
 

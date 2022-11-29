@@ -1,15 +1,13 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Query,
-} from '@nestjs/common'
+import { Body, Controller, Get, Post, Query } from '@nestjs/common'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
 import { Auth, ReqUser, ReqWallet } from '../auth/auth.decorator'
 
 import { WalletService } from './service/wallet.service'
-import { getWalletTransactionQueryDTO, RequestDepositQrCodeRequestDTO, WithdrawRequestDTO } from './dto/wallet.dto'
+import {
+  getWalletTransactionQueryDTO,
+  RequestDepositQrCodeRequestDTO,
+  WithdrawRequestDTO,
+} from './dto/wallet.dto'
 import { Wallet } from 'src/db/entities/Wallet'
 import { OtpService } from '../otp/service/otp.service'
 import { Member } from 'src/db/entities/Member'
@@ -31,9 +29,7 @@ export class WalletController {
   ) {}
 
   @Get('/')
-  async getWallet(
-    @ReqWallet() wallet: Wallet,
-  ) {
+  async getWallet(@ReqWallet() wallet: Wallet) {
     return await this.walletService.GetWalletHandler()(wallet)
   }
 
@@ -45,7 +41,7 @@ export class WalletController {
     @TransactionManager() etm: EntityManager,
   ) {
     return await this.walletService.GetWalletTransactionHandler(
-      this.walletService.InqueryWalletTransactionFromDbFunc(etm)
+      this.walletService.InqueryWalletTransactionFromDbFunc(etm),
     )(wallet, query)
   }
 

@@ -276,7 +276,7 @@ export class HappyPointService {
     validatePoint: Promise<ValidateCalculatePointByExchangeAndAmountType>,
     validateAmount: Promise<ValidateCalculateAmountType>,
     insertHappyPointTypeBuyToDb: Promise<InsertHappyPointTypeBuyToDbType>,
-    updateDebitBalanceMemberToDb: Promise<UpdateCreditBalanceToDbType>,
+    updateDebitBalanceMemberToDb: Promise<UpdateDebitBalanceToDbType>,
   ): DebitHappyPointType {
     return async (
       happyPoint: HappyPoint,
@@ -774,7 +774,7 @@ export class HappyPointService {
         })
 
         if (happyPoint.balance < point) {
-          return [happyPoint, 'point not enough for transfer']
+          return [happyPoint, 'point not enough for process']
         }
 
         const newBalance = happyPoint.balance - point

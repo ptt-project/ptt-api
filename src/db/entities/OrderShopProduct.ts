@@ -1,9 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
-import { AppEntity } from "./AppEntity";
-import { OrderShop } from "./OrderShop";
-import { Product } from "./Product";
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { AppEntity } from './AppEntity'
+import { OrderShop } from './OrderShop'
+import { Product } from './Product'
 
-export type OrderShopProductStatusType = 'toPay' | 'toShip' | 'toReceive' | 'complated' | 'cancelled' | 'return' | 'refund'
 @Entity({ name: 'order_shop_products' })
 export class OrderShopProduct extends AppEntity {
   @Column({ name: 'order_shop_id', nullable: false })
@@ -38,14 +37,10 @@ export class OrderShopProduct extends AppEntity {
   productOptions2?: string
 
   @Column({
-    name: 'status', 
-    type: 'enum',
-    enum: ['toPay', 'toShip', 'toReceive', 'complated', 'cancelled', 'return', 'refund'],
+    name: 'product_profile_json',
+    type: 'simple-json',
     nullable: false,
   })
-  status: OrderShopProductStatusType
-
-  @Column({ name: 'product_profile_json', type: 'simple-json', nullable: false })
   productProfileJson: string
 
   @ManyToOne(

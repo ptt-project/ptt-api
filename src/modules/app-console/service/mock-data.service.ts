@@ -15,7 +15,6 @@ import {
   InsertProductProfileToDbParams,
   InsertProductsToDbParams,
 } from '../../product/type/product.type'
-import { genUuid } from 'src/utils/helpers'
 import { MasterConfig, MasterConfigType } from 'src/db/entities/MasterConfig'
 import { OtpService } from 'src/modules/otp/service/otp.service'
 import { MobileService } from 'src/modules/mobile/service/mobile.service'
@@ -156,6 +155,8 @@ export class MockDataConsoleService {
       this.regiserSellerService.CreateTablePartitionOfProductProfileToDbFunc(
         etm,
       ),
+      this.walletService.InsertWalletToDbFunc(etm),
+      this.regiserSellerService.updateShopWalletFunc(etm),
     )(member, bodyRegisterSeller)
   }
 

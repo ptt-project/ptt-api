@@ -5,6 +5,7 @@ import { WalletTransactionReference } from './WalletTransactionReference'
 import { BankAccount } from './BankAccount'
 import { transformerDecimalToNumber } from 'src/utils/entity-transform'
 import { Payment } from './Payment'
+import { OrderShop } from './OrderShop'
 
 export type TransactionType = 'deposit' | 'withdraw' | 'buy' | 'sell' | 'buy_happy_point' | 'sell_happy_point'
 export type TransactionStatus = 'success' | 'fail' | 'cancel' | 'pending'
@@ -92,6 +93,9 @@ export class WalletTransaction extends AppEntity {
   @Column({ name: 'bank_account_id', nullable: true })
   bankAccountId: string
 
+  @Column({ name: 'order_shop_id', nullable: true })
+  orderShopId: string
+
   @ManyToOne(
     () => Wallet,
     wallet => wallet.transactions,
@@ -112,6 +116,13 @@ export class WalletTransaction extends AppEntity {
   )
   @JoinColumn({ name: 'bank_account_id', referencedColumnName: 'id' })
   bankAccount: BankAccount
+
+  @OneToOne(
+    () => OrderShop,
+    orderShop => orderShop.walletTransaction,
+  )
+  @JoinColumn({ name: 'order_shop_id', referencedColumnName: 'id' })
+  orderShop: OrderShop
 
   @OneToMany(
     () => Payment,

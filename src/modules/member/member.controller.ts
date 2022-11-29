@@ -20,7 +20,6 @@ import { LookupService } from '../happy-point/service/lookup.service'
 import { OtpService } from '../otp/service/otp.service'
 import { WalletService } from '../wallet/service/wallet.service'
 import { ChagnePasswordRequestDto } from './dto/password.dto'
-import { CreateOrderDto } from './dto/createOrder.dto'
 import { EditEmailRequestDto } from './dto/editEmail.dto'
 import { GetRelationRequestDto } from './dto/relation.dto'
 import { RelationService } from './service/relation.service'
@@ -32,11 +31,10 @@ import {
 import { SearchMemberByUsernameDto } from './dto/search.dto'
 import { UpdateProfiledRequestDto } from './dto/updateProfile.dto'
 import { MemberService } from './service/member.service'
-import { OrderService } from './service/order.service'
 import { PasswordService } from './service/password.service'
 import { ProductService } from './service/product.service'
 import { MemberService as AddressMemberService } from '../address/service/member.service'
-import { OrderService as ShippingOrderService } from '../order/service/order.service'
+import { ShippopService } from '../order/service/shippop.service'
 
 @Auth()
 @Controller('v1/members')
@@ -47,14 +45,13 @@ export class MemberController {
     private readonly relationService: RelationService,
     private readonly emailService: MemberEmailService,
     private readonly productService: ProductService,
-    private readonly orderService: OrderService,
     private readonly lookupService: LookupService,
     private readonly happyService: HappyPointService,
     private readonly otpService: OtpService,
     private readonly walletService: WalletService,
     private readonly redisService: RedisService,
     private readonly addressMemberService: AddressMemberService,
-    private readonly shippingOrderService: ShippingOrderService,
+    private readonly shippopService: ShippopService,
   ) {}
 
   @Patch('change-password')
@@ -135,13 +132,12 @@ export class MemberController {
     @Body() query: GetProductShipingDto,
     @TransactionManager() etm: EntityManager,
   ) {
-    console.log('products/shippings')
     return await this.productService.GetProductShippingHandler(
       this.productService.InquiryProductInfoByProductIdsFunc(etm),
       this.addressMemberService.InquiryAddressByIdFunc(etm),
       this.addressMemberService.InquirySellerAddressesByShopIdsFunc(etm),
       this.productService.RequestProductShippingPriceFunc(
-        this.shippingOrderService.InquiryPriceFromShippopFunc(),
+        this.shippopService.InquiryPriceFromShippopFunc(),
       )
     )(member, query)
   }
@@ -168,50 +164,5 @@ export class MemberController {
     return await this.memberService.SearchUserByUsernameHandler(
       this.memberService.InquiryMemberByUsernameFunc(etm),
     )(query)
-  }
-
-  @Auth()
-  @Post('order')
-  @Transaction()
-  async createOrder(
-    @ReqWallet() wallet: Wallet,
-    @ReqHappyPoint() happyPoint: HappyPoint,
-    @ReqUser() member: Member,
-    @Body() body: CreateOrderDto,
-    @TransactionManager() etm: EntityManager,
-  ) {
-    const redis = this.redisService.getClient()
-
-    return await this.orderService.CheckoutHandler(
-      this.orderService.InsertOrderToDbFunc(etm),
-      this.orderService.InsertPaymentByBankToDbFunc(etm),
-      this.otpService.InquiryVerifyOtpFunc(etm),
-      this.lookupService.InquiryRefIdExistInTransactionFunc(etm),
-      this.lookupService.GetCacheLookupToRedisFunc(redis),
-      this.happyService.ValidateCalculateFeeAmountFunc(),
-      this.happyService.ValidateCalculatePointByExchangeAndAmountFunc(),
-      this.happyService.ValidateCalculateAmountFunc(),
-      this.happyService.InsertHappyPointTransactionToDbFunc(etm),
-      this.walletService.RequestInteranlWalletTransactionService(
-        this.walletService.InsertTransactionToDbFunc(etm),
-        this.walletService.InsertReferenceToDbFunc(etm),
-        this.walletService.UpdateReferenceToDbFunc(etm),
-        this.walletService.AdjustWalletInDbFunc(etm),
-      ),
-      this.happyService.UpdatDebitBalanceMemberToDbFunc(etm),
-      this.walletService.InsertTransactionToDbFunc(etm),
-      this.walletService.InsertReferenceToDbFunc(etm),
-      this.walletService.UpdateReferenceToDbFunc(etm),
-      this.walletService.AdjustWalletInDbFunc(etm),
-      this.orderService.InsertPaymentByEwalletToDbFunc(etm),
-      this.orderService.InsertPaymentByHappyPointToDbFunc(etm),
-      this.orderService.UpdatePaymentIdToOrderFunc(etm),
-      this.orderService.InquiryShopByIdFunc(etm),
-      this.orderService.InsertOrderShopToDbFunc(etm),
-      this.orderService.InquiryProductByIdFunc(etm),
-      this.orderService.UpdateStockToProductFunc(etm),
-      this.orderService.InquiryProductProfileByIdFunc(etm),
-      this.orderService.InsertOrderShopProductToDbFunc(etm),
-    )(wallet, happyPoint, member, body)
   }
 }

@@ -1,3 +1,4 @@
+import { OrderShop } from 'src/db/entities/OrderShop'
 import { Wallet } from 'src/db/entities/Wallet'
 import {
   TransactionType,
@@ -12,6 +13,7 @@ export type RequestInteranlWalletTransactionServiceFuncType = (
   type: TransactionType,
   thirdPtReferenceNo: string,
   detail?: string,
+  orderShopId?: string,
 ) => Promise<[Wallet, string]>
 
 export type InqueryWalletTransactionFuncType = (
@@ -23,6 +25,7 @@ export type InqueryWalletTransactionFuncType = (
 
 export type InsertWalletToDbFuncType = (
   memberId: string,
+  shopId?: string,
 ) => Promise<[Wallet, string]>
 
 export type InsertTransactionToDbFuncType = (
@@ -32,6 +35,7 @@ export type InsertTransactionToDbFuncType = (
   detail: string,
   type: TransactionType,
   bankAccountId?: string,
+  orderShopId?: string,
 ) => Promise<[WalletTransaction, string]>
 
 export type InsertReferenceToDbFuncType = (
@@ -70,6 +74,10 @@ export type AdjustWalletFuncType = (
   transactionType: TransactionType,
 ) => Promise<[Wallet, string]>
 
+export type InquiryWalletByShopIdType = (
+  shopId: string,
+) => Promise<[Wallet, string]>
+
 export type InquiryRefIdExistInTransactionType = (
   refId: string,
 ) => Promise<[number, string]>
@@ -80,3 +88,21 @@ export type ValidateCalculateWithdrawAndFeeFuncType = (
   feeRate: number,
   fee: number,
 ) => Promise<string>
+
+export type AdjustWalletToSellerParams = {
+  orderShops: OrderShop[]
+}
+
+export type AdjustWalletToSellerType = (
+  parms: AdjustWalletToSellerParams,
+) => Promise<string>
+
+export type AdjustWalletToBuyerParams = {
+  walletId: string
+  totalPrice: number
+  code: string
+}
+
+export type AdjustWalletToBuyerType = (
+  params: AdjustWalletToBuyerParams,
+) => Promise<[WalletTransaction, string]>

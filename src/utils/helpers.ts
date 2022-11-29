@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt'
+import dayjs from 'dayjs'
 import { Redis } from 'ioredis'
 
 export const randomStr = (length: number) => {
@@ -40,6 +41,17 @@ export const genUuid = () => {
   })
 }
 
+export const genOrderNumber = () => {
+  const dt = new Date()
+  const year = dt.getFullYear() % 100
+  const month = (dt.getMonth() + 1).toString().padStart(2, '0')
+  const date = dt
+    .getDate()
+    .toString()
+    .padStart(2, '0')
+  return `ORD${year}${month}${date}${randomStr(6)}`
+}
+
 export class ColumnNumericTransformer {
   to(data: number): number {
     return data
@@ -74,4 +86,14 @@ export const getCacheObjectToRedis = async (redis: Redis, key: string) => {
 
 export const getCacheStringToRedis = async (redis: Redis, key: string) => {
   return await redis.get(key)
+}
+
+export const convertEstimateTimeToMinAndMaxDate = (estimateTime: string) => {
+  const values = estimateTime.replace(/[^0-9\-\.]+/g, '').split('-')
+
+  const now = dayjs()
+  const minDate = now.add(Number(values[0]), 'days').format('YYYY-MM-DD')
+  const maxDate = now.add(Number(values[1]), 'days').format('YYYY-MM-DD')
+
+  return { minDate, maxDate }
 }

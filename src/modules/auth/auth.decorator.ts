@@ -36,6 +36,8 @@ export const ReqWallet = createParamDecorator((data, ctx: ExecutionContext) => {
 export const ReqHappyPoint = createParamDecorator(
   (data, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest()
+    console.log('request.user', request.user)
+    console.log('happyPoints', request.user.happyPoints[0])
     return request.user.happyPoints[0]
   },
 )
