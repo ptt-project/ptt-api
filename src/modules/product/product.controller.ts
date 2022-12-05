@@ -15,6 +15,7 @@ import { Auth, ReqShop, Seller } from '../auth/auth.decorator'
 import {
   CreateProductProfileRequestDto,
   GetProductListDto,
+  GetProductsByShopIdAndCategoryIdDTO,
   GetProductsDTO,
   UpdateProductProfileRequestDto,
 } from './dto/product.dto'
@@ -134,5 +135,46 @@ export class ProductController {
       this.productService.ExecuteInquiryProductProfileFromDbFunc(),
       this.productService.ConvertDataToProductProfileLandingPageFunc(),
     )(query)
+  }
+
+  @Get(':productProfileId')
+  @Transaction()
+  async getProductByProductId(
+    @Param('productProfileId') productProfileId: string,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.productService.GetProductProfileByIdHandler(
+      this.productService.InquiryProductDetailByIdFromDbFunc(etm),
+    )(productProfileId)
+  }
+
+  @Get('popular-product/:shopId')
+  @Transaction()
+  async getPopularProductByShopId(
+    @Param('shopId') shopId: string,
+    @Query() query: GetProductsDTO,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.productService.GetPopularProductProfileHandler(
+      this.productService.PreInquiryPopularProductProfileByShopIdFunc(etm),
+      this.productService.ExecuteInquiryProductProfileFromDbFunc(),
+      this.productService.ConvertDataToProductProfileLandingPageFunc(),
+    )(shopId, query)
+  }
+
+  @Get('shop/:shopId')
+  @Transaction()
+  async getProductByShopIdAndCategoryId(
+    @Param('shopId') shopId: string,
+    @Query() query: GetProductsByShopIdAndCategoryIdDTO,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.productService.GetProductsByShopIdAndCategoryIdHandler(
+      this.productService.PreInquiryProductProfileByShopIdAndCategoryIdFunc(
+        etm,
+      ),
+      this.productService.ExecuteInquiryProductProfileFromDbFunc(),
+      this.productService.ConvertDataToProductProfileLandingPageFunc(),
+    )(shopId, query)
   }
 }

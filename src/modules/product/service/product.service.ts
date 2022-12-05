@@ -50,6 +50,9 @@ import {
   PreInquiryProductProfileFromDbType,
   ConvertDataToProductProfileLandingPageType,
   ExecutePreInquiryProductProfileFromDbType,
+  InquiryProductProfileByIdFromDbType,
+  PreInquiryPopularProductProfileByShopIdType,
+  PreInquiryProductProfileByShopIdAndCategoryIdType,
 } from '../type/product.type'
 import { PinoLogger } from 'nestjs-pino'
 import dayjs from 'dayjs'
@@ -58,6 +61,7 @@ import {
   GetProductsDTO,
   UpdateProductProfileRequestDto,
   GetProductListDto,
+  GetProductsByShopIdAndCategoryIdDTO,
 } from '../dto/product.dto'
 
 import { Shop } from 'src/db/entities/Shop'
@@ -1603,6 +1607,260 @@ export class ProductService {
     }
   }
 
+  GetProductProfileByIdHandler(
+    inquiryProductProfileByIdFromDb: InquiryProductProfileByIdFromDbType,
+  ) {
+    return async (productProfileId: string) => {
+      const start = dayjs()
+
+      const [
+        productProfiles,
+        inquiryProductProfileFromDbError,
+      ] = await inquiryProductProfileByIdFromDb(productProfileId)
+
+      if (inquiryProductProfileFromDbError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          inquiryProductProfileFromDbError,
+        )
+      }
+
+      this.logger.info(
+        `Done GetProductProfileByIdHandler ${dayjs().diff(start)} ms`,
+      )
+
+      return response(productProfiles)
+    }
+  }
+
+  InquiryProductDetailByIdFromDbFunc(
+    etm: EntityManager,
+  ): InquiryProductProfileByIdFromDbType {
+    return async (
+      productProfileId: string,
+    ): Promise<[ProductProfile, string]> => {
+      let productProfile: ProductProfile
+
+      try {
+        productProfile = await etm.findOne(ProductProfile, productProfileId, {
+          withDeleted: false,
+          relations: ['products', 'shop'],
+        })
+      } catch (error) {
+        return [undefined, error.message]
+      }
+
+      if (!productProfile) {
+        return [undefined, 'Not found product profile']
+      }
+
+      if (!productProfile.shop) {
+        return [undefined, 'Not found shop']
+      }
+
+      if (!productProfile.products) {
+        return [undefined, 'Not found product']
+      }
+
+      return [productProfile, '']
+    }
+  }
+
+  GetPopularProductProfileHandler(
+    preInquiryPopularProductProfileByShopId: PreInquiryPopularProductProfileByShopIdType,
+    executeInquiryProductProfileFromDb: ExecutePreInquiryProductProfileFromDbType,
+    convertProductProfileToProductProfileListForBuyer: ConvertDataToProductProfileLandingPageType,
+  ) {
+    return async (shopId: string, query: GetProductsDTO) => {
+      const { limit, page } = query
+      const [
+        productProfiles,
+        errorInquiryPopularProductProfileFromDb,
+      ] = preInquiryPopularProductProfileByShopId(shopId)
+
+      if (errorInquiryPopularProductProfileFromDb != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          errorInquiryPopularProductProfileFromDb,
+        )
+      }
+
+      const [
+        paginateProductProfile,
+        errorExecuteInquiryProductProfileFromDb,
+      ] = await executeInquiryProductProfileFromDb(productProfiles, limit, page)
+
+      if (errorExecuteInquiryProductProfileFromDb != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          errorExecuteInquiryProductProfileFromDb,
+        )
+      }
+
+      const [
+        result,
+        errorConvertProductProfileToProductProfileListForBuyer,
+      ] = convertProductProfileToProductProfileListForBuyer(
+        paginateProductProfile,
+      )
+      if (errorConvertProductProfileToProductProfileListForBuyer != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          errorConvertProductProfileToProductProfileListForBuyer,
+        )
+      }
+
+      return response(result)
+    }
+  }
+
+  PreInquiryPopularProductProfileByShopIdFunc(
+    etm: EntityManager,
+  ): PreInquiryPopularProductProfileByShopIdType {
+    return (shopId: string): [SelectQueryBuilder<ProductProfile>, string] => {
+      const start = dayjs()
+      let productProfiles: SelectQueryBuilder<ProductProfile>
+
+      const partitionQuery = `product_profile_shop_${shopId}`
+
+      try {
+        productProfiles = etm
+          .createQueryBuilder(ProductProfile, partitionQuery)
+          .where(`${partitionQuery}.deletedAt IS NULL`)
+          .andWhere(`${partitionQuery}.shopId = :shopId`, {
+            shopId,
+          })
+
+        productProfiles = this.SelectQueryBuilderJoinAndMapProductAndShopForPartition(
+          productProfiles,
+          partitionQuery,
+        )
+
+        productProfiles.andWhere(`products.amountSold > 0`)
+        productProfiles.orderBy(`products.amountSold`, 'DESC')
+      } catch (error) {
+        return [productProfiles, error]
+      }
+
+      this.logger.info(
+        `Done PreInquiryPopularProductProfileByShopIdFunc ${dayjs().diff(
+          start,
+        )} ms`,
+      )
+
+      return [productProfiles, '']
+    }
+  }
+
+  GetProductsByShopIdAndCategoryIdHandler(
+    preInquiryProductProfileByShopIdAndCategoryId: PreInquiryProductProfileByShopIdAndCategoryIdType,
+    executeInquiryProductProfileFromDb: ExecutePreInquiryProductProfileFromDbType,
+    convertProductProfileToProductProfileListForBuyer: ConvertDataToProductProfileLandingPageType,
+  ) {
+    return async (
+      shopId: string,
+      query: GetProductsByShopIdAndCategoryIdDTO,
+    ) => {
+      const { limit, page, categoryId } = query
+      const [
+        productProfiles,
+        preInquiryProductProfileByShopIdAndCategoryIdError,
+      ] = preInquiryProductProfileByShopIdAndCategoryId(shopId, categoryId)
+
+      if (preInquiryProductProfileByShopIdAndCategoryIdError != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          preInquiryProductProfileByShopIdAndCategoryIdError,
+        )
+      }
+
+      const [
+        paginateProductProfile,
+        errorExecuteInquiryProductProfileFromDb,
+      ] = await executeInquiryProductProfileFromDb(productProfiles, limit, page)
+
+      if (errorExecuteInquiryProductProfileFromDb != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          errorExecuteInquiryProductProfileFromDb,
+        )
+      }
+
+      const [
+        result,
+        errorConvertProductProfileToProductProfileListForBuyer,
+      ] = convertProductProfileToProductProfileListForBuyer(
+        paginateProductProfile,
+      )
+      if (errorConvertProductProfileToProductProfileListForBuyer != '') {
+        return response(
+          undefined,
+          UnableInquiryProductProfileByProductProfileId,
+          errorConvertProductProfileToProductProfileListForBuyer,
+        )
+      }
+
+      return response(result)
+    }
+  }
+
+  PreInquiryProductProfileByShopIdAndCategoryIdFunc(
+    etm: EntityManager,
+  ): PreInquiryProductProfileByShopIdAndCategoryIdType {
+    return (
+      shopId: string,
+      categoryId: string,
+    ): [SelectQueryBuilder<ProductProfile>, string] => {
+      const start = dayjs()
+      let productProfiles: SelectQueryBuilder<ProductProfile>
+
+      const partitionQuery = `product_profile_shop_${shopId}`
+
+      try {
+        productProfiles = etm
+          .createQueryBuilder(ProductProfile, partitionQuery)
+          .where(`${partitionQuery}.deletedAt IS NULL`)
+          .andWhere(`${partitionQuery}.shopId = :shopId`, {
+            shopId,
+          })
+
+        productProfiles = this.SelectQueryBuilderJoinAndMapProductAndShopForPartition(
+          productProfiles,
+          partitionQuery,
+        )
+
+        console.log('categoryId : ', categoryId)
+
+        if (categoryId) {
+          productProfiles.innerJoin(
+            'category_product_profiles',
+            'category_product_profiles',
+            `${partitionQuery}.id = category_product_profiles.product_profile_id and category_id = :categoryId`,
+            {
+              categoryId,
+            },
+          )
+        }
+      } catch (error) {
+        return [productProfiles, error]
+      }
+
+      this.logger.info(
+        `Done PreInquiryProductProfileByShopIdAndCategoryIdFunc ${dayjs().diff(
+          start,
+        )} ms`,
+      )
+
+      return [productProfiles, '']
+    }
+  }
+
   private SelectQueryBuilderJoinAndMapProdcutsAndShop(
     productProfiles: SelectQueryBuilder<ProductProfile>,
   ) {
@@ -1615,6 +1873,24 @@ export class ProductService {
       .innerJoinAndMapOne(
         'productProfiles.shop',
         'productProfiles.shop',
+        'shops',
+      )
+  }
+
+  private SelectQueryBuilderJoinAndMapProductAndShopForPartition(
+    productProfiles: SelectQueryBuilder<ProductProfile>,
+    partitionQuery: string,
+  ) {
+    return productProfiles
+
+      .innerJoinAndMapMany(
+        `${partitionQuery}.products`,
+        `${partitionQuery}.products`,
+        'products',
+      )
+      .innerJoinAndMapOne(
+        `${partitionQuery}.shop`,
+        `${partitionQuery}.shop`,
         'shops',
       )
   }
