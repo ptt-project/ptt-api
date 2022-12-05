@@ -1,6 +1,7 @@
 import { MallApplicantRoleType, Shop, ShopType } from 'src/db/entities/Shop'
-import { Condition } from "src/db/entities/Condition";
+import { Condition } from 'src/db/entities/Condition'
 import { UpdateShopInfoRequestDto } from '../dto/shop.dto'
+import { SelectQueryBuilder } from 'typeorm'
 
 export type InsertShopToDbParams = {
   type: ShopType
@@ -57,3 +58,6 @@ export type UpdateShopTobDbByIdType = (
   params: UpdateShopInfoRequestDto,
 ) => Promise<string>
 
+export type InquiryShopDetailByIdType = (
+  shopId: string,
+) => Promise<[Shop, string]>

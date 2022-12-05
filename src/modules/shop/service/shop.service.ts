@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import { PinoLogger } from 'nestjs-pino'
 import { Condition } from 'src/db/entities/Condition'
 import { Shop } from 'src/db/entities/Shop'
-import { EntityManager, UpdateResult } from 'typeorm'
+import { EntityManager, SelectQueryBuilder, UpdateResult } from 'typeorm'
 import {
   UnableToGetConditions,
   UnableToGetShopInfo,
@@ -13,10 +13,13 @@ import {
 import { Member } from 'src/db/entities/Member'
 import {
   GetShopInfoType,
+  InquiryShopDetailByIdType,
   UpdateShopInfoToDbParams,
   UpdateShopTobDbByIdType,
 } from '../type/shop.type'
 import { InquiryConditionByShopIdType } from '../type/condition.type'
+import { ProductProfile } from 'src/db/entities/ProductProfile'
+import { paginate } from 'nestjs-typeorm-paginate'
 
 @Injectable()
 export class ShopService {
@@ -163,6 +166,49 @@ export class ShopService {
         `Done InquiryConditionByShopIdFunc ${dayjs().diff(start)} ms`,
       )
       return [condition, '']
+    }
+  }
+
+  GetShopDetailHandler(inquiryShopDetailById: InquiryShopDetailByIdType) {
+    return async (shopId: string) => {
+      const start = dayjs()
+
+      const [shop, inquiryShopDetailByIdError] = await inquiryShopDetailById(
+        shopId,
+      )
+
+      if (inquiryShopDetailByIdError != '') {
+        return response(
+          undefined,
+          UnableToGetShopInfo,
+          inquiryShopDetailByIdError,
+        )
+      }
+
+      this.logger.info(`Done GetShopDetailHandler ${dayjs().diff(start)} ms`)
+      return response(shop)
+    }
+  }
+
+  InquiryShopDetailByIdFunc(etm: EntityManager): InquiryShopDetailByIdType {
+    return async (shopId: string): Promise<[Shop, string]> => {
+      const start = dayjs()
+
+      let shop: Shop
+      try {
+        shop = await etm.findOne(Shop, shopId, {
+          withDeleted: false,
+          relations: ['categories'],
+        })
+
+        if (!shop) {
+          return [shop, 'Unable to get shop for this user']
+        }
+      } catch (error) {
+        return [shop, error.message]
+      }
+
+      return [shop, '']
     }
   }
 }

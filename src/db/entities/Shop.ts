@@ -1,5 +1,6 @@
 import { Column, Entity, OneToOne, JoinColumn, OneToMany } from 'typeorm'
 import { AppEntity } from './AppEntity'
+import { Category } from './Category'
 import { Condition } from './Condition'
 import { Member } from './Member'
 import { OrderShop } from './OrderShop'
@@ -198,4 +199,11 @@ export class Shop extends AppEntity {
   )
   @JoinColumn({ name: 'condition_id', referencedColumnName: 'id' })
   condition: Condition
+
+  @OneToMany(
+    () => Category,
+    category => category.shop,
+  )
+  @JoinColumn({ referencedColumnName: 'shop_id' })
+  categories: Category[]
 }

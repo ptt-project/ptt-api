@@ -288,3 +288,14 @@ export class GetProductsDTO {
   @IsOptional()
   page?: number
 }
+
+export class GetProductsByShopIdAndCategoryIdDTO {
+  @IsOptional()
+  limit?: number
+
+  @IsOptional()
+  page?: number
+
+  @IsOptional()
+  categoryId?: string
+}

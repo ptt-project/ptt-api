@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch } from '@nestjs/common'
 import { Member } from 'src/db/entities/Member'
 import { Shop } from 'src/db/entities/Shop'
 import { EntityManager, Transaction, TransactionManager } from 'typeorm'
@@ -7,7 +7,6 @@ import { UpdateShopInfoRequestDto } from './dto/shop.dto'
 import { ConditionService } from './service/condition.service'
 import { ShopService } from './service/shop.service'
 
-@Auth()
 @Controller('v1/shops')
 export class ShopController {
   constructor(
@@ -15,9 +14,10 @@ export class ShopController {
     private readonly conditionService: ConditionService,
   ) {}
 
+  @Auth()
   @Get('/shop-info')
   @Transaction()
-  async getShopoInfo(
+  async getShopInfo(
     @ReqUser() member: Member,
     @TransactionManager() etm: EntityManager,
   ) {
@@ -29,7 +29,7 @@ export class ShopController {
   @Seller()
   @Patch('/shop-info')
   @Transaction()
-  async updateShopoInfo(
+  async updateShopInfo(
     @ReqUser() member: Member,
     @Body() body: UpdateShopInfoRequestDto,
     @TransactionManager() etm: EntityManager,
@@ -49,5 +49,16 @@ export class ShopController {
     return await this.conditionService.GetConditionsHandler(
       this.conditionService.InquiryConditionByShopIdFunc(etm),
     )(shop)
+  }
+
+  @Get('/shop-detail/:shopId')
+  @Transaction()
+  async getShopDetailById(
+    @Param('shopId') shopId: string,
+    @TransactionManager() etm: EntityManager,
+  ) {
+    return await this.shopService.GetShopDetailHandler(
+      this.shopService.InquiryShopDetailByIdFunc(etm),
+    )(shopId)
   }
 }

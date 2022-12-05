@@ -169,3 +169,16 @@ export type ExecutePreInquiryProductProfileFromDbType = (
   limit: number,
   page: number,
 ) => Promise<[Pagination<ProductProfile, IPaginationMeta>, string]>
+
+export type InquiryProductProfileByIdFromDbType = (
+  productProfileId: string,
+) => Promise<[ProductProfile, string]>
+
+export type PreInquiryPopularProductProfileByShopIdType = (
+  shopId: string,
+) => [SelectQueryBuilder<ProductProfile>, string]
+
+export type PreInquiryProductProfileByShopIdAndCategoryIdType = (
+  shopId: string,
+  categoryProductProfileId: string,
+) => [SelectQueryBuilder<ProductProfile>, string]
